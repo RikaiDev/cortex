@@ -1,9 +1,12 @@
 {
-  "name": "cortex-ai",
+  "name": "@rikaidev/cortex",
   "version": "0.1.0",
   "description": "AI Collaboration Brain - Dynamic role discovery and document-driven learning",
   "main": "dist/index.js",
   "type": "module",
+  "bin": {
+    "cortex": "./dist/cli/index.js"
+  },
   "scripts": {
     "build": "bun run tsc",
     "dev": "bun run tsc --watch",
@@ -11,7 +14,17 @@
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write src/**/*.ts",
     "start": "bun run dist/index.js",
-    "cli": "bun run dist/cli/index.js"
+    "cli": "bun run dist/cli/index.js",
+    "postinstall": "bun run build",
+    "setup": "node dist/cli/index.js setup",
+    "cortex:start": "node dist/cli/index.js start",
+    "cortex:discover": "node dist/cli/index.js discover",
+    "cortex:generate-ide": "node dist/cli/index.js generate-ide",
+    "cortex:setup": "node dist/cli/index.js setup",
+    "cortex:integrate": "node dist/cli/index.js integrate",
+    "cortex:init": "node dist/cli/index.js init",
+    "cortex:generate-role": "node dist/cli/index.js generate-role",
+    "cortex:analyze-patterns": "node dist/cli/index.js analyze-patterns"
   },
   "keywords": [
     "ai",
@@ -54,8 +67,5 @@
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
     "bun-types": "latest"
-  },
-  "bin": {
-    "cortex": "./dist/cli/index.js"
   }
 } 

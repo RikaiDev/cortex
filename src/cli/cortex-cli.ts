@@ -5,12 +5,14 @@ import path from "path";
 import { DynamicRoleDiscovery } from "../core/role-discovery.js";
 import { IntelligentRoleSelector } from "../core/role-selector.js";
 import { CursorAdapter } from "../core/cursor-adapter.js";
+import { ProjectDetector } from "../core/project-detector.js";
 import { Role, Task } from "../core/types.js";
 
 export class CortexCLI {
   private projectPath: string;
   private roleDiscovery: DynamicRoleDiscovery;
   private roleSelector: IntelligentRoleSelector;
+  private projectDetector: ProjectDetector;
 
   constructor(projectPath?: string) {
     this.projectPath = projectPath || process.cwd();
@@ -22,6 +24,7 @@ export class CortexCLI {
       conventions: [],
       constraints: [],
     });
+    this.projectDetector = new ProjectDetector(this.projectPath);
   }
 
   /**
@@ -60,6 +63,104 @@ export class CortexCLI {
       chalk.gray('3. Run "cortex generate-ide" to create IDE configurations')
     );
     console.log(chalk.gray('4. Run "cortex start" to begin AI collaboration'));
+  }
+
+  /**
+   * One-click setup for Cortex
+   */
+  async setup(
+    options: { quick?: boolean; config?: string } = {}
+  ): Promise<void> {
+    console.log(chalk.blue("🚀 Setting up Cortex AI Collaboration Brain..."));
+
+    try {
+      // Detect existing AI collaboration systems
+      const detection = await this.projectDetector.detectExistingAI();
+
+      console.log(chalk.green(`\n📊 Project Analysis:`));
+      console.log(chalk.cyan(`   Project Type: ${detection.projectType}`));
+      console.log(
+        chalk.cyan(`   Existing AI: ${detection.existingAI ? "Yes" : "No"}`)
+      );
+      console.log(
+        chalk.cyan(`   Existing Roles: ${detection.existingRoles.length}`)
+      );
+      console.log(
+        chalk.cyan(
+          `   IDE Configs: ${detection.ideConfigs.join(", ") || "None"}`
+        )
+      );
+
+      if (detection.recommendations.length > 0) {
+        console.log(chalk.yellow("\n💡 Recommendations:"));
+        for (const recommendation of detection.recommendations) {
+          console.log(chalk.gray(`   • ${recommendation}`));
+        }
+      }
+
+      // Auto-configure the project
+      if (detection.autoConfig) {
+        console.log(chalk.blue("\n⚙️ Auto-configuring project..."));
+        await this.projectDetector.autoConfigure();
+      } else {
+        console.log(chalk.yellow("\n⚠️ Manual configuration required"));
+        await this.initialize();
+      }
+
+      // Discover roles and patterns
+      console.log(chalk.blue("\n🔍 Discovering roles and patterns..."));
+      await this.discover();
+
+      // Generate IDE configurations
+      console.log(chalk.blue("\n🛠️ Generating IDE configurations..."));
+      await this.generateIDE();
+
+      console.log(chalk.green("\n🎉 Cortex setup complete!"));
+      console.log(chalk.yellow("\nNext steps:"));
+      console.log(chalk.gray("1. Open your IDE - configurations are ready"));
+      console.log(
+        chalk.gray("2. Start chatting with AI - roles are automatically loaded")
+      );
+      console.log(
+        chalk.gray("3. Customize roles in docs/ai-collaboration/roles/")
+      );
+      console.log(
+        chalk.gray('4. Run "cortex start" for interactive collaboration')
+      );
+    } catch (error) {
+      console.error(chalk.red(`\n❌ Setup failed: ${error}`));
+      throw error;
+    }
+  }
+
+  /**
+   * Integrate with existing AI collaboration systems
+   */
+  async integrate(
+    options: { roles?: boolean; workflows?: boolean } = {}
+  ): Promise<void> {
+    console.log(
+      chalk.blue("🔗 Integrating with existing AI collaboration systems...")
+    );
+
+    const detection = await this.projectDetector.detectExistingAI();
+
+    if (detection.existingAI) {
+      console.log(chalk.green("📁 Existing AI collaboration system detected"));
+
+      if (options.roles) {
+        console.log(chalk.blue("\n🎭 Analyzing existing roles..."));
+        for (const role of detection.existingRoles) {
+          console.log(chalk.gray(`   • ${role.name} - ${role.description}`));
+        }
+      }
+
+      await this.projectDetector.autoConfigure();
+      console.log(chalk.green("✅ Integration complete!"));
+    } else {
+      console.log(chalk.yellow("⚠️ No existing AI collaboration system found"));
+      console.log(chalk.gray("Run 'cortex setup' to create a new system"));
+    }
   }
 
   /**

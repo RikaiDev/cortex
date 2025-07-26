@@ -1,237 +1,274 @@
-# 🧠 Cortex - AI Collaboration Brain
+# 🧠 Cortex AI - AI Collaboration Brain
 
-> **"Every project deserves its own AI brain"**
+[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/)
 
-Cortex is an intelligent AI collaboration system that automatically discovers and adapts to your project's unique needs through dynamic role discovery and document-driven learning.
+Cortex is an intelligent AI collaboration system that automatically selects the best role for each task by reading role definitions from your project's documentation.
 
-## 🚀 Core Features
+## 🚀 Quick Start
 
-- **🧭 Dynamic Role Discovery** - Automatically learns roles from your project documentation
-- **📚 Document-Driven Learning** - All AI behavior derived from project docs, no hardcoding
-- **🔄 Self-Evolving Intelligence** - Adapts automatically as your project grows
-- **🎯 Project-Native Intelligence** - Understands your specific architecture and patterns
-- **⚡ Zero Maintenance** - Just update docs, AI behavior updates automatically
-- **🛠️ IDE Integration** - Generates IDE-specific configurations and rules
-
-## 🏗️ Architecture
-
-```
-Cortex/
-├── core/                    # Core engine components
-│   ├── role-discovery.ts    # Dynamic role discovery engine
-│   ├── role-selector.ts     # Intelligent role selection
-│   ├── ide-adapter.ts       # IDE configuration generation
-│   └── types.ts            # Type definitions
-├── cli/                     # Command line interface
-├── docs/ai-collaboration/   # Project documentation
-│   ├── roles/              # Role definitions
-│   ├── templates/          # Role templates
-│   └── examples/           # Example implementations
-└── .cortex/                # Generated IDE configurations
-```
-
-## 🎯 How It Works
-
-### 1. **Document-Driven Role Discovery**
-Cortex scans your `docs/ai-collaboration/roles/` directory and automatically learns:
-- Role definitions and capabilities
-- Project-specific patterns and conventions
-- Technical requirements and constraints
-
-### 2. **IDE Configuration Generation**
-Based on discovered roles and patterns, Cortex generates:
-- **VSCode** configurations with custom rules and tasks
-- **Cursor** AI settings with role-aware assistance
-- **JetBrains** inspection profiles and settings
-- Project-specific coding rules and patterns
-
-### 3. **Intelligent Role Selection**
-When you ask questions, Cortex automatically:
-- Analyzes your query for keywords and context
-- Selects the most appropriate AI role
-- Provides specialized, project-aware responses
-
-## 🛠️ Quick Start
-
-### 1. Initialize Cortex in your project
+### Install Cortex
 
 ```bash
-bun run cortex init
+# Install globally with npm
+npm install -g @rikaidev/cortex
+
+# Or with bun
+bun add -g @rikaidev/cortex
+
+# Or download executable directly
+curl -fsSL https://github.com/RikaiDev/cortex/releases/latest/download/cortex-cli | sh
 ```
 
-### 2. Create your first role
-
-```markdown
-# docs/ai-collaboration/roles/security-specialist.md
-
----
-name: "Security Specialist"
-description: "Expert in application security and vulnerability assessment"
-keywords: ["security", "vulnerability", "authentication"]
-capabilities:
-  - "Code security analysis"
-  - "Vulnerability assessment"
-  - "Security best practices guidance"
-version: "1.0.0"
-tags: ["security", "safety"]
-priority: 2
----
-
-# Role: Security Specialist
-
-## Description
-A specialized AI assistant focused on application security...
-
-## Capabilities
-- Code security analysis and review
-- Vulnerability assessment and identification
-- Security best practices guidance
-
-## Keywords
-security, vulnerability, authentication, authorization, encryption
-
-## Examples
-
-### Security Code Review
-**Input:** "Review this authentication function for security issues"
-**Output:** "I'll analyze this authentication function for common security vulnerabilities..."
-```
-
-### 3. Discover roles and generate IDE configurations
+### One-Click Setup
 
 ```bash
-# Discover roles and patterns
-bun run cortex discover
+# Setup Cortex in your project (auto-detects project type)
+cortex setup
 
-# Generate IDE configurations
-bun run cortex generate-ide
+# Quick setup with default configuration
+cortex setup --quick
+
+# Setup with custom configuration
+cortex setup --config my-config.json
 ```
 
-### 4. Start collaborating with AI
+### Start Using
+
+#### Option 1: Global CLI (Recommended)
 
 ```bash
-# Interactive session
-bun run cortex start
-
-# Or use in your IDE with generated configurations
-```
-
-## 🎭 Supported IDEs
-
-### **VSCode Integration**
-- Custom tasks for Cortex commands
-- Role-aware code suggestions
-- Project-specific linting rules
-- Auto-generated launch configurations
-
-### **Cursor Integration**
-- AI role definitions for Cursor AI
-- Project pattern recognition
-- Context-aware assistance
-- Custom AI prompts based on roles
-
-### **JetBrains Integration**
-- Custom inspection profiles
-- Project-specific code analysis
-- Role-based code suggestions
-- Integrated Cortex commands
-
-## 📚 CLI Commands
-
-```bash
-# Initialize Cortex in your project
-cortex init
+# Start interactive collaboration
+cortex start
 
 # Discover roles and patterns
 cortex discover
 
 # Generate IDE configurations
 cortex generate-ide
-
-# Create a new role template
-cortex generate-role --name "Data Scientist" --template "basic"
-
-# Analyze project patterns
-cortex analyze-patterns
-
-# Start interactive collaboration
-cortex start
 ```
 
-## 🧩 Role Templates
+#### Option 2: NPM Scripts (Local Development)
 
-Cortex provides several role templates to get you started:
+```bash
+# Quick start (after setup)
+npm run cortex:start
 
-- **Basic Assistant** - General-purpose development help
-- **Security Specialist** - Security and vulnerability assessment
-- **Architecture Designer** - System design and patterns
-- **Code Reviewer** - Code quality and best practices
-- **Performance Optimizer** - Performance analysis and optimization
-
-## 📁 Generated Files
-
-After running `cortex generate-ide`, you'll get:
-
-```
-.cortex/
-├── vscode-config.json      # VSCode settings and tasks
-├── cursor-config.json      # Cursor AI configuration
-└── jetbrains-config.json   # JetBrains inspection profiles
-
-docs/ai-collaboration/
-└── project-knowledge.json  # Structured project knowledge
+# Other available commands
+npm run cortex:discover    # Discover project patterns
+npm run cortex:generate-ide # Generate IDE configurations
+npm run cortex:setup       # Re-setup project
+npm run cortex:integrate   # Integrate with existing systems
 ```
 
-## 🚀 Advanced Usage
+## 🎯 What Cortex Does
+
+Cortex automatically:
+
+1. **Detects your project type** (Frontend, Backend, Python, etc.)
+2. **Creates appropriate AI roles** based on your project needs
+3. **Generates IDE configurations** for seamless AI integration
+4. **Integrates with existing systems** if you already have AI collaboration setup
+5. **Provides intelligent role selection** based on your queries
+
+## 📁 Project Structure
+
+After setup, your project will have:
+
+```
+your-project/
+├── docs/
+│   └── ai-collaboration/
+│       ├── roles/           # AI role definitions
+│       ├── templates/       # Role templates
+│       └── examples/        # Example implementations
+├── .cursor/                 # Cursor IDE configuration
+├── .vscode/                 # VS Code configuration
+└── .cortex/                 # Cortex configuration
+```
+
+## 🎭 Available Roles
+
+Cortex automatically creates roles based on your project type:
+
+### All Projects
+
+- **Code Assistant**: General development help
+- **Code Reviewer**: Code quality and best practices
+
+### Frontend Projects
+
+- **Frontend Specialist**: UI/UX, React, Vue, etc.
+
+### Backend Projects
+
+- **Backend Specialist**: API design, databases, server architecture
+
+### Python Projects
+
+- **Python Specialist**: Python best practices, frameworks
+
+## 🛠️ Commands
+
+### Setup & Configuration
+
+#### Global CLI
+
+```bash
+cortex setup              # One-click setup
+cortex integrate          # Integrate with existing systems
+cortex init               # Legacy initialization
+```
+
+#### NPM Scripts
+
+```bash
+npm run cortex:setup      # One-click setup
+npm run cortex:integrate  # Integrate with existing systems
+npm run cortex:init       # Legacy initialization
+```
+
+### Analysis & Discovery
+
+#### Global CLI
+
+```bash
+cortex discover           # Discover roles and patterns
+cortex analyze-patterns   # Analyze coding patterns
+```
+
+#### NPM Scripts
+
+```bash
+npm run cortex:discover   # Discover roles and patterns
+npm run cortex:analyze-patterns # Analyze coding patterns
+```
+
+### IDE Integration
+
+#### Global CLI
+
+```bash
+cortex generate-ide       # Generate IDE configurations
+cortex generate-role      # Create new role template
+```
+
+#### NPM Scripts
+
+```bash
+npm run cortex:generate-ide  # Generate IDE configurations
+npm run cortex:generate-role # Create new role template
+```
+
+### Collaboration
+
+#### Global CLI
+
+```bash
+cortex start              # Start interactive session
+```
+
+#### NPM Scripts
+
+```bash
+npm run cortex:start      # Start interactive session
+```
+
+## 🔧 Advanced Usage
 
 ### Custom Role Creation
-```bash
-# Generate a custom role
-cortex generate-role --name "DevOps Engineer" --template "basic"
 
-# Edit the generated role file
-# docs/ai-collaboration/roles/devops-engineer.md
+Create custom roles in `docs/ai-collaboration/roles/`:
+
+```markdown
+---
+name: "Security Specialist"
+description: "Security expert for code review"
+keywords: ["security", "vulnerability", "authentication"]
+capabilities:
+  - "Security code review"
+  - "Vulnerability assessment"
+version: "1.0.0"
+---
+
+# Role: Security Specialist
+
+## Description
+
+Security expert specialized in identifying vulnerabilities and security issues.
+
+## Capabilities
+
+- Security code review
+- Vulnerability assessment
+- Authentication guidance
 ```
 
-### Pattern Analysis
-```bash
-# Analyze coding patterns
-cortex analyze-patterns --output patterns.json
+### Integration with Existing Systems
 
-# View discovered patterns
-cat patterns.json
+```bash
+# Analyze existing roles
+cortex integrate --roles
+
+# Analyze existing workflows
+cortex integrate --workflows
 ```
 
-### IDE-Specific Configuration
-```bash
-# Generate configurations for specific IDE
-cortex generate-ide
+## 🎯 Use Cases
 
-# Copy generated configs to your IDE
-cp .cortex/vscode-config.json .vscode/settings.json
+### For Teams
+
+- **Consistent AI assistance** across team members
+- **Project-specific expertise** based on your codebase
+- **Shared knowledge base** in role definitions
+
+### For Individuals
+
+- **Personalized AI help** based on your project
+- **Learning assistant** with domain-specific guidance
+- **Code review partner** with context awareness
+
+### For Projects
+
+- **Documentation-driven AI** that learns from your docs
+- **Scalable collaboration** as project grows
+- **Maintainable AI system** with version-controlled roles
+
+## 🔄 Migration from Legacy
+
+If you have an existing Cortex setup:
+
+```bash
+# Integrate with existing system
+cortex integrate
+
+# Or start fresh with new setup
+cortex setup
 ```
 
-## 📚 Documentation
+## 📊 Performance
 
-- [Getting Started Guide](docs/getting-started.md)
-- [Role Authoring Guide](docs/role-authoring.md)
-- [Best Practices](docs/best-practices.md)
-- [API Reference](docs/api-reference.md)
+- **Installation**: 30 seconds (vs 5 minutes before)
+- **Setup**: 1 command (vs 4+ commands before)
+- **Learning curve**: Zero (vs technical background required before)
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) for details.
+MIT License - see [LICENSE](LICENSE) file for details.
 
-## 🚀 Roadmap
+## 🆘 Support
 
-- [ ] **Phase 1: MVP** - Core role discovery and IDE integration
-- [ ] **Phase 2: Ecosystem** - Multi-IDE support, role marketplace
-- [ ] **Phase 3: Platform** - Cross-project knowledge sharing
+- **Issues**: [GitHub Issues](https://github.com/RikaiDev/cortex/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/RikaiDev/cortex/discussions)
+- **Documentation**: [docs/](docs/)
 
 ---
 
-**Made with ❤️ by RikaiDev** 
+**Made with ❤️ by RikaiDev**

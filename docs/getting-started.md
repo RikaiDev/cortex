@@ -1,352 +1,247 @@
-# Getting Started with Cortex
+# 🚀 Quick Start Guide
 
-> **Quick start guide for Cortex AI Collaboration Brain**
+Get Cortex AI up and running in your project in under 2 minutes!
 
-## 🚀 Installation
+## 📋 Prerequisites
 
-### Prerequisites
+- Node.js 18+ or Bun
+- Git (for version control)
 
-- Node.js 18+
-- Bun (recommended) or npm
+## ⚡ Super Quick Setup
 
-### Install Cortex
+### 1. Install Cortex
 
 ```bash
-# Clone the repository
-git clone https://github.com/RikaiDev/cortex.git
-cd cortex
+# Choose your preferred method:
 
-# Install dependencies
-bun install
+# Option A: npm (recommended)
+npm install -g @rikaidev/cortex
 
-# Build the project
-bun run build
+# Option B: bun
+bun add -g @rikaidev/cortex
+
+# Option C: direct download
+curl -fsSL https://github.com/RikaiDev/cortex/releases/latest/download/cortex-cli | sh
 ```
 
-## 🎯 Quick Start
-
-### 1. Initialize Cortex in Your Project
+### 2. Setup in Your Project
 
 ```bash
-# Navigate to your project directory
+# Navigate to your project
 cd your-project
 
-# Initialize Cortex
-bun run cli init
+# One command setup
+cortex setup
 ```
 
-This will create:
+That's it! 🎉 Cortex is now ready to use.
 
-- `docs/ai-collaboration/` directory structure
-- Sample role definitions
-- Initial configuration files
+## 🎯 What Just Happened?
 
-### 2. Discover Roles and Patterns
+Cortex automatically:
+
+1. **Detected your project type** (Frontend, Backend, Python, etc.)
+2. **Created AI roles** specific to your project needs
+3. **Generated IDE configurations** for seamless AI integration
+4. **Set up the collaboration structure** in your project
+
+## 🚀 Start Using Cortex
+
+### Option 1: Interactive Mode (Global CLI)
 
 ```bash
-# Discover existing roles and patterns
-bun run cli discover
+cortex start
 ```
 
-This will:
-
-- Scan your project for existing roles
-- Analyze coding patterns
-- Provide recommendations
-
-### 3. Generate IDE Configurations
+### Option 2: Interactive Mode (NPM Scripts)
 
 ```bash
-# Generate IDE-specific configurations
-bun run cli generate-ide
+npm run cortex:start
 ```
 
-This creates:
+### Option 3: IDE Integration
 
-- VSCode configuration with custom tasks
-- Cursor AI settings with role definitions
-- JetBrains inspection profiles
-- Project knowledge documentation
+Open your IDE (Cursor, VS Code, etc.) - configurations are already set up!
 
-### 4. Start AI Collaboration
+### Option 4: Command Line
+
+#### Global CLI
 
 ```bash
-# Start interactive session
-bun run cli start
+# Discover what Cortex found
+cortex discover
+
+# Generate additional IDE configs
+cortex generate-ide
 ```
 
-## 🎭 Using Roles
-
-### Available Roles
-
-Cortex comes with several pre-built roles:
-
-- **Security Specialist** - Security analysis and vulnerability assessment
-- **Architecture Designer** - System design and architectural patterns
-- **Code Reviewer** - Code quality and best practices
-- **Performance Optimizer** - Performance analysis and optimization
-- **QA Tester** - Testing strategies and quality assurance
-- **Product Manager** - Product strategy and requirements analysis
-
-### Creating Custom Roles
+#### NPM Scripts
 
 ```bash
-# Generate a new role template
-bun run cli generate-role --name "DevOps Engineer" --template "basic"
+# Discover what Cortex found
+npm run cortex:discover
+
+# Generate additional IDE configs
+npm run cortex:generate-ide
 ```
 
-Edit the generated file in `docs/ai-collaboration/roles/devops-engineer.md`:
+## 📁 What Was Created
 
-```markdown
----
-name: "DevOps Engineer"
-description: "DevOps and infrastructure specialist"
-keywords: ["devops", "infrastructure", "deployment", "ci-cd"]
-capabilities:
-  - "CI/CD pipeline design"
-  - "Infrastructure automation"
-  - "Monitoring and logging"
-version: "1.0.0"
-tags: ["devops", "infrastructure"]
-priority: 2
----
-
-# Role: DevOps Engineer
-
-## Description
-
-Specialized in DevOps practices, infrastructure automation, and deployment strategies.
-
-## Capabilities
-
-- CI/CD pipeline design and implementation
-- Infrastructure as Code (IaC)
-- Container orchestration
-- Monitoring and observability
-- Security and compliance
-
-## Keywords
-
-devops, infrastructure, deployment, ci-cd, automation, monitoring, security
-
-## Examples
-
-### Pipeline Design
-
-**Input:** "Design a CI/CD pipeline for this application"
-**Output:** "I'll help you design a comprehensive CI/CD pipeline with proper testing, security scanning, and deployment strategies."
-```
-
-## 🛠️ IDE Integration
-
-### VSCode Integration
-
-1. Copy the generated VSCode configuration:
-
-```bash
-cp .cortex/vscode-config.json .vscode/settings.json
-```
-
-2. Install recommended extensions:
-
-- Prettier
-- ESLint
-- TypeScript
-
-3. Use Cortex commands in VSCode:
-
-- `Ctrl+Shift+P` → "Cortex: Discover Roles"
-- `Ctrl+Shift+P` → "Cortex: Start Collaboration"
-
-### Cursor Integration
-
-1. Copy the Cursor configuration:
-
-```bash
-cp .cortex/cursor-config.json .cursor/settings.json
-```
-
-2. Cursor will automatically use the role definitions for AI assistance
-
-### JetBrains Integration
-
-1. Import the inspection profile from `.cortex/jetbrains-config.json`
-2. Apply the custom code analysis rules
-
-## 📚 CLI Commands
-
-### Core Commands
-
-```bash
-# Initialize Cortex in a project
-bun run cli init
-
-# Discover roles and patterns
-bun run cli discover
-
-# Generate IDE configurations
-bun run cli generate-ide
-
-# Create a new role
-bun run cli generate-role --name "Role Name" --template "basic"
-
-# Analyze project patterns
-bun run cli analyze-patterns
-
-# Start interactive session
-bun run cli start
-```
-
-### Advanced Commands
-
-```bash
-# Discover with verbose output
-bun run cli discover --verbose
-
-# Generate role with specific template
-bun run cli generate-role --name "Data Scientist" --template "security"
-
-# Analyze patterns and save to file
-bun run cli analyze-patterns --output patterns.json
-```
-
-## 🔧 Configuration
-
-### Project Structure
+Your project now has:
 
 ```
 your-project/
-├── docs/ai-collaboration/
-│   ├── roles/                 # Role definitions
-│   ├── templates/             # Role templates
-│   └── examples/              # Example implementations
-├── .cortex/                   # Generated configurations
-│   ├── vscode-config.json
-│   ├── cursor-config.json
-│   └── jetbrains-config.json
-└── package.json
+├── docs/
+│   └── ai-collaboration/
+│       ├── roles/           # AI role definitions
+│       │   ├── code-assistant.md
+│       │   ├── code-reviewer.md
+│       │   └── [project-specific].md
+│       ├── templates/       # Role templates
+│       └── examples/        # Example implementations
+├── .cursor/                 # Cursor IDE configuration
+├── .vscode/                 # VS Code configuration
+└── .cortex/                 # Cortex configuration
 ```
 
-### Role Definition Format
+## 🎭 Your AI Roles
 
-Each role is defined in a markdown file with frontmatter:
+Based on your project type, Cortex created these roles:
+
+### All Projects
+
+- **Code Assistant**: General development help
+- **Code Reviewer**: Code quality and best practices
+
+### Frontend Projects
+
+- **Frontend Specialist**: UI/UX, React, Vue, etc.
+
+### Backend Projects
+
+- **Backend Specialist**: API design, databases, server architecture
+
+### Python Projects
+
+- **Python Specialist**: Python best practices, frameworks
+
+## 💬 Start Chatting
+
+Now you can ask questions and Cortex will automatically select the best role:
+
+### In Your IDE
+
+- Open Cursor, VS Code, or your preferred IDE
+- Start chatting with AI - roles are automatically loaded
+- Ask questions like:
+  - "Review this code for security issues"
+  - "Help me optimize this function"
+  - "Design an API for this feature"
+
+### In Terminal
+
+#### Global CLI
+
+```bash
+cortex start
+```
+
+#### NPM Scripts
+
+```bash
+npm run cortex:start
+```
+
+Then ask questions like:
+
+- "What roles are available?"
+- "Help me with this bug"
+- "Review this code"
+
+## 🔧 Customization
+
+### Add Custom Roles
+
+Edit files in `docs/ai-collaboration/roles/`:
 
 ```markdown
 ---
-name: "Role Name"
-description: "Role description"
-keywords: ["keyword1", "keyword2"]
+name: "My Custom Role"
+description: "Specialized for my project needs"
+keywords: ["custom", "specialized"]
 capabilities:
-  - "Capability 1"
-  - "Capability 2"
+  - "Custom capability 1"
+  - "Custom capability 2"
 version: "1.0.0"
-tags: ["tag1", "tag2"]
-priority: 1
 ---
 
-# Role: Role Name
+# Role: My Custom Role
 
 ## Description
 
-Detailed role description...
+Your custom role description...
 
 ## Capabilities
 
-- Specific capabilities...
-
-## Keywords
-
-keyword1, keyword2, keyword3
-
-## Examples
-
-### Example 1
-
-**Input:** "Example input"
-**Output:** "Example output"
+- Capability 1
+- Capability 2
 ```
 
-## 🚀 Advanced Usage
+### Modify Existing Roles
 
-### Custom Role Templates
+Edit any role file in `docs/ai-collaboration/roles/` to customize behavior.
 
-Create custom role templates in `docs/ai-collaboration/templates/`:
+## 🆘 Troubleshooting
 
-```markdown
-# Custom Template
-
-## Template Structure
-
-- Frontmatter with role metadata
-- Detailed description and capabilities
-- Implementation guidelines
-- Usage examples
-
-## Best Practices
-
-- Use clear, descriptive names
-- Include relevant keywords
-- Provide specific examples
-- Consider project context
-```
-
-### IDE-Specific Rules
-
-Cortex generates IDE-specific rules based on your roles:
-
-- **VSCode**: Custom tasks and code analysis rules
-- **Cursor**: AI role definitions and context
-- **JetBrains**: Inspection profiles and code quality rules
-
-### Pattern Analysis
-
-Cortex automatically analyzes your project patterns:
+### Installation Issues
 
 ```bash
-# View discovered patterns
-bun run cli analyze-patterns --output patterns.json
+# Check if Cortex is installed
+cortex --version
 
-# Patterns include:
-# - Naming conventions
-# - Architectural patterns
-# - Code organization
-# - Technology stack usage
+# Reinstall if needed
+npm uninstall -g @rikaidev/cortex
+npm install -g @rikaidev/cortex
 ```
 
-## 🐛 Troubleshooting
+### Setup Issues
 
-### Common Issues
+```bash
+# Check project structure
+ls -la docs/ai-collaboration/
 
-1. **No roles discovered**
-   - Ensure role files are in `docs/ai-collaboration/roles/`
-   - Check markdown format and frontmatter
-   - Run `bun run cli discover --verbose`
+# Re-run setup
+cortex setup
 
-2. **IDE configuration not working**
-   - Copy configuration files to correct locations
-   - Restart your IDE
-   - Check file permissions
+# Or start fresh
+rm -rf docs/ai-collaboration/ .cursor/ .vscode/
+cortex setup
+```
 
-3. **Build errors**
-   - Run `bun install` to install dependencies
-   - Check TypeScript compilation with `bun run build`
-   - Verify Node.js version (18+)
+### IDE Integration Issues
 
-### Getting Help
+```bash
+# Regenerate IDE configs
+cortex generate-ide
 
-- Check the [README](../README.md) for overview
-- Review [Contributing Guide](../CONTRIBUTING.md) for development
-- Open an issue on GitHub for bugs
-- Join our community for support
+# Check if configs exist
+ls -la .cursor/ .vscode/
+```
 
-## 📈 Next Steps
+## 🎯 Next Steps
 
-1. **Explore Roles**: Try different roles for various tasks
-2. **Customize**: Create project-specific roles
-3. **Integrate**: Set up IDE configurations
-4. **Collaborate**: Use Cortex in team workflows
-5. **Contribute**: Help improve Cortex
+1. **Explore your roles**: Check `docs/ai-collaboration/roles/`
+2. **Start chatting**: Use `cortex start` or your IDE
+3. **Customize**: Edit role definitions to match your needs
+4. **Share**: Commit your role definitions to share with your team
+
+## 📚 Learn More
+
+- [Role Authoring Guide](role-authoring.md)
+- [Advanced Configuration](advanced-config.md)
+- [Best Practices](best-practices.md)
+- [API Reference](api-reference.md)
 
 ---
 
-**Ready to start? Run `bun run cli init` to begin your Cortex journey!**
+**Need help?** Check our [GitHub Issues](https://github.com/RikaiDev/cortex/issues) or [Discussions](https://github.com/RikaiDev/cortex/discussions).
