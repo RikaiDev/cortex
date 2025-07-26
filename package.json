@@ -1,0 +1,61 @@
+{
+  "name": "cortex-ai",
+  "version": "0.1.0",
+  "description": "AI Collaboration Brain - Dynamic role discovery and document-driven learning",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "bun run tsc",
+    "dev": "bun run tsc --watch",
+    "test": "bun test",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts",
+    "start": "bun run dist/index.js",
+    "cli": "bun run dist/cli/index.js"
+  },
+  "keywords": [
+    "ai",
+    "collaboration",
+    "role-discovery",
+    "document-driven",
+    "intelligent-assistant",
+    "development-workflow"
+  ],
+  "author": "RikaiDev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/RikaiDev/cortex.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RikaiDev/cortex/issues"
+  },
+  "homepage": "https://github.com/RikaiDev/cortex",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "typescript": "^5.0.0",
+    "commander": "^11.0.0",
+    "chalk": "^5.0.0",
+    "inquirer": "^9.0.0",
+    "fs-extra": "^11.0.0",
+    "glob": "^10.0.0",
+    "marked": "^5.0.0",
+    "gray-matter": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/fs-extra": "^11.0.0",
+    "@types/inquirer": "^9.0.0",
+    "@types/marked": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "bun-types": "latest"
+  },
+  "bin": {
+    "cortex": "./dist/cli/index.js"
+  }
+} 
