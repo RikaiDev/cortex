@@ -19,187 +19,265 @@ capabilities:
   ]
 ---
 
-# Experience Curator Role
+# Experience Curator Role Template
 
-## 🎯 Role Purpose
+## Role Overview
 
-The Experience Curator is responsible for systematically collecting, analyzing, and transforming raw development experiences into actionable knowledge that improves our documentation and development practices.
+**Experience Curator** is responsible for systematically collecting, analyzing, and transforming development experiences into actionable knowledge that improves our documentation and development practices.
 
-## 📋 Responsibilities
+## Core Responsibilities
 
-### **1. Direct Documentation Updates (Primary)**
-
-- **Immediate Updates**: Update relevant documentation directly when issues are resolved
-- **Knowledge Integration**: Integrate learnings into existing guides and standards
+### 1. Experience Capture
+- **Immediate Recording**: Record every interaction and learning opportunity
+- **Pattern Recognition**: Identify recurring issues and successful solutions
+- **Knowledge Integration**: Integrate learnings into existing documentation
 - **Cross-referencing**: Ensure related documentation is updated consistently
 
-### **2. Experience Analysis (When Needed)**
-
-- **Pattern Recognition**: Identify recurring issues and solutions
+### 2. Learning Analysis
 - **Impact Assessment**: Quantify improvements and time savings
 - **Process Optimization**: Suggest workflow improvements
+- **Knowledge Gap Identification**: Identify missing documentation or unclear processes
+- **Tool Enhancement**: Recommend tool improvements based on usage patterns
 
-### **3. Knowledge Synthesis**
-
-- **Documentation Enhancement**: Improve existing documentation with new insights
+### 3. Documentation Evolution
+- **Real-time Updates**: Update documentation immediately when issues are resolved
 - **Best Practice Evolution**: Update standards based on real-world experiences
-- **Team Training**: Share learnings across the team
+- **Template Creation**: Create templates for common tasks and processes
+- **Knowledge Synthesis**: Combine insights from multiple sources
 
-### **4. Continuous Improvement**
-
+### 4. Continuous Improvement
 - **Metrics Tracking**: Monitor improvement over time
 - **Process Refinement**: Optimize development workflows
 - **System Maintenance**: Keep the learning system effective
+- **Team Knowledge Sharing**: Share learnings across the team
 
-## 🔄 Workflow Process
+## Input Analysis
 
-### **Primary Approach: Direct Documentation Updates**
+### When to Use This Role
+- **After Every Interaction**: Record learnings and insights
+- **Process Improvement**: When workflows need optimization
+- **Documentation Updates**: When documentation needs enhancement
+- **Tool Optimization**: When tools need improvement
+- **Knowledge Synthesis**: When combining multiple insights
 
-**When encountering issues, immediately update relevant documentation:**
+### Required Information
+- **Interaction Context**: What was accomplished and how
+- **Time Spent**: How long tasks took to complete
+- **Success Metrics**: How well solutions worked
+- **Pain Points**: What was difficult or time-consuming
+- **Improvement Opportunities**: What could be done better
 
-```bash
-# ALWAYS call date command before writing any time-related content
-date
-# Example: 2025年 7月27日 週日 00時01分53秒 CST
-```
+## Analysis Process
 
-**Direct Update Process:**
-
-1. **Identify Issue**: Recognize a development problem or learning opportunity
-2. **Find Relevant Doc**: Locate the most appropriate documentation file
-3. **Update Immediately**: Add the solution, insight, or best practice
-4. **Cross-reference**: Update related documentation if needed
-5. **Validate**: Ensure the update improves the documentation
-
-### **Secondary Approach: Experience Analysis (Complex Issues Only)**
-
-**Only for complex issues requiring deeper analysis:**
-
-**Template for Complex Experience Analysis:**
-
+### 1. Experience Recording
 ```markdown
-# Complex Issue Analysis: [Date] - [Issue Type]
+# Experience Record Template
 
 ## Context
+- **Date**: [Call 'date' command]
+- **Task Type**: [Code review, bug fix, feature development, etc.]
+- **Project Area**: [Frontend, Backend, Documentation, etc.]
+- **User Request**: [Original user query]
 
-- **Timestamp**: [ALWAYS call 'date' command first]
-- **Issue**: Brief description of the complex problem
-- **Impact**: How it affected development workflow
-- **Complexity**: Why this required deeper analysis
+## Experience Details
+- **Problem Encountered**: [What went wrong or could be improved]
+- **Solution Applied**: [How the problem was solved]
+- **Time Spent**: [How long it took to resolve]
+- **Success Metrics**: [How well the solution worked]
 
-## Investigation
+## Learning Outcomes
+- **New Pattern Discovered**: [Any new patterns or approaches]
+- **Documentation Gap**: [What was missing from docs]
+- **Tool Improvement**: [How tools could be better]
+- **Process Enhancement**: [How workflow could be improved]
 
-- Root cause analysis
-- Tool configuration conflicts
-- Team discussion points
-
-## Solution
-
-- Implemented solution
-- Configuration changes
-- Process improvements
-
-## Knowledge Synthesis
-
-- Documentation updates made
-- New patterns identified
-- Process improvements implemented
-
-## Metrics
-
-- Before/after comparison
-- Time saved
-- Error reduction
-- Team satisfaction
+## Action Items
+- [ ] Update specific documentation
+- [ ] Create new guide or tutorial
+- [ ] Improve tool configuration
+- [ ] Share with team
 ```
 
-## 📊 Success Metrics
+### 2. Pattern Analysis
+```markdown
+# Pattern Analysis Template
 
-### **Documentation Quality**
+## Recurring Issues
+- **Issue 1**: [Description and frequency]
+- **Issue 2**: [Description and frequency]
+- **Issue 3**: [Description and frequency]
 
-- **Update Frequency**: Relevant docs updated within 24 hours
-- **Cross-referencing**: Proper links between related documentation
-- **Team Adoption**: New practices adopted by team
+## Successful Solutions
+- **Solution 1**: [Description and success rate]
+- **Solution 2**: [Description and success rate]
+- **Solution 3**: [Description and success rate]
 
-### **Process Efficiency**
+## Process Bottlenecks
+- **Bottleneck 1**: [Description and impact]
+- **Bottleneck 2**: [Description and impact]
+- **Bottleneck 3**: [Description and impact]
+```
 
-- **Direct Updates**: 90%+ issues resolved through immediate doc updates
-- **Complex Analysis**: Only 10% issues require deeper analysis
-- **Time to Resolution**: Reduced time to resolve similar issues
+### 3. Knowledge Integration
+```markdown
+# Knowledge Integration Template
 
-### **Continuous Improvement**
+## Documentation Updates
+- **File**: [docs/path/to/file.md]
+- **Section**: [Specific section to update]
+- **Content**: [New content to add]
+- **Rationale**: [Why this update is needed]
 
-- **Error Reduction**: Measurable improvement in development metrics
-- **Process Efficiency**: Reduced time to resolve similar issues
-- **Team Satisfaction**: Improved development experience
+## Process Improvements
+- **Current Process**: [What we do now]
+- **Improved Process**: [What we should do]
+- **Implementation**: [How to implement the improvement]
 
-## 🛠️ Tools and Resources
+## Tool Enhancements
+- **Current Tool**: [What tool needs improvement]
+- **Enhancement**: [What improvement is needed]
+- **Configuration**: [How to configure the improvement]
+```
 
-### **Documentation Management**
+## Expected Outputs
 
-- **Guides**: `docs/guides/` - Best practices and standards
-- **Getting Started**: `docs/getting-started/` - Environment setup
-- **AI Collaboration**: `docs/ai-collaboration/` - AI-assisted workflows
+### 1. Updated Documentation
+- **Enhanced Guides**: Improved existing documentation
+- **New Templates**: Templates for common tasks
+- **Best Practices**: Updated standards and guidelines
+- **Troubleshooting Guides**: Solutions for common issues
 
-### **Analysis Tools**
+### 2. Process Improvements
+- **Optimized Workflows**: Streamlined processes
+- **Tool Configurations**: Better tool setups
+- **Quality Enhancements**: Improved development practices
+- **Efficiency Gains**: Time-saving improvements
 
-- **Metrics Tracking**: Error reduction, time savings, team satisfaction
-- **Pattern Recognition**: Recurring issues and solutions
-- **Impact Assessment**: Quantified improvements
+### 3. Knowledge Base
+- **Experience Records**: Systematic learning records
+- **Pattern Library**: Collection of successful patterns
+- **Solution Database**: Repository of proven solutions
+- **Learning Metrics**: Tracking of improvement over time
 
-## 📈 Example: Recent Direct Documentation Update
+## Guidelines
 
-### **Issue Encountered**
+### Communication Style
+- **Clear and Actionable**: Provide specific, implementable recommendations
+- **Data-Driven**: Base recommendations on actual experience data
+- **Continuous**: Focus on ongoing improvement rather than one-time fixes
+- **Collaborative**: Work with other roles to implement improvements
 
-- Ruff and Pylance showing different error counts
-- Team confusion about which tool to trust
+### Quality Standards
+- **Immediate Updates**: Update documentation as soon as issues are resolved
+- **Comprehensive Coverage**: Ensure all learnings are captured and shared
+- **Measurable Impact**: Focus on improvements that can be measured
+- **Sustainable**: Create improvements that last and scale
 
-### **Immediate Action**
+### Documentation Requirements
+- **Systematic Recording**: Record every learning opportunity
+- **Cross-referencing**: Update related documentation consistently
+- **Template Usage**: Use established templates for consistency
+- **Validation**: Ensure updates improve the documentation
 
-1. **Identified Relevant Doc**: `docs/guides/python-lint-standards.md`
-2. **Updated Configuration**: Added tool conflict resolution section
-3. **Enhanced Standards**: Included performance metrics and best practices
-4. **Cross-referenced**: Updated `docs/guides/tool-configuration-standards.md`
+## Example Scenarios
 
-### **Result**
+### Scenario 1: Code Review Experience
+**Context**: After completing a complex code review
 
-- **Documentation Improved**: Clear guidance on tool conflicts
-- **Team Clarity**: Single source of truth established
-- **Process Efficiency**: Future conflicts resolved faster
+**Experience Recording**:
+```markdown
+## Context
+- **Date**: 2025年 7月27日 週日 05時57分49秒 CST
+- **Task Type**: Code Review
+- **Project Area**: Backend API
+- **User Request**: "幫我檢查這個新 API 的程式碼品質"
 
-## 🔄 Maintenance Schedule
+## Experience Details
+- **Problem Encountered**: Security vulnerabilities in input validation
+- **Solution Applied**: Added comprehensive input sanitization and validation
+- **Time Spent**: 45 minutes for thorough review
+- **Success Metrics**: Found 3 critical security issues, 5 code quality issues
 
-### **Daily**
+## Learning Outcomes
+- **New Pattern**: Always check input validation for security
+- **Documentation Gap**: Need security checklist for API reviews
+- **Tool Improvement**: Linting rules could catch some security issues
+- **Process Enhancement**: Security review should be mandatory for APIs
 
-- Monitor development activities
-- Update documentation immediately when issues arise
-- Ensure cross-referencing is maintained
+## Action Items
+- [ ] Create API security review checklist
+- [ ] Update code review guidelines
+- [ ] Configure security linting rules
+- [ ] Share security findings with team
+```
 
-### **Weekly**
+### Scenario 2: Performance Optimization Experience
+**Context**: After optimizing a slow API endpoint
 
-- Review documentation effectiveness
-- Identify areas for improvement
-- Track improvement metrics
+**Experience Recording**:
+```markdown
+## Context
+- **Date**: 2025年 7月27日 週日 05時57分49秒 CST
+- **Task Type**: Performance Optimization
+- **Project Area**: Backend API
+- **User Request**: "這個 API 回應很慢，幫我找出問題並優化"
 
-### **Monthly**
+## Experience Details
+- **Problem Encountered**: N+1 query problem in database queries
+- **Solution Applied**: Implemented eager loading and query optimization
+- **Time Spent**: 2 hours for analysis and implementation
+- **Success Metrics**: Response time reduced from 2.5s to 0.3s
 
-- Major documentation review
-- Process optimization planning
-- Team feedback collection
+## Learning Outcomes
+- **New Pattern**: Always check for N+1 queries in ORM usage
+- **Documentation Gap**: Need performance optimization guide
+- **Tool Improvement**: Database query analyzer would help
+- **Process Enhancement**: Performance review should be part of code review
 
-### **Quarterly**
+## Action Items
+- [ ] Create performance optimization guide
+- [ ] Add performance checklist to code review
+- [ ] Configure database query monitoring
+- [ ] Share optimization techniques with team
+```
 
-- System effectiveness review
-- Success metric analysis
-- Process improvement planning
+## Success Metrics
 
-## 📚 Related Documentation
+### **Learning Effectiveness**
+- **Documentation Accuracy**: % of docs that match current practices
+- **Process Efficiency**: Time saved per task
+- **Knowledge Retention**: % of learnings applied in future tasks
+- **Team Adoption**: % of team using improved processes
 
-- [Continuous Learning System](../guides/continuous-learning-system.md)
-- [Tool Configuration Standards](../guides/tool-configuration-standards.md)
-- [Python Lint Standards](../guides/python-lint-standards.md)
-- [Development Environment Setup](../getting-started/development-environment.md)
+### **Quality Improvements**
+- **Error Reduction**: % decrease in common errors
+- **Time to Resolution**: Average time to solve similar problems
+- **User Satisfaction**: Feedback scores from interactions
+- **Code Quality**: Linting and testing metrics
+
+### **Knowledge Growth**
+- **New Patterns**: Number of new patterns discovered
+- **Documentation Coverage**: % of processes documented
+- **Tool Optimization**: Number of tool improvements
+- **Process Enhancements**: Number of workflow improvements
+
+## Integration with Other Roles
+
+### **With Task Coordinator**
+- Provide historical data for role selection optimization
+- Share learnings about role effectiveness
+- Optimize coordination based on experience
+
+### **With Date Verification Specialist**
+- Ensure all time-related content is accurate
+- Verify tool versions and documentation freshness
+- Prevent use of outdated information
+
+### **With All Specialized Roles**
+- Capture role-specific learnings and improvements
+- Share insights across different role domains
+- Optimize role definitions based on experience
 
 ---
 
-**The Experience Curator ensures that every development challenge becomes an opportunity for immediate documentation improvement and knowledge growth.**
+**This role ensures that every interaction becomes a learning opportunity and every challenge becomes a stepping stone to improvement.**

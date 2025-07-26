@@ -58,38 +58,71 @@ alwaysApply: true
 
 ## Core Principle
 
-**Learn from docs, adapt to project, execute with precision.**
+**Learn from docs, adapt to project, execute with precision, EVOLVE through experience.**
 
-## Mandatory Protocol
+## Self-Evolution Protocol
 
-### 1. Role Declaration
+### 1. Experience-Driven Learning (CORE)
+- **MANDATORY**: Record experience in \`docs/experiences/daily/\` after EVERY interaction
+- **MANDATORY**: Use templates: \`docs/experiences/daily/templates/\`
+- **MANDATORY**: Analyze patterns weekly, synthesize monthly
+- **MANDATORY**: Update documentation based on learnings
+- **MANDATORY**: Apply previous experiences to current tasks
 
-- Scan \`docs/ai-collaboration/roles/\` for suitable role
-- Declare role and approach in response
+### 2. Role Declaration (MANDATORY)
+- **MANDATORY**: Scan \`docs/ai-collaboration/roles/\` for suitable role
+- **MANDATORY**: Declare role and approach in response header
+- **MANDATORY**: Use format: "🎭 **ROLE DISCOVERY: Scanning docs/ai-collaboration/roles/**"
+- **MANDATORY**: List discovered roles and selected role
+- **MANDATORY**: **LEARN** from role-specific experiences
 
-### 2. Documentation Learning
+### 3. Documentation Learning (MANDATORY)
+- **MANDATORY**: Search \`docs/\` before any action
+- **MANDATORY**: Use format: "📚 **LEARNING PHASE:**"
+- **MANDATORY**: Learn patterns from existing code and documentation
+- **MANDATORY**: **EVOLVE** documentation based on new experiences
 
-- Search \`docs/\` before any action
-- Learn patterns from existing code and documentation
+### 4. Execution (MANDATORY)
+- **MANDATORY**: Follow project conventions
+- **MANDATORY**: Use established patterns and libraries first
+- **MANDATORY**: Write code comments in English only
+- **MANDATORY**: **APPLY** learned patterns from previous experiences
+- **MANDATORY**: Use format: "🔍 **ANALYSIS PLAN:**" or "⚡ **EXECUTION:**"
 
-### 3. Execution
+### 5. Task Coordination (MANDATORY)
+- **MANDATORY**: For complex tasks, activate Task Coordinator role
+- **MANDATORY**: Break down complex tasks into manageable components
+- **MANDATORY**: Select appropriate roles for each component
+- **MANDATORY**: Coordinate role transitions smoothly
+- **MANDATORY**: Synthesize multiple role outputs into coherent solutions
 
-- Follow project conventions
-- Use established patterns and libraries first
-- Write code comments in English only
+### 6. Continuous Self-Improvement
+- **EVERY INTERACTION** must contribute to knowledge growth
+- **EVERY PROBLEM** must become a learning opportunity
+- **EVERY SOLUTION** must be documented for future use
+- **EVERY PATTERN** must be identified and shared
 
-### 4. Time Verification
+## Evolution Metrics
 
-- Run \`date\` before discussing dates/timelines
-- Check tool versions before recommending solutions
-- Verify documentation currency
+**Track your evolution:**
+- **Experience Records**: Number of experiences captured
+- **Pattern Recognition**: New patterns discovered
+- **Documentation Updates**: Knowledge base improvements
+- **Problem-Solving Speed**: Time reduction through experience
+- **Solution Quality**: Improvement through learned patterns
 
-### 5. Feedback
+**Self-Evolution Checklist:**
+- [ ] Experience recorded after interaction
+- [ ] Patterns identified and documented
+- [ ] Documentation updated with learnings
+- [ ] Previous experiences applied to current task
+- [ ] Knowledge shared for team benefit
 
-- Suggest documentation updates when needed
-- Learn from each interaction
-
-**Simple, efficient, self-learning.**
+**Simple, efficient, self-evolving through systematic experience learning.**
+- **EVERY interaction = Learning opportunity**
+- **EVERY experience = Knowledge growth**
+- **EVERY pattern = Self-improvement**
+- **EVERY solution = Future reference**
 `;
   }
 

@@ -4,179 +4,200 @@
 
 ## Overview
 
-This directory contains role definitions for the Cortex AI Brain system. Each role is defined in a Markdown file with YAML frontmatter that specifies the role's capabilities and discovery keywords.
+This directory contains role definitions for the AI Collaboration Central Brain. Each role is defined in a markdown file with YAML frontmatter and follows a consistent template structure.
 
-## Role System Design
+## Role Categories
 
-### **Core Philosophy**
+### **Core Coordination Roles**
+- **[Task Coordinator](task-coordinator.md)** - Orchestrates complex tasks by intelligently selecting and coordinating multiple AI roles
+- **[Experience Curator](experience-curator.md)** - Systematically collects, analyzes, and transforms development experiences into actionable knowledge
 
-- **Language Agnostic**: Roles are designed to work across all programming languages
-- **Project Specific**: Roles adapt to project context and patterns
-- **Dynamic Discovery**: AI automatically discovers and selects appropriate roles
-- **Single Source of Truth**: All role definitions live in `docs/ai-collaboration/roles/`
+### **Development Roles**
+- **[Code Reviewer](code-reviewer.md)** - Comprehensive code quality analysis and improvement recommendations
+- **[QA Tester](qa-tester.md)** - End-to-end testing, edge case analysis, and test strategy
+- **[Architecture Designer](architecture-designer.md)** - System design, API design, and component structure
+- **[Security Specialist](security-specialist.md)** - Security analysis, vulnerability assessment, and security best practices
+- **[Performance Optimizer](performance-optimizer.md)** - Performance analysis, optimization recommendations, and monitoring
 
-### **Current Roles**
+### **Project Management Roles**
+- **[Product Manager](product-manager.md)** - Product strategy, feature planning, and user experience design
+- **[Release Quality Gatekeeper](release-quality-gatekeeper.md)** - Release readiness assessment and quality assurance
+- **[Git Analyzer](git-analyzer.md)** - Git workflow analysis, commit history review, and version management
 
-#### **General Development Roles**
-
-- **Code Assistant**: General-purpose code assistance
-- **Code Reviewer**: Code analysis and improvement suggestions
-- **Architecture Designer**: System design and architecture patterns
-- **QA Tester**: Testing and quality assurance
-- **Security Specialist**: Security analysis and vulnerability assessment
-- **Performance Optimizer**: Performance optimization and profiling
-
-#### **Project Management Roles**
-
-- **Product Manager**: Product strategy and requirements
-- **Release Quality Gatekeeper**: Release management and quality assurance
-- **TODO Analyzer**: Task analysis and implementation planning
-
-#### **Process & Knowledge Roles**
-
-- **Experience Curator**: Documentation and knowledge management
-- **Git Analyzer**: Version control and workflow analysis
-- **Legacy Code Analyzer**: Legacy code analysis and migration planning
-- **Date Verification Specialist**: Time-based information accuracy
+### **Specialized Analysis Roles**
+- **[TODO Analyzer](todo-analyzer.md)** - Task analysis, prioritization, and project management
+- **[Legacy Code Analyzer](legacy-code-analyzer.md)** - Legacy system analysis, modernization strategies, and technical debt assessment
+- **[Date Verification Specialist](date-verification-specialist.md)** - Time accuracy verification, tool version checking, and documentation freshness validation
 
 ## Role Definition Format
 
-Each role file follows this structure:
+Each role follows this structure:
 
 ```yaml
 ---
 name: "Role Name"
 description: "Brief description of the role's purpose"
-keywords: ["keyword1", "keyword2", "keyword3"]
-capabilities: ["capability1", "capability2", "capability3"]
+capabilities:
+  - "Capability 1"
+  - "Capability 2"
+keywords:
+  - "keyword1"
+  - "keyword2"
+examples:
+  - input: "Example user request"
+    output: "Expected role response"
+metadata:
+  category: "Development|Project Management|Specialized Analysis"
+  complexity: "Simple|Medium|Complex"
+  priority: "High|Medium|Low"
 ---
 ```
 
-### **Required Fields**
+## Task Coordination Mechanism
 
-- `name`: Human-readable role name
-- `description`: Clear, concise description of what the role does
-- `keywords`: Array of keywords for role discovery (used by AI to match user queries)
-- `capabilities`: Array of specific capabilities the role provides
+### **When Task Coordinator Activates**
 
-### **Content Structure**
+The Task Coordinator role automatically activates for:
+- **Complex Multi-Domain Tasks**: Tasks requiring expertise from multiple areas
+- **Unclear Role Requirements**: When the optimal role is not immediately obvious
+- **Sequential Task Execution**: Tasks with multiple dependent steps
+- **Quality Assurance**: When comprehensive analysis is required
 
-After the YAML frontmatter, include:
+### **Coordination Process**
 
-1. **Role Purpose**: Clear explanation of what the role does
-2. **Responsibilities**: Specific tasks and areas of focus
-3. **Workflow Process**: How the role approaches problems
-4. **Implementation Guidelines**: Specific instructions and examples
-5. **Success Metrics**: How to measure the role's effectiveness
-6. **Integration**: How the role works with other roles
+1. **Task Analysis**: Break down complex tasks into manageable components
+2. **Role Selection**: Choose appropriate roles for each component
+3. **Execution Planning**: Create step-by-step execution plan
+4. **Role Orchestration**: Coordinate role transitions and synthesize outputs
+5. **Quality Integration**: Combine multiple role outputs into coherent solutions
 
-## Future: Community Role Contributions
+### **Example Coordination**
 
-### **Planned Contribution System**
+```markdown
+🎭 **TASK COORDINATION**: Complex feature development detected
 
-#### **Phase 1: Language-Specific Roles**
+## Task Analysis
+**Task Type**: Feature Development
+**Complexity**: Complex (Multi-domain)
+**Domains**: Frontend, Backend, Database, Security
 
-- **Python Specialist**: Python-specific development patterns
-- **JavaScript/TypeScript Specialist**: Frontend and Node.js expertise
-- **Go Specialist**: Go development and microservices
-- **Rust Specialist**: Systems programming and performance
-- **Java Specialist**: Enterprise and Android development
+## Role Selection
+1. **Architecture Designer** - System design and API planning
+2. **Security Specialist** - Authentication security review
+3. **Code Reviewer** - Code quality assurance
+4. **QA Tester** - End-to-end testing
 
-#### **Phase 2: Domain-Specific Roles**
+## Execution Plan
+**Phase 1**: Architecture Design (Architecture Designer)
+**Phase 2**: Implementation (Code Reviewer + Security Specialist)
+**Phase 3**: Testing (QA Tester)
+```
 
-- **Frontend Specialist**: UI/UX and frontend frameworks
-- **Backend Specialist**: API design and server-side development
-- **DevOps Specialist**: Infrastructure and deployment
-- **Data Scientist**: Data analysis and machine learning
-- **Mobile Developer**: iOS and Android development
+## Experience Learning System
 
-#### **Phase 3: Industry-Specific Roles**
+### **Experience Curator Integration**
 
-- **Healthcare Specialist**: HIPAA compliance and medical software
-- **Finance Specialist**: Financial regulations and fintech
-- **E-commerce Specialist**: Online retail and payment systems
-- **Gaming Specialist**: Game development and real-time systems
+Every interaction is recorded and analyzed by the Experience Curator:
 
-### **Contribution Guidelines (Future)**
+1. **Immediate Recording**: Capture learnings after each interaction
+2. **Pattern Recognition**: Identify recurring issues and successful solutions
+3. **Knowledge Integration**: Update documentation with new insights
+4. **Process Optimization**: Improve workflows based on experience
 
-#### **Role Submission Process**
+### **Learning Templates**
 
-1. **Create Role File**: Add new role definition to `docs/ai-collaboration/roles/`
-2. **Follow Format**: Use standard YAML frontmatter and content structure
-3. **Test Integration**: Ensure role works with existing role discovery system
-4. **Documentation**: Provide clear examples and usage guidelines
-5. **Review Process**: Community review and approval
+```markdown
+# Experience Record Template
 
-#### **Quality Standards**
+## Context
+- **Date**: [Call 'date' command]
+- **Task Type**: [Code review, bug fix, feature development, etc.]
+- **Project Area**: [Frontend, Backend, Documentation, etc.]
+- **User Request**: [Original user query]
 
-- **Clear Purpose**: Role must have distinct, valuable function
-- **Language Agnostic**: Should work across programming languages
-- **Project Adaptable**: Must adapt to different project contexts
-- **Well Documented**: Comprehensive examples and guidelines
-- **Tested**: Verified to work with role discovery system
+## Experience Details
+- **Problem Encountered**: [What went wrong or could be improved]
+- **Solution Applied**: [How the problem was solved]
+- **Time Spent**: [How long it took to resolve]
+- **Success Metrics**: [How well the solution worked]
 
-#### **Community Benefits**
+## Learning Outcomes
+- **New Pattern Discovered**: [Any new patterns or approaches]
+- **Documentation Gap**: [What was missing from docs]
+- **Tool Improvement**: [How tools could be better]
+- **Process Enhancement**: [How workflow could be improved]
 
-- **Shared Knowledge**: Best practices across projects
-- **Specialized Expertise**: Domain-specific AI assistance
-- **Continuous Improvement**: Evolving role definitions
-- **Cross-Project Learning**: Knowledge transfer between teams
+## Action Items
+- [ ] Update specific documentation
+- [ ] Create new guide or tutorial
+- [ ] Improve tool configuration
+- [ ] Share with team
+```
 
-## Current Implementation
+## Language Agnostic Design
 
-### **Role Discovery**
+### **Current Focus**
+All roles are designed to be **language-agnostic**, providing general development guidance that applies across programming languages and frameworks.
 
-The AI automatically scans this directory and:
+### **Future Extensions**
+The role system is designed to support future language-specific contributions:
 
-1. **Parses YAML frontmatter** to understand role capabilities
-2. **Matches keywords** to user query intent
-3. **Selects optimal role** based on context and requirements
-4. **Applies role-specific knowledge** to provide assistance
+#### **Language-Specific Roles**
+- **Python Specialist** - Python-specific best practices and patterns
+- **JavaScript/TypeScript Specialist** - Frontend and Node.js expertise
+- **Go Specialist** - Go language patterns and performance optimization
+- **Rust Specialist** - Systems programming and memory safety
 
-### **Dynamic Loading**
+#### **Domain-Specific Roles**
+- **Web Development Specialist** - Frontend frameworks and web technologies
+- **Mobile Development Specialist** - iOS/Android development patterns
+- **DevOps Specialist** - Infrastructure, deployment, and CI/CD
+- **Data Science Specialist** - Machine learning and data analysis
 
-- **No hardcoded roles**: All roles loaded from `docs/ai-collaboration/roles/`
-- **Real-time updates**: Changes to role files immediately available
-- **Project specific**: Roles adapt to project context and patterns
-- **Single source of truth**: All role definitions in one location
+#### **Industry-Specific Roles**
+- **Healthcare Specialist** - HIPAA compliance and medical software patterns
+- **Financial Specialist** - Security, compliance, and financial software patterns
+- **E-commerce Specialist** - Payment processing and e-commerce patterns
 
-## Getting Started
+## Community Contribution
 
-### **Using Existing Roles**
+### **Role Submission Process**
+1. **Create Role Definition**: Follow the established template format
+2. **Add Examples**: Include practical input/output examples
+3. **Test Integration**: Ensure role works with existing coordination system
+4. **Submit for Review**: Community review and validation process
 
-1. **Ask questions naturally**: AI will automatically select appropriate roles
-2. **Use role-specific keywords**: Mention relevant concepts to trigger specific roles
-3. **Provide context**: Share project details for better role selection
+### **Quality Standards**
+- **Clear Purpose**: Role must have a well-defined, specific purpose
+- **Practical Examples**: Include real-world usage examples
+- **Integration Ready**: Must work with Task Coordinator and Experience Curator
+- **Documentation**: Comprehensive guidelines and best practices
 
-### **Customizing Roles**
+### **Validation System**
+- **Community Review**: Peer review by experienced developers
+- **Testing**: Integration testing with existing role system
+- **Performance Metrics**: Effectiveness measurement and optimization
+- **Continuous Improvement**: Regular updates based on usage feedback
 
-1. **Edit existing roles**: Modify `docs/ai-collaboration/roles/*.md` files
-2. **Add project context**: Include project-specific examples and patterns
-3. **Test changes**: Verify role selection works as expected
+## Integration with Development Workflow
 
-### **Creating New Roles**
+### **IDE Integration**
+- **Cursor**: Primary integration with `.cursor/rules/cortex.mdc`
+- **VS Code**: Extension for role activation and coordination
+- **Other IDEs**: Planned integrations for Windsurf, Cline, Roo Code
 
-1. **Follow the format**: Use standard YAML frontmatter structure
-2. **Be specific**: Define clear responsibilities and capabilities
-3. **Include examples**: Provide practical usage examples
-4. **Test integration**: Ensure role discovery works correctly
+### **CLI Integration**
+- **Role Discovery**: `cortex discover` - Scan and register available roles
+- **Task Coordination**: `cortex coordinate` - Activate Task Coordinator for complex tasks
+- **Experience Recording**: `cortex record` - Record development experiences
+- **Knowledge Synthesis**: `cortex learn` - Analyze patterns and update documentation
 
-## Best Practices
-
-### **Role Design**
-
-- **Single Responsibility**: Each role should have one clear purpose
-- **Keyword Precision**: Use specific, relevant keywords for discovery
-- **Comprehensive Coverage**: Include all important responsibilities
-- **Practical Examples**: Provide real-world usage scenarios
-
-### **Content Quality**
-
-- **Clear Structure**: Use consistent formatting and organization
-- **Actionable Guidance**: Provide specific, implementable advice
-- **Context Awareness**: Consider different project types and sizes
-- **Continuous Updates**: Keep roles current with best practices
+### **Continuous Learning**
+- **Automatic Recording**: Every interaction contributes to knowledge base
+- **Pattern Recognition**: Identify recurring issues and successful solutions
+- **Documentation Updates**: Real-time updates based on new learnings
+- **Process Optimization**: Continuous improvement of development workflows
 
 ---
 
-**The role system is designed to be flexible, extensible, and community-driven, enabling teams to create their own AI collaboration brain that grows with their needs.**
+**This role system provides a comprehensive, self-evolving AI collaboration framework that adapts to project needs and continuously improves through experience learning.**
