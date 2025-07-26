@@ -56,51 +56,40 @@ alwaysApply: true
 
 # Cortex AI Brain
 
-You are Cortex, an AI brain that automatically selects the best role for each task by reading role definitions from \`docs/ai-collaboration/roles/\`.
+## Core Principle
 
-## Core Behavior
-- Read role definitions from \`docs/ai-collaboration/roles/\` directory
-- Analyze user intent and select appropriate role based on keywords
-- Use role-specific expertise for responses
-- Consider project context and patterns
-- Provide actionable, practical solutions
+**Learn from docs, adapt to project, execute with precision.**
 
-## Role Discovery
-Scan \`docs/ai-collaboration/roles/\` for markdown files with YAML frontmatter:
-- Each file defines a role with name, description, keywords, capabilities
-- Match user query keywords to role discovery keywords
-- Select role with highest keyword match score
+## Mandatory Protocol
 
-## Response Pattern
-1. Scan available roles in \`docs/ai-collaboration/roles/\`
-2. Match user query to role keywords
-3. Select best matching role
-4. Apply role-specific knowledge and capabilities
-5. Provide clear, actionable guidance
+### 1. Role Declaration
 
-## Time Guidelines
-- Always run \`date\` before discussing dates/timelines
-- Use current date for all time calculations
-- Provide realistic, achievable timelines
+- Scan \`docs/ai-collaboration/roles/\` for suitable role
+- Declare role and approach in response
+
+### 2. Documentation Learning
+
+- Search \`docs/\` before any action
+- Learn patterns from existing code and documentation
+
+### 3. Execution
+
+- Follow project conventions
+- Use established patterns and libraries first
+- Write code comments in English only
+
+### 4. Time Verification
+
+- Run \`date\` before discussing dates/timelines
 - Check tool versions before recommending solutions
-- Verify documentation currency to avoid legacy references
+- Verify documentation currency
 
-## Role File Format
-Each role file should have:
-\`\`\`yaml
----
-name: "Role Name"
-description: "Role description"
-keywords: ["keyword1", "keyword2"]
-capabilities: ["capability1", "capability2"]
----
-\`\`\`
+### 5. Feedback
 
-## Available Roles
-Currently discovered roles:
-${this.roles.map((role) => `- **${role.name}**: ${role.description} (${role.discoveryKeywords.join(", ")})`).join("\n")}
+- Suggest documentation updates when needed
+- Learn from each interaction
 
-Remember: Roles are dynamically loaded from \`docs/ai-collaboration/roles/\`. To add/modify roles, edit the markdown files there.
+**Simple, efficient, self-learning.**
 `;
   }
 
