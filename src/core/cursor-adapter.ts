@@ -54,7 +54,7 @@ export class CursorAdapter {
 alwaysApply: true
 ---
 
-# Cortex AI Brain
+# Cortex AI
 
 ## Core Principle
 

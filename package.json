@@ -1,7 +1,7 @@
 {
   "name": "@rikaidev/cortex",
-  "version": "0.1.0",
-  "description": "AI Collaboration Brain - Dynamic role discovery and document-driven learning",
+  "version": "0.1.1",
+  "description": "Cortex AI - AI Collaboration Central Brain with dynamic role discovery and experience learning",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
@@ -32,7 +32,10 @@
     "role-discovery",
     "document-driven",
     "intelligent-assistant",
-    "development-workflow"
+    "development-workflow",
+    "cortex-ai",
+    "experience-learning",
+    "task-coordination"
   ],
   "author": "RikaiDev",
   "license": "MIT",

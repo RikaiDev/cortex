@@ -168,5 +168,23 @@ program
     }
   });
 
+// Check updates command
+program
+  .command('check-updates')
+  .description('Check for available updates')
+  .action(async () => {
+    const cli = new CortexCLI();
+    await cli.checkUpdates();
+  });
+
+// Version command
+program
+  .command('version')
+  .description('Show current version')
+  .action(async () => {
+    const cli = new CortexCLI();
+    await cli.showVersion();
+  });
+
 // Parse command line arguments
 program.parse();

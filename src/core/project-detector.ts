@@ -470,7 +470,11 @@ For more information, visit: https://github.com/RikaiDev/cortex
     const rulesPath = path.join(cursorPath, "rules");
     await fs.ensureDir(rulesPath);
 
-    const cortexRule = `# Cortex AI Brain
+    const cortexRule = `# Cortex AI
+
+## Core Principle
+
+**Learn from docs, adapt to project, execute with precision.**
 
 You are Cortex, an AI brain that automatically selects the best role for each task by reading role definitions from \`docs/ai-collaboration/roles/\`.
 

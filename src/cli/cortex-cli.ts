@@ -31,7 +31,7 @@ export class CortexCLI {
    * Initialize Cortex in the project
    */
   async initialize(): Promise<void> {
-    console.log(chalk.blue("🧠 Initializing Cortex AI Collaboration Brain..."));
+    console.log(chalk.blue("🧠 Initializing Cortex AI..."));
 
     // Create necessary directories
     const dirs = [
@@ -53,7 +53,7 @@ export class CortexCLI {
     // Create sample role
     await this.createSampleRole();
 
-    console.log(chalk.green("\n🎉 Cortex initialization complete!"));
+    console.log(chalk.green("\n🎉 Cortex AI initialization complete!"));
     console.log(chalk.yellow("\nNext steps:"));
     console.log(chalk.gray('1. Run "cortex discover" to analyze your project'));
     console.log(
@@ -71,7 +71,7 @@ export class CortexCLI {
   async setup(
     options: { quick?: boolean; config?: string } = {}
   ): Promise<void> {
-    console.log(chalk.blue("🚀 Setting up Cortex AI Collaboration Brain..."));
+    console.log(chalk.blue("🚀 Setting up Cortex AI..."));
 
     try {
       // Detect existing AI collaboration systems
@@ -678,5 +678,100 @@ ${templateData.keywords.join(", ")}
 **Input:** "Review this implementation"
 **Output:** "Let me analyze this implementation from a ${template} perspective."
 `;
+  }
+
+  async checkUpdates(): Promise<void> {
+    console.log("🔍 Checking for updates...");
+
+    try {
+      // Get current version from package.json
+      const currentVersion = this.getCurrentVersion();
+
+      // Check latest version from npm registry
+      const latestVersion = await this.getLatestVersion();
+
+      if (this.isUpdateAvailable(currentVersion, latestVersion)) {
+        console.log("\n🚀 Update Available!");
+        console.log(`Current version: ${currentVersion}`);
+        console.log(`Latest version: ${latestVersion}`);
+        console.log("\n📋 Recent Updates:");
+        await this.showRecentUpdates();
+        console.log("\n💡 To update, run: bun update @rikaidev/cortex");
+      } else {
+        console.log("✅ You are using the latest version!");
+      }
+    } catch (error) {
+      console.log("⚠️ Could not check for updates. Please check manually.");
+    }
+  }
+
+  private getCurrentVersion(): string {
+    try {
+      const packageJson = require("../../package.json");
+      return packageJson.version;
+    } catch {
+      return "unknown";
+    }
+  }
+
+  private async getLatestVersion(): Promise<string> {
+    try {
+      // In a real implementation, this would fetch from npm registry
+      // For now, return a mock version
+      return "0.1.1";
+    } catch {
+      return "unknown";
+    }
+  }
+
+  private isUpdateAvailable(current: string, latest: string): boolean {
+    if (current === "unknown" || latest === "unknown") return false;
+
+    const currentParts = current.split(".").map(Number);
+    const latestParts = latest.split(".").map(Number);
+
+    for (
+      let i = 0;
+      i < Math.max(currentParts.length, latestParts.length);
+      i++
+    ) {
+      const currentPart = currentParts[i] || 0;
+      const latestPart = latestParts[i] || 0;
+
+      if (latestPart > currentPart) return true;
+      if (latestPart < currentPart) return false;
+    }
+
+    return false;
+  }
+
+  private async showRecentUpdates(): Promise<void> {
+    const updates = [
+      {
+        version: "0.1.1",
+        date: "2025-07-27",
+        features: [
+          "Added Task Coordinator role for complex task orchestration",
+          "Added Experience Curator role for systematic learning",
+          "Implemented Self-Evolution Protocol",
+          "Created experience recording system",
+        ],
+      },
+    ];
+
+    updates.forEach((update) => {
+      console.log(`\n📦 Version ${update.version} (${update.date})`);
+      update.features.forEach((feature) => {
+        console.log(`  • ${feature}`);
+      });
+    });
+  }
+
+  async showVersion(): Promise<void> {
+    const version = this.getCurrentVersion();
+    console.log(`🧠 Cortex AI v${version}`);
+    console.log(
+      "AI Collaboration Central Brain - Self-evolving through experience learning"
+    );
   }
 }

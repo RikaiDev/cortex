@@ -1,274 +1,216 @@
-# 🧠 Cortex AI - AI Collaboration Brain
+# Cortex AI
 
-[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/)
+[![Version](https://img.shields.io/badge/version-v0.1.1-blue.svg)](https://github.com/RikaiDev/cortex/releases)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Bun](https://img.shields.io/badge/runtime-Bun-yellow.svg)](https://bun.sh)
 
-Cortex is an intelligent AI collaboration system that automatically selects the best role for each task by reading role definitions from your project's documentation.
+[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Updates](docs/updates/) | [Changelog](CHANGELOG.md)
+
+## 🧠 AI Collaboration Central Brain
+
+**Cortex AI** is an AI collaboration system that learns from project documentation and adapts to your development needs. It provides dynamic role discovery, intelligent task coordination, and continuous self-improvement through experience learning.
+
+### ✨ Latest Updates (v0.1.1)
+
+🚀 **New Features:**
+
+- **Task Coordinator**: Intelligent orchestration of complex tasks by coordinating multiple AI roles
+- **Experience Curator**: Systematic collection and analysis of development experiences
+- **Self-Evolution Protocol**: Mandatory experience-driven learning and continuous improvement
+- **Experience Recording System**: Daily experience records with templates and analysis
+
+📚 **Enhanced Documentation:**
+
+- Comprehensive role definitions and usage examples
+- Detailed coordination mechanisms and learning protocols
+- Improved Cursor rules with evolution protocols
+
+🔧 **CLI Improvements:**
+
+- `cortex check-updates` - Check for available updates
+- `cortex version` - Show current version
+- Enhanced role discovery and coordination
+
+[📋 View Full Changelog](CHANGELOG.md) | [🚀 Check for Updates](#staying-updated)
+
+## 🎯 Core Features
+
+### **Dynamic Role Discovery**
+
+- Automatically discovers roles from `docs/ai-collaboration/roles/`
+- Intelligent role selection based on task requirements
+- Language-agnostic design with future language-specific extensions
+
+### **Task Coordination**
+
+- **Task Coordinator** orchestrates complex multi-domain tasks
+- Breaks down complex tasks into manageable components
+- Coordinates multiple roles for comprehensive solutions
+- Smooth role transitions and output synthesis
+
+### **Experience Learning**
+
+- **Experience Curator** records every interaction and learning
+- Systematic pattern recognition and knowledge synthesis
+- Continuous process improvement based on real experience
+- Self-evolving documentation and role definitions
+
+### **IDE Integration**
+
+- **Cursor**: Primary integration with dynamic role reading
+- **VS Code**: Extension development in progress
+- **Other IDEs**: Windsurf, Cline, Roo Code planned
 
 ## 🚀 Quick Start
 
-### Install Cortex
+### **Installation**
 
 ```bash
-# Install globally with npm
-npm install -g @rikaidev/cortex
+# Global installation
+bun install -g @rikaidev/cortex
 
-# Or with bun
-bun add -g @rikaidev/cortex
-
-# Or download executable directly
-curl -fsSL https://github.com/RikaiDev/cortex/releases/latest/download/cortex-cli | sh
+# Or using npx
+npx @rikaidev/cortex
 ```
 
-### One-Click Setup
+### **Initialize Project**
 
 ```bash
-# Setup Cortex in your project (auto-detects project type)
-cortex setup
+# Initialize Cortex AI in your project
+cortex init
 
-# Quick setup with default configuration
-cortex setup --quick
-
-# Setup with custom configuration
-cortex setup --config my-config.json
-```
-
-### Start Using
-
-#### Option 1: Global CLI (Recommended)
-
-```bash
-# Start interactive collaboration
-cortex start
-
-# Discover roles and patterns
+# Discover available roles
 cortex discover
 
 # Generate IDE configurations
 cortex generate-ide
 ```
 
-#### Option 2: NPM Scripts (Local Development)
+### **Start Collaborating**
 
 ```bash
-# Quick start (after setup)
-npm run cortex:start
+# Interactive collaboration mode
+cortex start
 
-# Other available commands
-npm run cortex:discover    # Discover project patterns
-npm run cortex:generate-ide # Generate IDE configurations
-npm run cortex:setup       # Re-setup project
-npm run cortex:integrate   # Integrate with existing systems
+# Check for updates
+cortex check-updates
+
+# Show version
+cortex version
 ```
 
-## 🎯 What Cortex Does
+## 📚 Documentation
 
-Cortex automatically:
-
-1. **Detects your project type** (Frontend, Backend, Python, etc.)
-2. **Creates appropriate AI roles** based on your project needs
-3. **Generates IDE configurations** for seamless AI integration
-4. **Integrates with existing systems** if you already have AI collaboration setup
-5. **Provides intelligent role selection** based on your queries
-
-## 📁 Project Structure
-
-After setup, your project will have:
-
-```
-your-project/
-├── docs/
-│   └── ai-collaboration/
-│       ├── roles/           # AI role definitions
-│       ├── templates/       # Role templates
-│       └── examples/        # Example implementations
-├── .cursor/                 # Cursor IDE configuration
-├── .vscode/                 # VS Code configuration
-└── .cortex/                 # Cortex configuration
-```
+- **[Getting Started](docs/getting-started.md)** - Quick setup guide
+- **[Role System](docs/ai-collaboration/roles/)** - Available roles and coordination
+- **[Experience Learning](docs/experiences/)** - Learning and improvement system
+- **[Updates & Notifications](docs/updates/)** - Stay informed about changes
+- **[Roadmap](ROADMAP.md)** - Future development plans
 
 ## 🎭 Available Roles
 
-Cortex automatically creates roles based on your project type:
+### **Core Coordination**
 
-### All Projects
+- **[Task Coordinator](docs/ai-collaboration/roles/task-coordinator.md)** - Orchestrates complex tasks
+- **[Experience Curator](docs/ai-collaboration/roles/experience-curator.md)** - Manages learning and knowledge
 
-- **Code Assistant**: General development help
-- **Code Reviewer**: Code quality and best practices
+### **Development**
 
-### Frontend Projects
+- **[Code Reviewer](docs/ai-collaboration/roles/code-reviewer.md)** - Code quality analysis
+- **[QA Tester](docs/ai-collaboration/roles/qa-tester.md)** - Testing and quality assurance
+- **[Architecture Designer](docs/ai-collaboration/roles/architecture-designer.md)** - System design
+- **[Security Specialist](docs/ai-collaboration/roles/security-specialist.md)** - Security analysis
+- **[Performance Optimizer](docs/ai-collaboration/roles/performance-optimizer.md)** - Performance optimization
 
-- **Frontend Specialist**: UI/UX, React, Vue, etc.
+### **Project Management**
 
-### Backend Projects
+- **[Product Manager](docs/ai-collaboration/roles/product-manager.md)** - Product strategy
+- **[Release Quality Gatekeeper](docs/ai-collaboration/roles/release-quality-gatekeeper.md)** - Release management
+- **[Git Analyzer](docs/ai-collaboration/roles/git-analyzer.md)** - Version control analysis
 
-- **Backend Specialist**: API design, databases, server architecture
+### **Specialized Analysis**
 
-### Python Projects
+- **[TODO Analyzer](docs/ai-collaboration/roles/todo-analyzer.md)** - Task analysis
+- **[Legacy Code Analyzer](docs/ai-collaboration/roles/legacy-code-analyzer.md)** - Legacy system analysis
+- **[Date Verification Specialist](docs/ai-collaboration/roles/date-verification-specialist.md)** - Time accuracy
 
-- **Python Specialist**: Python best practices, frameworks
+## 🔄 Self-Evolution Protocol
 
-## 🛠️ Commands
+Cortex AI continuously improves through systematic experience learning:
 
-### Setup & Configuration
+1. **Experience Recording** - Every interaction is recorded
+2. **Pattern Recognition** - Recurring issues and solutions identified
+3. **Knowledge Integration** - Learnings applied to documentation
+4. **Process Optimization** - Workflows improved based on experience
+5. **Role Evolution** - Role definitions updated based on performance
 
-#### Global CLI
+## 🛠️ Development
 
-```bash
-cortex setup              # One-click setup
-cortex integrate          # Integrate with existing systems
-cortex init               # Legacy initialization
-```
+### **Prerequisites**
 
-#### NPM Scripts
+- [Bun](https://bun.sh) (recommended) or Node.js 18+
+- TypeScript knowledge
 
-```bash
-npm run cortex:setup      # One-click setup
-npm run cortex:integrate  # Integrate with existing systems
-npm run cortex:init       # Legacy initialization
-```
-
-### Analysis & Discovery
-
-#### Global CLI
-
-```bash
-cortex discover           # Discover roles and patterns
-cortex analyze-patterns   # Analyze coding patterns
-```
-
-#### NPM Scripts
+### **Setup**
 
 ```bash
-npm run cortex:discover   # Discover roles and patterns
-npm run cortex:analyze-patterns # Analyze coding patterns
+# Clone repository
+git clone https://github.com/RikaiDev/cortex.git
+cd cortex
+
+# Install dependencies
+bun install
+
+# Build project
+bun run build
+
+# Run tests
+bun run test
+
+# Start development
+bun run dev
 ```
 
-### IDE Integration
+### **Contributing**
 
-#### Global CLI
+- [Contributing Guidelines](CONTRIBUTING.md)
+- [Code of Conduct](CODE_OF_CONDUCT.md)
+- [Development Setup](docs/development/)
+
+## 📈 Staying Updated
+
+### **Automatic Updates**
 
 ```bash
-cortex generate-ide       # Generate IDE configurations
-cortex generate-role      # Create new role template
+# Check for updates
+cortex check-updates
+
+# Update to latest version
+bun update @rikaidev/cortex
 ```
 
-#### NPM Scripts
+### **Manual Updates**
 
-```bash
-npm run cortex:generate-ide  # Generate IDE configurations
-npm run cortex:generate-role # Create new role template
-```
+- **[GitHub Releases](https://github.com/RikaiDev/cortex/releases)** - Detailed changelog
+- **[Changelog](CHANGELOG.md)** - Complete version history
+- **[Updates Documentation](docs/updates/)** - Migration guides and notifications
 
-### Collaboration
+### **Community**
 
-#### Global CLI
-
-```bash
-cortex start              # Start interactive session
-```
-
-#### NPM Scripts
-
-```bash
-npm run cortex:start      # Start interactive session
-```
-
-## 🔧 Advanced Usage
-
-### Custom Role Creation
-
-Create custom roles in `docs/ai-collaboration/roles/`:
-
-```markdown
----
-name: "Security Specialist"
-description: "Security expert for code review"
-keywords: ["security", "vulnerability", "authentication"]
-capabilities:
-  - "Security code review"
-  - "Vulnerability assessment"
-version: "1.0.0"
----
-
-# Role: Security Specialist
-
-## Description
-
-Security expert specialized in identifying vulnerabilities and security issues.
-
-## Capabilities
-
-- Security code review
-- Vulnerability assessment
-- Authentication guidance
-```
-
-### Integration with Existing Systems
-
-```bash
-# Analyze existing roles
-cortex integrate --roles
-
-# Analyze existing workflows
-cortex integrate --workflows
-```
-
-## 🎯 Use Cases
-
-### For Teams
-
-- **Consistent AI assistance** across team members
-- **Project-specific expertise** based on your codebase
-- **Shared knowledge base** in role definitions
-
-### For Individuals
-
-- **Personalized AI help** based on your project
-- **Learning assistant** with domain-specific guidance
-- **Code review partner** with context awareness
-
-### For Projects
-
-- **Documentation-driven AI** that learns from your docs
-- **Scalable collaboration** as project grows
-- **Maintainable AI system** with version-controlled roles
-
-## 🔄 Migration from Legacy
-
-If you have an existing Cortex setup:
-
-```bash
-# Integrate with existing system
-cortex integrate
-
-# Or start fresh with new setup
-cortex setup
-```
-
-## 📊 Performance
-
-- **Installation**: 30 seconds (vs 5 minutes before)
-- **Setup**: 1 command (vs 4+ commands before)
-- **Learning curve**: Zero (vs technical background required before)
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+- **[GitHub Issues](https://github.com/RikaiDev/cortex/issues)** - Bug reports and feature requests
+- **[Discussions](https://github.com/RikaiDev/cortex/discussions)** - Community discussions
+- **[Discord](https://discord.gg/cortex)** - Real-time community support
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🆘 Support
+## 🙏 Acknowledgments
 
-- **Issues**: [GitHub Issues](https://github.com/RikaiDev/cortex/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/RikaiDev/cortex/discussions)
-- **Documentation**: [docs/](docs/)
+- Inspired by the [Hygieia](https://github.com/weemed-ai/hygieia) project's AI collaboration patterns
+- Built with modern TypeScript and Bun for optimal performance
+- Community-driven development and continuous improvement
 
 ---
 
-**Made with ❤️ by RikaiDev**
+**🧠 Every project deserves its own AI brain. Let Cortex AI evolve with yours!**

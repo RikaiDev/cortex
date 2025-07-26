@@ -1,273 +1,216 @@
-# 🧠 Cortex AI - AI 協作大腦
+# Cortex AI
 
-[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/)
+[![Version](https://img.shields.io/badge/version-v0.1.1-blue.svg)](https://github.com/RikaiDev/cortex/releases)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Bun](https://img.shields.io/badge/runtime-Bun-yellow.svg)](https://bun.sh)
 
-Cortex 是一個智能 AI 協作系統，透過讀取專案文件中的角色定義，自動為每個任務選擇最適合的角色。
+[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Updates](docs/updates/) | [Changelog](CHANGELOG.md)
+
+## 🧠 AI 協作中央大腦
+
+**Cortex AI** 是一個 AI 協作系統，從專案文檔中學習並適應您的開發需求。它提供動態角色發現、智能任務協調和通過經驗學習的持續自我改進。
+
+### ✨ 最新更新 (v0.1.1)
+
+🚀 **新功能：**
+
+- **任務協調者**：通過協調多個 AI 角色智能編排複雜任務
+- **經驗策展人**：系統性收集和分析開發經驗
+- **自我演化協議**：強制性經驗驅動學習和持續改進
+- **經驗記錄系統**：每日經驗記錄與模板和分析
+
+📚 **增強文檔：**
+
+- 全面的角色定義和使用範例
+- 詳細的協調機制和學習協議
+- 改進的 Cursor 規則與演化協議
+
+🔧 **CLI 改進：**
+
+- `cortex check-updates` - 檢查可用更新
+- `cortex version` - 顯示當前版本
+- 增強的角色發現和協調
+
+[📋 查看完整更新日誌](CHANGELOG.md) | [🚀 檢查更新](#保持更新)
+
+## 🎯 核心功能
+
+### **動態角色發現**
+
+- 自動從 `docs/ai-collaboration/roles/` 發現角色
+- 基於任務需求的智能角色選擇
+- 語言無關設計，未來支援語言特定擴展
+
+### **任務協調**
+
+- **任務協調者**編排複雜的多領域任務
+- 將複雜任務分解為可管理的組件
+- 協調多個角色以提供全面解決方案
+- 平滑的角色轉換和輸出合成
+
+### **經驗學習**
+
+- **經驗策展人**記錄每次互動和學習
+- 系統性模式識別和知識綜合
+- 基於實際經驗的持續流程改進
+- 自我演化的文檔和角色定義
+
+### **IDE 整合**
+
+- **Cursor**：主要整合，動態角色讀取
+- **VS Code**：擴展開發中
+- **其他 IDE**：計劃支援 Windsurf、Cline、Roo Code
 
 ## 🚀 快速開始
 
-### 安裝 Cortex
+### **安裝**
 
 ```bash
-# 使用 npm 全域安裝
-npm install -g @rikaidev/cortex
+# 全域安裝
+bun install -g @rikaidev/cortex
 
-# 或使用 bun
-bun add -g @rikaidev/cortex
-
-# 或直接下載執行檔
-curl -fsSL https://github.com/RikaiDev/cortex/releases/latest/download/cortex-cli | sh
+# 或使用 npx
+npx @rikaidev/cortex
 ```
 
-### 一鍵設置
+### **初始化專案**
 
 ```bash
-# 在專案中設置 Cortex（自動檢測專案類型）
-cortex setup
+# 在專案中初始化 Cortex AI
+cortex init
 
-# 快速設置（使用預設配置）
-cortex setup --quick
-
-# 自定義設置
-cortex setup --config my-config.json
-```
-
-### 開始使用
-
-#### 選項 1：全域 CLI（推薦）
-
-```bash
-# 開始互動式協作
-cortex start
-
-# 發現角色和模式
+# 發現可用角色
 cortex discover
 
 # 生成 IDE 配置
 cortex generate-ide
 ```
 
-#### 選項 2：NPM Scripts（本地開發）
+### **開始協作**
 
 ```bash
-# 快速啟動（已設置完成）
-npm run cortex:start
+# 互動式協作模式
+cortex start
 
-# 其他可用命令
-npm run cortex:discover    # 發現專案模式
-npm run cortex:generate-ide # 生成 IDE 配置
-npm run cortex:setup       # 重新設置
+# 檢查更新
+cortex check-updates
+
+# 顯示版本
+cortex version
 ```
 
-## 🎯 Cortex 的功能
+## 📚 文檔
 
-Cortex 會自動：
-
-1. **檢測你的專案類型**（前端、後端、Python 等）
-2. **根據專案需求創建適當的 AI 角色**
-3. **生成 IDE 配置**以實現無縫 AI 整合
-4. **整合現有系統**（如果你已有 AI 協作設置）
-5. **根據你的查詢提供智能角色選擇**
-
-## 📁 專案結構
-
-設置完成後，你的專案將包含：
-
-```
-your-project/
-├── docs/
-│   └── ai-collaboration/
-│       ├── roles/           # AI 角色定義
-│       ├── templates/       # 角色模板
-│       └── examples/        # 範例實作
-├── .cursor/                 # Cursor IDE 配置
-├── .vscode/                 # VS Code 配置
-└── .cortex/                 # Cortex 配置
-```
+- **[快速開始](docs/getting-started.md)** - 快速設置指南
+- **[角色系統](docs/ai-collaboration/roles/)** - 可用角色和協調
+- **[經驗學習](docs/experiences/)** - 學習和改進系統
+- **[更新和通知](docs/updates/)** - 了解變更資訊
+- **[發展路線圖](ROADMAP.md)** - 未來發展計劃
 
 ## 🎭 可用角色
 
-Cortex 會根據專案類型自動創建角色：
+### **核心協調**
 
-### 所有專案
+- **[任務協調者](docs/ai-collaboration/roles/task-coordinator.md)** - 編排複雜任務
+- **[經驗策展人](docs/ai-collaboration/roles/experience-curator.md)** - 管理學習和知識
 
-- **Code Assistant**：一般開發協助
-- **Code Reviewer**：程式碼品質和最佳實踐
+### **開發**
 
-### 前端專案
+- **[程式碼審查者](docs/ai-collaboration/roles/code-reviewer.md)** - 程式碼品質分析
+- **[QA 測試者](docs/ai-collaboration/roles/qa-tester.md)** - 測試和品質保證
+- **[架構設計師](docs/ai-collaboration/roles/architecture-designer.md)** - 系統設計
+- **[安全專家](docs/ai-collaboration/roles/security-specialist.md)** - 安全分析
+- **[效能優化師](docs/ai-collaboration/roles/performance-optimizer.md)** - 效能優化
 
-- **Frontend Specialist**：UI/UX、React、Vue 等
+### **專案管理**
 
-### 後端專案
+- **[產品經理](docs/ai-collaboration/roles/product-manager.md)** - 產品策略
+- **[發布品質守門員](docs/ai-collaboration/roles/release-quality-gatekeeper.md)** - 發布管理
+- **[Git 分析師](docs/ai-collaboration/roles/git-analyzer.md)** - 版本控制分析
 
-- **Backend Specialist**：API 設計、資料庫、伺服器架構
+### **專業分析**
 
-### Python 專案
+- **[TODO 分析師](docs/ai-collaboration/roles/todo-analyzer.md)** - 任務分析
+- **[遺留程式碼分析師](docs/ai-collaboration/roles/legacy-code-analyzer.md)** - 遺留系統分析
+- **[日期驗證專家](docs/ai-collaboration/roles/date-verification-specialist.md)** - 時間準確性
 
-- **Python Specialist**：Python 最佳實踐、框架
+## 🔄 自我演化協議
 
-## 🛠️ 命令
+Cortex AI 通過系統性經驗學習持續改進：
 
-### 設置和配置
+1. **經驗記錄** - 記錄每次互動
+2. **模式識別** - 識別重複問題和解決方案
+3. **知識整合** - 將學習應用到文檔
+4. **流程優化** - 基於經驗改進工作流程
+5. **角色演化** - 基於表現更新角色定義
 
-#### 全域 CLI
+## 🛠️ 開發
 
-```bash
-cortex setup              # 一鍵設置
-cortex integrate          # 整合現有系統
-cortex init               # 傳統初始化
-```
+### **前置需求**
 
-#### NPM Scripts
+- [Bun](https://bun.sh)（推薦）或 Node.js 18+
+- TypeScript 知識
 
-```bash
-npm run cortex:setup      # 一鍵設置
-npm run cortex:integrate  # 整合現有系統
-npm run cortex:init       # 傳統初始化
-```
-
-### 分析和發現
-
-#### 全域 CLI
-
-```bash
-cortex discover           # 發現角色和模式
-cortex analyze-patterns   # 分析編碼模式
-```
-
-#### NPM Scripts
+### **設置**
 
 ```bash
-npm run cortex:discover   # 發現角色和模式
-npm run cortex:analyze-patterns # 分析編碼模式
+# 克隆專案
+git clone https://github.com/RikaiDev/cortex.git
+cd cortex
+
+# 安裝依賴
+bun install
+
+# 建置專案
+bun run build
+
+# 執行測試
+bun run test
+
+# 開始開發
+bun run dev
 ```
 
-### IDE 整合
+### **貢獻**
 
-#### 全域 CLI
+- [貢獻指南](CONTRIBUTING.md)
+- [行為準則](CODE_OF_CONDUCT.md)
+- [開發設置](docs/development/)
+
+## 📈 保持更新
+
+### **自動更新**
 
 ```bash
-cortex generate-ide       # 生成 IDE 配置
-cortex generate-role      # 創建新角色模板
+# 檢查更新
+cortex check-updates
+
+# 更新到最新版本
+bun update @rikaidev/cortex
 ```
 
-#### NPM Scripts
+### **手動更新**
 
-```bash
-npm run cortex:generate-ide  # 生成 IDE 配置
-npm run cortex:generate-role # 創建新角色模板
-```
+- **[GitHub Releases](https://github.com/RikaiDev/cortex/releases)** - 詳細更新日誌
+- **[更新日誌](CHANGELOG.md)** - 完整版本歷史
+- **[更新文檔](docs/updates/)** - 遷移指南和通知
 
-### 協作
+### **社群**
 
-#### 全域 CLI
-
-```bash
-cortex start              # 開始互動式會話
-```
-
-#### NPM Scripts
-
-```bash
-npm run cortex:start      # 開始互動式會話
-```
-
-## 🔧 進階使用
-
-### 自定義角色創建
-
-在 `docs/ai-collaboration/roles/` 中創建自定義角色：
-
-```markdown
----
-name: "Security Specialist"
-description: "Security expert for code review"
-keywords: ["security", "vulnerability", "authentication"]
-capabilities:
-  - "Security code review"
-  - "Vulnerability assessment"
-version: "1.0.0"
----
-
-# Role: Security Specialist
-
-## Description
-
-Security expert specialized in identifying vulnerabilities and security issues.
-
-## Capabilities
-
-- Security code review
-- Vulnerability assessment
-- Authentication guidance
-```
-
-### 整合現有系統
-
-```bash
-# 分析現有角色
-cortex integrate --roles
-
-# 分析現有工作流程
-cortex integrate --workflows
-```
-
-## 🎯 使用案例
-
-### 對於團隊
-
-- **一致的 AI 協助**：跨團隊成員
-- **專案特定專業知識**：基於你的程式碼庫
-- **共享知識庫**：角色定義
-
-### 對於個人
-
-- **個人化 AI 協助**：基於你的專案
-- **學習助手**：領域特定指導
-- **程式碼審查夥伴**：具備上下文意識
-
-### 對於專案
-
-- **文件驅動的 AI**：從你的文件學習
-- **可擴展協作**：隨專案成長
-- **可維護的 AI 系統**：版本控制角色
-
-## 🔄 從舊版遷移
-
-如果你有現有的 Cortex 設置：
-
-```bash
-# 整合現有系統
-cortex integrate
-
-# 或重新開始設置
-cortex setup
-```
-
-## 📊 效能
-
-- **安裝時間**：30 秒（之前需要 5 分鐘）
-- **設置**：1 個命令（之前需要 4+ 個命令）
-- **學習曲線**：零（之前需要技術背景）
-
-## 🤝 貢獻
-
-1. Fork 專案
-2. 創建功能分支
-3. 進行變更
-4. 添加測試（如適用）
-5. 提交 Pull Request
+- **[GitHub Issues](https://github.com/RikaiDev/cortex/issues)** - 錯誤回報和功能請求
+- **[討論](https://github.com/RikaiDev/cortex/discussions)** - 社群討論
+- **[Discord](https://discord.gg/cortex)** - 即時社群支援
 
 ## 📄 授權
 
-MIT License - 詳見 [LICENSE](LICENSE) 檔案。
+本專案採用 MIT 授權 - 詳見 [LICENSE](LICENSE) 檔案。
 
-## 🆘 支援
+## 🙏 致謝
 
-- **問題回報**：[GitHub Issues](https://github.com/RikaiDev/cortex/issues)
-- **討論**：[GitHub Discussions](https://github.com/RikaiDev/cortex/discussions)
-- **文件**：[docs/](docs/)
+- 靈感來自 [Hygieia](https://github.com/weemed-ai/hygieia) 專案的 AI 協作模式
+- 使用現代 TypeScript 和 Bun 建置，實現最佳效能
+- 社群驅動開發和持續改進
 
 ---
 
-**Made with ❤️ by RikaiDev**
+**🧠 每個專案都值得擁有自己的 AI 大腦。讓 Cortex AI 與您的專案一起演化！**
