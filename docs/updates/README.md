@@ -110,7 +110,7 @@ cortex --version
 cortex check-updates
 # Output:
 # Current version: v0.1.0
-# Latest version: v0.1.1
+# Latest version: v0.1.2
 # New features: Task Coordinator, Experience Curator
 # Breaking changes: None
 ```
@@ -119,15 +119,15 @@ cortex check-updates
 
 ```bash
 # Update via npm/bun
-bun update @cortex-ai/cli
+bun update @rikaidev/cortex
 
 # Or reinstall
-bun install @cortex-ai/cli@latest
+bun install @rikaidev/cortex@latest
 ```
 
 ## Update History
 
-### **v0.1.1 (Latest)**
+### **v0.1.2 (Latest)**
 
 - **Date**: 2025-07-27
 - **Features**:
@@ -161,7 +161,7 @@ bun install @cortex-ai/cli@latest
 #### **1. Update Installation**
 
 ```bash
-bun update @cortex-ai/cli
+bun update @rikaidev/cortex
 ```
 
 #### **2. Regenerate IDE Configurations**
@@ -184,7 +184,7 @@ cortex discover
 mkdir -p docs/experiences/daily
 
 # Copy templates
-cp -r node_modules/@cortex-ai/cli/templates/experiences docs/experiences/daily/
+cp -r node_modules/@rikaidev/cortex/templates/experiences docs/experiences/daily/
 ```
 
 ## User Communication Strategy

@@ -1,6 +1,6 @@
 # Cortex AI
 
-[![Version](https://img.shields.io/badge/version-v0.1.1-blue.svg)](https://github.com/RikaiDev/cortex/releases)
+[![Version](https://img.shields.io/badge/version-v0.1.2-blue.svg)](https://github.com/RikaiDev/cortex/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Bun](https://img.shields.io/badge/runtime-Bun-yellow.svg)](https://bun.sh)
 
@@ -10,7 +10,7 @@
 
 **Cortex AI** is an AI collaboration system that learns from project documentation and adapts to your development needs. It provides dynamic role discovery, intelligent task coordination, and continuous self-improvement through experience learning.
 
-### ✨ Latest Updates (v0.1.1)
+### ✨ Latest Updates (v0.1.2)
 
 🚀 **New Features:**
 
@@ -133,6 +133,10 @@ cortex version
 - **[TODO Analyzer](docs/ai-collaboration/roles/todo-analyzer.md)** - Task analysis
 - **[Legacy Code Analyzer](docs/ai-collaboration/roles/legacy-code-analyzer.md)** - Legacy system analysis
 - **[Date Verification Specialist](docs/ai-collaboration/roles/date-verification-specialist.md)** - Time accuracy
+- **[Cognitive Evolution Specialist](docs/ai-collaboration/roles/cognitive-evolution-specialist.md)** - Cognitive pattern evolution
+- **[TDD Development Specialist](docs/ai-collaboration/roles/tdd-development-specialist.md)** - Test-driven development
+- **[Code Quality Gatekeeper](docs/ai-collaboration/roles/code-quality-gatekeeper.md)** - Code quality standards
+- **[Monorepo Architect](docs/ai-collaboration/roles/monorepo-architect.md)** - Monorepo architecture
 
 ## 🔄 Self-Evolution Protocol
 

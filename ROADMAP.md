@@ -11,6 +11,12 @@
 - [x] Basic role templates (Code Assistant, Code Reviewer, etc.)
 - [x] Date verification system
 - [x] Experience Curator role for knowledge management
+- [x] Enhanced experience recording system with CoT analysis
+- [x] Cognitive Evolution Specialist role
+- [x] TDD Development Specialist role
+- [x] Code Quality Gatekeeper role
+- [x] Monorepo Architect role
+- [x] Experience system cleanup and documentation quality improvements
 
 ### 🔄 In Progress
 

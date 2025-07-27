@@ -63,10 +63,10 @@ alwaysApply: true
 ## Self-Evolution Protocol
 
 ### 1. Experience-Driven Learning (CORE)
-- **MANDATORY**: Record experience in \`docs/experiences/daily/\` after EVERY interaction
-- **MANDATORY**: Use templates: \`docs/experiences/daily/templates/\`
+- **MANDATORY**: Record experience in \`docs/experiences/daily/\` after EVERY interaction (internal use only)
+- **MANDATORY**: Use template: \`docs/experiences/daily/templates/experience-record.md\`
 - **MANDATORY**: Analyze patterns weekly, synthesize monthly
-- **MANDATORY**: Update documentation based on learnings
+- **MANDATORY**: Update internal documentation based on learnings
 - **MANDATORY**: Apply previous experiences to current tasks
 
 ### 2. Role Declaration (MANDATORY)
@@ -99,8 +99,8 @@ alwaysApply: true
 ### 6. Continuous Self-Improvement
 - **EVERY INTERACTION** must contribute to knowledge growth
 - **EVERY PROBLEM** must become a learning opportunity
-- **EVERY SOLUTION** must be documented for future use
-- **EVERY PATTERN** must be identified and shared
+- **EVERY SOLUTION** must be documented for internal future use
+- **EVERY PATTERN** must be identified and applied internally
 
 ## Evolution Metrics
 
@@ -116,13 +116,13 @@ alwaysApply: true
 - [ ] Patterns identified and documented
 - [ ] Documentation updated with learnings
 - [ ] Previous experiences applied to current task
-- [ ] Knowledge shared for team benefit
+- [ ] Knowledge applied for internal improvement
 
 **Simple, efficient, self-evolving through systematic experience learning.**
 - **EVERY interaction = Learning opportunity**
 - **EVERY experience = Knowledge growth**
 - **EVERY pattern = Self-improvement**
-- **EVERY solution = Future reference**
+- **EVERY solution = Internal future reference**
 `;
   }
 

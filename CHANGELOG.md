@@ -55,77 +55,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Language-agnostic role design
 - Single source of truth for role definitions
 
-## Version History
+## Development Status
 
-### v0.1.1 (Latest)
+### Current Development Version: v0.1.2
 
-- **Release Date**: 2025-07-27
-- **Focus**: Coordination and Learning
-- **Key Features**: Task Coordinator, Experience Curator, Self-Evolution Protocol
+- **Development Commit**: `1865e0c`
+- **Focus**: Product Name Unification and Package Naming
+- **Key Features**:
+  - Unified product name to "Cortex AI" across all documentation
+  - Updated package naming from `@cortex-ai/cli` to `@rikaidev/cortex`
+  - Fixed all documentation references to use consistent package names
+  - Improved package installation and update instructions
+  - Experience system cleanup and documentation quality improvements
+  - Enhanced template system with unified experience recording
 
-### v0.1.0
+### Development History
 
-- **Release Date**: 2025-07-27
+#### v0.1.1 Development
+
+- **Commit**: `2cbda1a`
+- **Focus**: Hygieia Integration and Experience Learning
+- **Key Features**:
+  - Integrated Hygieia's coordination and experience learning systems
+  - Added comprehensive role system with specialized roles
+  - Implemented experience recording system with CoT analysis
+  - Enhanced cursor rules with evolution protocols
+
+#### v0.1.0 Development
+
+- **Commit**: `c4a2394`
 - **Focus**: Core Foundation
-- **Key Features**: Basic role system, CLI, Cursor integration
+- **Key Features**:
+  - Initial development of Cortex AI Brain
+  - Dynamic role discovery system
+  - Document-driven learning system
+  - Basic CLI functionality
+  - Cursor IDE integration
 
-## Migration Guides
+### Recent Development Commits
 
-### Updating from v0.1.0 to v0.1.1
+- **4349f1d** - Simplified cursor rules to match Hygieia's efficient design
+- **9d729c4** - Added i18n support and improved installation experience
 
-#### Automatic Update
+## Development Notes
 
-```bash
-bun update @cortex-ai/cli
-```
+### Current Development Focus (v0.1.2)
 
-#### Manual Steps
+#### Package Name Unification
 
-1. **Regenerate IDE Configurations**
+- **Updated package name** from `@cortex-ai/cli` to `@rikaidev/cortex`
+- **All documentation updated** to use consistent package naming
+- **Installation commands standardized** across all platforms
 
-   ```bash
-   cortex generate-ide
-   ```
+#### Experience System Improvements
 
-2. **Set Up Experience Recording**
+- **Experience records are internal use only** - not for public repository
+- **Unified template system** with comprehensive CoT analysis
+- **Enhanced documentation quality** and organization
 
-   ```bash
-   mkdir -p docs/experiences/daily
-   cp -r node_modules/@cortex-ai/cli/templates/experiences docs/experiences/daily/
-   ```
+### Development Migration Notes
 
-3. **Review New Roles**
+#### From v0.1.1 to v0.1.2 Development
 
-   ```bash
-   cortex discover
-   ```
+- Package naming consistency improvements
+- Experience system cleanup and optimization
+- Documentation structure enhancements
 
-#### Breaking Changes
+#### From v0.1.0 to v0.1.1 Development
 
-- None in this release
+- Hygieia system integration
+- Experience recording system implementation
+- Enhanced role coordination mechanisms
+- Self-evolution protocols implementation
 
-#### New Commands
+## Release Strategy
 
-- `cortex check-updates` - Check for available updates
-- `cortex version` - Show current version
+### First Official Release: v0.2.0
 
-## Future Releases
+**Target**: First public release with comprehensive features
+**Timeline**: TBD
 
-### Planned for v0.1.2
+#### Planned Features for v0.2.0
 
-- VS Code extension
+- VS Code extension development
 - Enhanced CLI commands
 - Performance optimizations
 - Additional role templates
+- Complete documentation and user guides
+- Community-ready features
 
-### Planned for v0.2.0
+### Future Releases
+
+#### v0.3.0
 
 - Community role marketplace
 - Advanced coordination features
 - Multi-IDE support
 - Enterprise features
 
-### Planned for v1.0.0
+#### v1.0.0
 
 - AI collaboration platform
 - Cross-project knowledge sharing

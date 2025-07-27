@@ -1,6 +1,6 @@
 # Cortex AI
 
-[![Version](https://img.shields.io/badge/version-v0.1.1-blue.svg)](https://github.com/RikaiDev/cortex/releases)
+[![Version](https://img.shields.io/badge/version-v0.1.2-blue.svg)](https://github.com/RikaiDev/cortex/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Bun](https://img.shields.io/badge/runtime-Bun-yellow.svg)](https://bun.sh)
 
@@ -10,7 +10,7 @@
 
 **Cortex AI** 是一個 AI 協作系統，從專案文檔中學習並適應您的開發需求。它提供動態角色發現、智能任務協調和通過經驗學習的持續自我改進。
 
-### ✨ 最新更新 (v0.1.1)
+### ✨ 最新更新 (v0.1.2)
 
 🚀 **新功能：**
 
@@ -133,6 +133,10 @@ cortex version
 - **[TODO 分析師](docs/ai-collaboration/roles/todo-analyzer.md)** - 任務分析
 - **[遺留程式碼分析師](docs/ai-collaboration/roles/legacy-code-analyzer.md)** - 遺留系統分析
 - **[日期驗證專家](docs/ai-collaboration/roles/date-verification-specialist.md)** - 時間準確性
+- **[認知演化專家](docs/ai-collaboration/roles/cognitive-evolution-specialist.md)** - 認知模式演化
+- **[TDD 開發專家](docs/ai-collaboration/roles/tdd-development-specialist.md)** - 測試驅動開發
+- **[程式碼品質守門員](docs/ai-collaboration/roles/code-quality-gatekeeper.md)** - 程式碼品質標準
+- **[單體倉庫架構師](docs/ai-collaboration/roles/monorepo-architect.md)** - 單體倉庫架構
 
 ## 🔄 自我演化協議
 
