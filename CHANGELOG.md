@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-07-28
+
+### Added
+
+- **🧠 Brain Architecture**: Simplified to "Brain + Experience + Tools" model
+- **📚 Real-Time Preference Learning**: AI learns from user feedback keywords ("不對", "我們用", "不要")
+- **⚡ Structured Thinking**: 6-step mandatory thinking process for all AI models
+- **🎯 Intent Exploration**: Mandatory first step in AI thinking process
+- **💡 User Intent Analysis**: AI explores what users REALLY want to achieve
+- **🎭 Pain Point Identification**: Automatic detection of user problems and priorities
+- **🔄 Cross-Platform Consistency**: Unified behavior across Cursor, Claude, and Gemini
+- **🎯 Prompt Injection**: Core mechanism for AI enhancement without external scripts
+- **💡 User Preference Memory**: AI remembers and applies user-specific preferences
+- **🚫 Anti-Repetition**: Never repeats corrected mistakes or user preferences
+
+### Changed
+
+- **Thinking Process**: Updated from 5-step to 6-step mandatory thinking protocol
+- **Response Format**: Added "Intent Exploration" as the first step in all AI responses
+- **Cross-Platform Consistency**: All adapters (Cursor, Claude, Gemini) now include intent exploration
+- **Architecture Simplification**: Removed complex role discovery and external learning scripts
+- **Core Mechanism**: Switched from external scripts to pure prompt injection
+- **Documentation**: Streamlined to focus on brain architecture and preference learning
+- **File Structure**: Removed unnecessary complexity, kept only essential components
+
+### Improved
+
+- **User Experience**: AI now proactively explores user intent before providing solutions
+- **Solution Quality**: Better alignment between AI solutions and user actual needs
+- **Communication**: Reduced need for user corrections and clarifications
+- **Intent Clarity**: AI automatically identifies user pain points and value priorities
+- **System Reliability**: Eliminated external script dependencies
+- **User Experience**: Immediate learning and application of preferences
+- **Maintainability**: Simplified codebase with clear brain + experience separation
+- **Performance**: Faster response through direct prompt injection
+
 ## [0.2.0] - 2025-07-28
 
 ### Added
@@ -33,8 +69,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Code Quality**: Enforced consistent TypeScript patterns and error handling
 - **User Experience**: Simplified configuration and better error prevention
 - **System Stability**: Reduced configuration complexity and improved maintainability
-
-## [Unreleased]
 
 ## [0.1.1] - 2025-07-27
 

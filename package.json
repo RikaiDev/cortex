@@ -1,7 +1,7 @@
 {
   "name": "@rikaidev/cortex",
-  "version": "0.2.0",
-  "description": "Cortex AI - AI Collaboration Central Brain with dynamic role discovery and experience learning",
+  "version": "0.3.0",
+  "description": "Cortex AI - AI Collaboration Brain with real-time preference learning and structured thinking",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
@@ -16,15 +16,9 @@
     "start": "bun run dist/index.js",
     "cli": "bun run dist/cli/index.js",
     "postinstall": "bun run build",
-    "setup": "node dist/cli/index.js setup",
     "cortex:start": "node dist/cli/index.js start",
-    "cortex:discover": "node dist/cli/index.js discover",
     "cortex:generate-ide": "node dist/cli/index.js generate-ide",
-    "cortex:setup": "node dist/cli/index.js setup",
-    "cortex:integrate": "node dist/cli/index.js integrate",
     "cortex:init": "node dist/cli/index.js init",
-    "cortex:generate-role": "node dist/cli/index.js generate-role",
-    "cortex:analyze-patterns": "node dist/cli/index.js analyze-patterns",
     "release:check": "chmod +x scripts/release-check.sh && ./scripts/release-check.sh",
     "release:prepare": "npm run release:check && git add . && git commit -m 'feat: release v$(node -p \"require('./package.json').version\")' && git tag v$(node -p \"require('./package.json').version\")",
     "release:publish": "npm run release:prepare && git push origin main --tags"
@@ -32,13 +26,13 @@
   "keywords": [
     "ai",
     "collaboration",
-    "role-discovery",
-    "document-driven",
-    "intelligent-assistant",
+    "prompt-injection",
+    "preference-learning",
+    "structured-thinking",
     "development-workflow",
     "cortex-ai",
-    "experience-learning",
-    "task-coordination"
+    "real-time-learning",
+    "cross-platform-ai"
   ],
   "author": "RikaiDev",
   "license": "MIT",

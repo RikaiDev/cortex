@@ -2,6 +2,14 @@
 
 Get Cortex AI up and running in your project in under 2 minutes!
 
+## 🎯 **What is Cortex AI?**
+
+**Cortex AI** transforms AI models into intelligent, learning partners by:
+
+- **🧠 Brain** - Structured thinking through prompt injection
+- **📚 Experience** - Real-time learning from user feedback
+- **🔄 Evolution** - Continuous improvement without repeating mistakes
+
 ## 📋 Prerequisites
 
 - Node.js 18+ or Bun
@@ -30,8 +38,11 @@ curl -fsSL https://github.com/RikaiDev/cortex/releases/latest/download/cortex-cl
 # Navigate to your project
 cd your-project
 
-# One command setup
-cortex setup
+# Initialize Cortex
+cortex init
+
+# Generate IDE configurations
+cortex generate-ide
 ```
 
 That's it! 🎉 Cortex is now ready to use.
@@ -40,49 +51,27 @@ That's it! 🎉 Cortex is now ready to use.
 
 Cortex automatically:
 
-1. **Detected your project type** (Frontend, Backend, Python, etc.)
-2. **Created AI roles** specific to your project needs
-3. **Generated IDE configurations** for seamless AI integration
-4. **Set up the collaboration structure** in your project
+1. **Created the brain structure** - Prompt injection for structured thinking
+2. **Set up experience system** - Long-term memory and learning
+3. **Generated IDE configurations** - For Cursor, Claude, and Gemini
+4. **Prepared learning environment** - Ready to learn from your preferences
 
 ## 🚀 Start Using Cortex
 
-### Option 1: Interactive Mode (Global CLI)
+### Option 1: IDE Integration (Recommended)
+
+```bash
+# Generate IDE configurations
+cortex generate-ide
+
+# Open your IDE and start coding!
+# The AI will learn from your feedback automatically
+```
+
+### Option 2: Interactive Mode
 
 ```bash
 cortex start
-```
-
-### Option 2: Interactive Mode (NPM Scripts)
-
-```bash
-npm run cortex:start
-```
-
-### Option 3: IDE Integration
-
-Open your IDE (Cursor, VS Code, etc.) - configurations are already set up!
-
-### Option 4: Command Line
-
-#### Global CLI
-
-```bash
-# Discover what Cortex found
-cortex discover
-
-# Generate additional IDE configs
-cortex generate-ide
-```
-
-#### NPM Scripts
-
-```bash
-# Discover what Cortex found
-npm run cortex:discover
-
-# Generate additional IDE configs
-npm run cortex:generate-ide
 ```
 
 ## 📁 What Was Created
@@ -93,155 +82,75 @@ Your project now has:
 your-project/
 ├── docs/
 │   └── ai-collaboration/
-│       ├── roles/           # AI role definitions
-│       │   ├── code-assistant.md
-│       │   ├── code-reviewer.md
-│       │   └── [project-specific].md
-│       ├── templates/       # Role templates
-│       └── examples/        # Example implementations
-├── .cursor/                 # Cursor IDE configuration
-├── .vscode/                 # VS Code configuration
-└── .cortex/                 # Cortex configuration
+│       ├── README.md        # System architecture
+│       └── roles/           # Basic role definitions
+├── .cursor/
+│   └── rules/
+│       └── cortex.mdc       # Cursor AI rules
+└── CLAUDE                   # Claude system message
+└── GEMINI                   # Gemini prompt template
 ```
 
-## 🎭 Your AI Roles
+## 🧠 How It Works
 
-Based on your project type, Cortex created these roles:
+### **Learning from Conversation**
 
-### All Projects
+```
+User: "註解又開始寫中文了？"
+AI: [Learns] Write all comments in English
 
-- **Code Assistant**: General development help
-- **Code Reviewer**: Code quality and best practices
+User: "我們用 uv run pytest"
+AI: [Learns] Always use uv run for Python commands
 
-### Frontend Projects
-
-- **Frontend Specialist**: UI/UX, React, Vue, etc.
-
-### Backend Projects
-
-- **Backend Specialist**: API design, databases, server architecture
-
-### Python Projects
-
-- **Python Specialist**: Python best practices, frameworks
-
-## 💬 Start Chatting
-
-Now you can ask questions and Cortex will automatically select the best role:
-
-### In Your IDE
-
-- Open Cursor, VS Code, or your preferred IDE
-- Start chatting with AI - roles are automatically loaded
-- Ask questions like:
-  - "Review this code for security issues"
-  - "Help me optimize this function"
-  - "Design an API for this feature"
-
-### In Terminal
-
-#### Global CLI
-
-```bash
-cortex start
+User: "又來了"
+AI: [Learns] Don't repeat the same mistake
 ```
 
-#### NPM Scripts
+### **Structured Thinking**
 
-```bash
-npm run cortex:start
-```
+The AI follows a 6-step thinking process:
 
-Then ask questions like:
-
-- "What roles are available?"
-- "Help me with this bug"
-- "Review this code"
-
-## 🔧 Customization
-
-### Add Custom Roles
-
-Edit files in `docs/ai-collaboration/roles/`:
-
-```markdown
----
-name: "My Custom Role"
-description: "Specialized for my project needs"
-keywords: ["custom", "specialized"]
-capabilities:
-  - "Custom capability 1"
-  - "Custom capability 2"
-version: "1.0.0"
----
-
-# Role: My Custom Role
-
-## Description
-
-Your custom role description...
-
-## Capabilities
-
-- Capability 1
-- Capability 2
-```
-
-### Modify Existing Roles
-
-Edit any role file in `docs/ai-collaboration/roles/` to customize behavior.
-
-## 🆘 Troubleshooting
-
-### Installation Issues
-
-```bash
-# Check if Cortex is installed
-cortex --version
-
-# Reinstall if needed
-npm uninstall -g @rikaidev/cortex
-npm install -g @rikaidev/cortex
-```
-
-### Setup Issues
-
-```bash
-# Check project structure
-ls -la docs/ai-collaboration/
-
-# Re-run setup
-cortex setup
-
-# Or start fresh
-rm -rf docs/ai-collaboration/ .cursor/ .vscode/
-cortex setup
-```
-
-### IDE Integration Issues
-
-```bash
-# Regenerate IDE configs
-cortex generate-ide
-
-# Check if configs exist
-ls -la .cursor/ .vscode/
-```
+1. **Intent Exploration** - What does the user REALLY want to achieve?
+2. **Problem Analysis** - Understanding the issue
+3. **Knowledge Integration** - Applying learned preferences
+4. **Solution Development** - Considering user patterns
+5. **Implementation Planning** - Respecting user preferences
+6. **Quality Validation** - Ensuring preference compliance
 
 ## 🎯 Next Steps
 
-1. **Explore your roles**: Check `docs/ai-collaboration/roles/`
-2. **Start chatting**: Use `cortex start` or your IDE
-3. **Customize**: Edit role definitions to match your needs
-4. **Share**: Commit your role definitions to share with your team
+1. **Start coding** - The AI will learn from your feedback
+2. **Provide feedback** - Use keywords like "不對", "我們用", "不要"
+3. **Watch it learn** - The AI will remember and apply your preferences
+4. **Enjoy consistency** - Same learning across all AI platforms
 
-## 📚 Learn More
+## 🔧 Available Commands
 
-- [Role Authoring Guide](role-authoring.md)
-- [Advanced Configuration](advanced-config.md)
-- [Best Practices](best-practices.md)
-- [API Reference](api-reference.md)
+```bash
+# Initialize Cortex in your project
+cortex init
+
+# Generate IDE configurations
+cortex generate-ide
+
+# Start AI collaboration
+cortex start
+
+# Show version
+cortex version
+```
+
+## 🎯 **Why This Works**
+
+**Traditional AI**: Forgets preferences, repeats mistakes, inconsistent behavior
+
+**Cortex AI**:
+
+- ✅ **Learns from feedback** - Remembers your preferences
+- ✅ **Structured thinking** - Follows systematic approach
+- ✅ **Cross-platform consistency** - Same behavior everywhere
+- ✅ **Continuous evolution** - Gets better with every interaction
 
 ---
 
-**Need help?** Check our [GitHub Issues](https://github.com/RikaiDev/cortex/issues) or [Discussions](https://github.com/RikaiDev/cortex/discussions).
+**Transform your AI interactions from frustrating repetitions to intelligent, learning partnerships!**

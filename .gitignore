@@ -115,7 +115,5 @@ docs/ai-collaboration/project-knowledge.json
 docs/ai-collaboration/analysis/
 docs/ai-collaboration/cache/
 
-# Experience records (internal use only, not for repository)
-docs/experiences/daily/*.md
-!docs/experiences/daily/README.md
-!docs/experiences/daily/templates/ 
+# Internal development documents (not for release)
+internal/

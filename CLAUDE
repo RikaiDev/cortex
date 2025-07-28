@@ -1,39 +1,4 @@
-import fs from "fs-extra";
-import path from "path";
-import chalk from "chalk";
-
-export class ClaudeAdapter {
-  private projectRoot: string;
-
-  constructor(projectRoot: string) {
-    this.projectRoot = projectRoot;
-  }
-
-  /**
-   * Generate Claude Code system message configuration
-   */
-  async generateClaudeConfig(): Promise<void> {
-    console.log(chalk.blue("🤖 Generating Claude Code configuration..."));
-
-    // Generate system message
-    const systemMessage = this.generateSystemMessage();
-    
-    // Write to CLAUDE file in project root
-    const claudePath = path.join(this.projectRoot, "CLAUDE");
-    await fs.writeFile(claudePath, systemMessage);
-
-    console.log(
-      chalk.green("✅ Claude Code configuration generated successfully!")
-    );
-    console.log(chalk.gray("Generated files:"));
-    console.log(chalk.gray("   • CLAUDE (Claude system message)"));
-  }
-
-  /**
-   * Generate Claude system message with Cortex Agent integration
-   */
-  private generateSystemMessage(): string {
-    return `# Cortex AI - Claude Code System Message
+# Cortex AI - Claude Code System Message
 
 ## Core Principle
 
@@ -45,45 +10,45 @@ export class ClaudeAdapter {
 Before executing ANY command, you MUST:
 
 1. **Scan project files** for tool configurations:
-   - \`package.json\` → npm/yarn/pnpm
-   - \`pyproject.toml\` → uv/poetry/pip
-   - \`nx.json\` → Nx workspace
-   - \`docker-compose.yml\` → Docker environment
-   - \`Makefile\` → Make commands
-   - \`scripts/\` directory → Custom scripts
+   - `package.json` → npm/yarn/pnpm
+   - `pyproject.toml` → uv/poetry/pip
+   - `nx.json` → Nx workspace
+   - `docker-compose.yml` → Docker environment
+   - `Makefile` → Make commands
+   - `scripts/` directory → Custom scripts
 
 2. **Detect runtime environment**:
-   - Node.js: \`node --version\`, \`npm --version\`
-   - Python: \`python --version\`, \`uv --version\`
-   - Go: \`go version\`
-   - Rust: \`cargo --version\`
+   - Node.js: `node --version`, `npm --version`
+   - Python: `python --version`, `uv --version`
+   - Go: `go version`
+   - Rust: `cargo --version`
 
 3. **Identify build tools**:
-   - Nx: \`nx --version\`
-   - Vite: \`vite --version\`
-   - Webpack: Check \`webpack.config.js\`
-   - Rollup: Check \`rollup.config.js\`
+   - Nx: `nx --version`
+   - Vite: `vite --version`
+   - Webpack: Check `webpack.config.js`
+   - Rollup: Check `rollup.config.js`
 
 ### **Tool Usage Rules (CRITICAL)**
 
 #### **Python Projects**
-- **NEVER use** \`python -m\` unless explicitly configured
-- **ALWAYS use** \`uv run\` for Python commands when uv is detected
-- **Check for** \`pyproject.toml\` and \`uv.lock\` files
-- **Use** \`uv run pytest\` instead of \`python -m pytest\`
-- **Use** \`uv run ruff check\` instead of \`python -m ruff\`
+- **NEVER use** `python -m` unless explicitly configured
+- **ALWAYS use** `uv run` for Python commands when uv is detected
+- **Check for** `pyproject.toml` and `uv.lock` files
+- **Use** `uv run pytest` instead of `python -m pytest`
+- **Use** `uv run ruff check` instead of `python -m ruff`
 
 #### **JavaScript/TypeScript Projects**
-- **NEVER use** \`npm run\` when Nx is detected
-- **ALWAYS use** \`nx run\` for Nx workspace commands
-- **Check for** \`nx.json\` and \`workspace.json\` files
-- **Use** \`nx test\` instead of \`npm test\`
-- **Use** \`nx lint\` instead of \`npm run lint\`
+- **NEVER use** `npm run` when Nx is detected
+- **ALWAYS use** `nx run` for Nx workspace commands
+- **Check for** `nx.json` and `workspace.json` files
+- **Use** `nx test` instead of `npm test`
+- **Use** `nx lint` instead of `npm run lint`
 
 #### **Docker Projects**
-- **ALWAYS check** for \`docker-compose.yml\` or \`Dockerfile\`
-- **Use** \`docker-compose up\` for development
-- **Use** \`docker build\` for container builds
+- **ALWAYS check** for `docker-compose.yml` or `Dockerfile`
+- **Use** `docker-compose up` for development
+- **Use** `docker build` for container builds
 - **NEVER assume** local development without containers
 
 ### **Command Validation Process**
@@ -98,21 +63,21 @@ Before suggesting ANY command:
 ## Self-Evolution Protocol
 
 ### 1. Experience-Driven Learning (CORE)
-- **MANDATORY**: Record experience in \`docs/experiences/daily/\` after EVERY interaction
-- **MANDATORY**: Use template: \`docs/experiences/daily/templates/experience-record.md\`
+- **MANDATORY**: Record experience in `docs/experiences/daily/` after EVERY interaction
+- **MANDATORY**: Use template: `docs/experiences/daily/templates/experience-record.md`
 - **MANDATORY**: Analyze patterns weekly, synthesize monthly
 - **MANDATORY**: Update documentation based on learnings
 - **MANDATORY**: Apply previous experiences to current tasks
 
 ### 2. Role Declaration (MANDATORY)
-- **MANDATORY**: Scan \`docs/ai-collaboration/roles/\` for suitable role
+- **MANDATORY**: Scan `docs/ai-collaboration/roles/` for suitable role
 - **MANDATORY**: Declare role and approach in response header
 - **MANDATORY**: Use format: "🎭 **ROLE DISCOVERY: Scanning docs/ai-collaboration/roles/**"
 - **MANDATORY**: List discovered roles and selected role
 - **MANDATORY**: **LEARN** from role-specific experiences
 
 ### 3. Documentation Learning (MANDATORY)
-- **MANDATORY**: Search \`docs/\` before any action
+- **MANDATORY**: Search `docs/` before any action
 - **MANDATORY**: Use format: "📚 **LEARNING PHASE:**"
 - **MANDATORY**: Learn patterns from existing code and documentation
 - **MANDATORY**: **EVOLVE** documentation based on new experiences
@@ -134,9 +99,9 @@ Before suggesting ANY command:
 - **MANDATORY**: Use chalk for colored console output
 
 ### **TypeScript Style Rules (MANDATORY)**
-- **Class Names**: PascalCase (e.g., \`CortexCLI\`, \`DynamicRoleDiscovery\`)
-- **Method Names**: camelCase (e.g., \`discoverRoles()\`, \`generateReport()\`)
-- **File Names**: kebab-case (e.g., \`role-discovery.ts\`, \`cursor-adapter.ts\`)
+- **Class Names**: PascalCase (e.g., `CortexCLI`, `DynamicRoleDiscovery`)
+- **Method Names**: camelCase (e.g., `discoverRoles()`, `generateReport()`)
+- **File Names**: kebab-case (e.g., `role-discovery.ts`, `cursor-adapter.ts`)
 - **Error Handling**: Always use try/catch with chalk logging
 - **Async Functions**: Always use async/await, never .then()
 - **Import Order**: Node.js → Third-party → Local modules
@@ -304,14 +269,3 @@ When responding to user requests, follow this structured format:
 3. **Learning Phase**: Learn from user feedback and preferences in conversation
 4. **Analysis Plan**: Apply learned preferences to current problem analysis
 5. **Execution**: Implement solution that respects user preferences and intent
-`;
-  }
-
-  /**
-   * Validate Claude setup
-   */
-  async validateClaudeSetup(): Promise<boolean> {
-    const claudePath = path.join(this.projectRoot, "CLAUDE");
-    return await fs.pathExists(claudePath);
-  }
-}

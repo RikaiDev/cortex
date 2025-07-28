@@ -1,67 +1,75 @@
 # Cortex AI
 
-[![Version](https://img.shields.io/badge/version-v0.1.2-blue.svg)](https://github.com/RikaiDev/cortex/releases)
+[![Version](https://img.shields.io/badge/version-v0.3.0-blue.svg)](https://github.com/RikaiDev/cortex/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Bun](https://img.shields.io/badge/runtime-Bun-yellow.svg)](https://bun.sh)
 
 [English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Updates](docs/updates/) | [Changelog](CHANGELOG.md)
 
-## 🧠 AI 協作中央大腦
+## 🧠 AI 協作大腦
 
-**Cortex AI** 是一個 AI 協作系統，從專案文檔中學習並適應您的開發需求。它提供動態角色發現、智能任務協調和通過經驗學習的持續自我改進。
+**Cortex AI** 是一個 AI 協作系統，將 AI 模型轉化為智能學習夥伴。它通過 **prompt injection** 和 **即時偏好學習** 解決 AI 不一致和缺乏記憶的核心問題。
 
-### ✨ 最新更新 (v0.1.2)
+### 🎯 **為什麼要做 Cortex？**
 
-🚀 **新功能：**
+**問題背景：**
 
-- **任務協調者**：通過協調多個 AI 角色智能編排複雜任務
-- **經驗策展人**：系統性收集和分析開發經驗
-- **自我演化協議**：強制性經驗驅動學習和持續改進
-- **經驗記錄系統**：每日經驗記錄與模板和分析
+- AI 模型缺乏穩定的思考流程（Chain-of-Thought）
+- AI 忘記用戶偏好，重複犯同樣錯誤
+- 不同 AI 平台行為不一致
+- 缺乏個人化或從對話中學習的能力
 
-📚 **增強文檔：**
+**解決方案：**
 
-- 全面的角色定義和使用範例
-- 詳細的協調機制和學習協議
-- 改進的 Cursor 規則與演化協議
+- **🧠 大腦** - 通過 prompt injection 實現結構化思考
+- **📚 經驗** - 從用戶反饋中即時學習
+- **🔄 進化** - 持續改進，不再重複錯誤
 
-🔧 **CLI 改進：**
+### 🏗️ **架構**
 
-- `cortex check-updates` - 檢查可用更新
-- `cortex version` - 顯示當前版本
-- 增強的角色發現和協調
+```
+🧠 大腦 (MDC/GEMINI/CLAUDE)
+├── 即時思考和決策
+├── 結構化 5 步思考流程
+├── 從對話中學習用戶偏好
+└── 跨平台一致性
 
-[📋 查看完整更新日誌](CHANGELOG.md) | [🚀 檢查更新](#保持更新)
+📚 經驗 (docs)
+├── 長期記憶和知識庫
+├── 專案特定模式和慣例
+├── 從成功互動中學習
+└── 持續知識演化
 
-## 🎯 核心功能
+🛠️ 必要工具
+├── AI 增強的 prompt injection
+├── 用戶偏好檢測和應用
+├── 跨平台適配器系統
+└── 簡化的 CLI 核心操作
+```
 
-### **動態角色發現**
+## ✨ **核心功能**
 
-- 自動從 `docs/ai-collaboration/roles/` 發現角色
-- 基於任務需求的智能角色選擇
-- 語言無關設計，未來支援語言特定擴展
+### **🧠 結構化思考**
 
-### **任務協調**
+- **6 步思考流程**：意圖探索 → 問題分析 → 知識整合 → 解決方案開發 → 實施規劃 → 品質驗證
+- **強制協議**：強制 AI 系統性思考，無論模型能力如何
+- **品質驗證**：確保完整和邏輯思考
 
-- **任務協調者**編排複雜的多領域任務
-- 將複雜任務分解為可管理的組件
-- 協調多個角色以提供全面解決方案
-- 平滑的角色轉換和輸出合成
+### **📚 即時學習**
 
-### **經驗學習**
+- **用戶偏好檢測**：從關鍵字學習，如 "不對"、"我們用"、"不要"
+- **立即應用**：將學習的偏好應用到當前回應
+- **不重複**：絕不重複已修正的錯誤
+- **挫折檢測**：識別並從用戶挫折中學習
 
-- **經驗策展人**記錄每次互動和學習
-- 系統性模式識別和知識綜合
-- 基於實際經驗的持續流程改進
-- 自我演化的文檔和角色定義
+### **🔄 跨平台一致性**
 
-### **IDE 整合**
+- **Cursor 整合**：增強 MDC 與偏好學習
+- **Claude 支援**：情境感知系統訊息
+- **Gemini 支援**：平台特定 prompt 工程
+- **統一行為**：所有平台相同的學習和思考
 
-- **Cursor**：主要整合，動態角色讀取
-- **VS Code**：擴展開發中
-- **其他 IDE**：計劃支援 Windsurf、Cline、Roo Code
-
-## 🚀 快速開始
+## 🚀 **快速開始**
 
 ### **安裝**
 
@@ -79,78 +87,63 @@ npx @rikaidev/cortex
 # 在專案中初始化 Cortex AI
 cortex init
 
-# 發現可用角色
-cortex discover
-
 # 生成 IDE 配置
 cortex generate-ide
 ```
 
-### **開始協作**
+### **開始學習**
 
 ```bash
-# 互動式協作模式
+# 開始 AI 協作
 cortex start
-
-# 檢查更新
-cortex check-updates
 
 # 顯示版本
 cortex version
 ```
 
-## 📚 文檔
+## 🎯 **如何運作**
+
+### **1. 從對話中學習**
+
+```
+用戶：「註解又開始寫中文了？」
+AI：[學習] 所有註解用英文寫
+
+用戶：「我們用 uv run pytest」
+AI：[學習] Python 命令都用 uv run
+
+用戶：「又來了」
+AI：[學習] 不要重複同樣的錯誤
+```
+
+### **2. 結構化思考**
+
+```
+🔍 分析階段：[問題理解]
+📚 知識整合：[應用學習的偏好]
+💡 解決方案開發：[考慮用戶模式]
+⚡ 實施規劃：[尊重用戶偏好]
+✅ 品質驗證：[確保偏好合規]
+```
+
+### **3. 跨平台一致性**
+
+- **相同學習** 在 Cursor、Claude 和 Gemini 之間
+- **相同思考** 流程在所有平台
+- **相同偏好** 應用到各處
+- **相同演化** 通過對話
+
+## 📚 **文檔**
 
 - **[快速開始](docs/getting-started.md)** - 快速設置指南
-- **[角色系統](docs/ai-collaboration/roles/)** - 可用角色和協調
+- **[AI 協作](docs/ai-collaboration/)** - 系統架構和角色
 - **[經驗學習](docs/experiences/)** - 學習和改進系統
-- **[更新和通知](docs/updates/)** - 了解變更資訊
-- **[發展路線圖](ROADMAP.md)** - 未來發展計劃
+- **[更新和通知](docs/updates/)** - 了解變更
+- **[路線圖](ROADMAP.md)** - 未來開發計劃
 
-## 🎭 可用角色
+## 🛠️ **開發**
 
-### **核心協調**
-
-- **[任務協調者](docs/ai-collaboration/roles/task-coordinator.md)** - 編排複雜任務
-- **[經驗策展人](docs/ai-collaboration/roles/experience-curator.md)** - 管理學習和知識
-
-### **開發**
-
-- **[程式碼審查者](docs/ai-collaboration/roles/code-reviewer.md)** - 程式碼品質分析
-- **[QA 測試者](docs/ai-collaboration/roles/qa-tester.md)** - 測試和品質保證
-- **[架構設計師](docs/ai-collaboration/roles/architecture-designer.md)** - 系統設計
-- **[安全專家](docs/ai-collaboration/roles/security-specialist.md)** - 安全分析
-- **[效能優化師](docs/ai-collaboration/roles/performance-optimizer.md)** - 效能優化
-
-### **專案管理**
-
-- **[產品經理](docs/ai-collaboration/roles/product-manager.md)** - 產品策略
-- **[發布品質守門員](docs/ai-collaboration/roles/release-quality-gatekeeper.md)** - 發布管理
-- **[Git 分析師](docs/ai-collaboration/roles/git-analyzer.md)** - 版本控制分析
-
-### **專業分析**
-
-- **[TODO 分析師](docs/ai-collaboration/roles/todo-analyzer.md)** - 任務分析
-- **[遺留程式碼分析師](docs/ai-collaboration/roles/legacy-code-analyzer.md)** - 遺留系統分析
-- **[日期驗證專家](docs/ai-collaboration/roles/date-verification-specialist.md)** - 時間準確性
-- **[認知演化專家](docs/ai-collaboration/roles/cognitive-evolution-specialist.md)** - 認知模式演化
-- **[TDD 開發專家](docs/ai-collaboration/roles/tdd-development-specialist.md)** - 測試驅動開發
-- **[程式碼品質守門員](docs/ai-collaboration/roles/code-quality-gatekeeper.md)** - 程式碼品質標準
-- **[單體倉庫架構師](docs/ai-collaboration/roles/monorepo-architect.md)** - 單體倉庫架構
-
-## 🔄 自我演化協議
-
-Cortex AI 通過系統性經驗學習持續改進：
-
-1. **經驗記錄** - 記錄每次互動
-2. **模式識別** - 識別重複問題和解決方案
-3. **知識整合** - 將學習應用到文檔
-4. **流程優化** - 基於經驗改進工作流程
-5. **角色演化** - 基於表現更新角色定義
-
-## 🛠️ 開發
-
-### **前置需求**
+### **先決條件**
 
 - [Bun](https://bun.sh)（推薦）或 Node.js 18+
 - TypeScript 知識
@@ -158,7 +151,7 @@ Cortex AI 通過系統性經驗學習持續改進：
 ### **設置**
 
 ```bash
-# 克隆專案
+# 克隆儲存庫
 git clone https://github.com/RikaiDev/cortex.git
 cd cortex
 
@@ -181,40 +174,17 @@ bun run dev
 - [行為準則](CODE_OF_CONDUCT.md)
 - [開發設置](docs/development/)
 
-## 📈 保持更新
+## 🎯 **為什麼取名 "Cortex"？**
 
-### **自動更新**
+**Cortex（大腦皮質）** 代表大腦的高級認知功能：
 
-```bash
-# 檢查更新
-cortex check-updates
+- **🧠 思考** - 結構化推理和問題解決
+- **📚 記憶** - 學習和儲存經驗
+- **🔄 進化** - 通過經驗持續改進
+- **🎯 決策** - 基於學習做出判斷
 
-# 更新到最新版本
-bun update @rikaidev/cortex
-```
-
-### **手動更新**
-
-- **[GitHub Releases](https://github.com/RikaiDev/cortex/releases)** - 詳細更新日誌
-- **[更新日誌](CHANGELOG.md)** - 完整版本歷史
-- **[更新文檔](docs/updates/)** - 遷移指南和通知
-
-### **社群**
-
-- **[GitHub Issues](https://github.com/RikaiDev/cortex/issues)** - 錯誤回報和功能請求
-- **[討論](https://github.com/RikaiDev/cortex/discussions)** - 社群討論
-- **[Discord](https://discord.gg/cortex)** - 即時社群支援
-
-## 📄 授權
-
-本專案採用 MIT 授權 - 詳見 [LICENSE](LICENSE) 檔案。
-
-## 🙏 致謝
-
-- 靈感來自 [Hygieia](https://github.com/weemed-ai/hygieia) 專案的 AI 協作模式
-- 使用現代 TypeScript 和 Bun 建置，實現最佳效能
-- 社群驅動開發和持續改進
+就像人類大腦皮質一樣，**Cortex AI** 是 AI 的「大腦」- 負責思考、記憶、學習和決策。
 
 ---
 
-**🧠 每個專案都值得擁有自己的 AI 大腦。讓 Cortex AI 與您的專案一起演化！**
+**將您的 AI 互動從令人挫折的重複轉化為智能學習夥伴關係！**

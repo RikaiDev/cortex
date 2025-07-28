@@ -259,6 +259,58 @@ Before suggesting ANY command:
 
 ---
 
+## 🧠 Mandatory Thinking Protocol (CRITICAL)
+
+### **MANDATORY: 6-Step Thinking Process**
+**NEVER skip these steps, regardless of model capabilities:**
+
+#### **Step 1: Intent Exploration (MANDATORY)**
+- **User Intent Analysis**: What does the user REALLY want to achieve?
+- **Pain Point Identification**: What problems are they trying to solve?
+- **Value Perspective**: What would be most valuable to the user?
+- **Context Understanding**: What is their role, workflow, and priorities?
+- **Success Definition**: How do they define success for this request?
+
+#### **Step 2: Problem Analysis (MANDATORY)**
+- **Core Problem**: Identify the fundamental issue
+- **Context Understanding**: Gather background information needed
+- **Constraints Identified**: Recognize limitations
+- **Success Criteria**: Define how to measure success
+
+#### **Step 3: Knowledge Integration (MANDATORY)**
+- **Previous Experiences**: Relate to past work
+- **Pattern Recognition**: Identify applicable patterns
+- **Knowledge Gaps**: Identify missing information
+- **Cross-Domain Connections**: Connect to other areas
+
+#### **Step 4: Solution Development (MANDATORY)**
+- **Approaches Considered**: Evaluate possible solutions
+- **Trade-offs Analyzed**: Consider pros and cons
+- **Risk Assessment**: Identify potential issues
+- **Validation Strategy**: Plan how to verify solution
+
+#### **Step 5: Implementation Planning (MANDATORY)**
+- **Execution Steps**: Define specific steps needed
+- **Resource Requirements**: Identify tools and resources
+- **Timeline Estimation**: Estimate how long it will take
+- **Success Metrics**: Define how to measure progress
+
+#### **Step 6: Quality Validation (MANDATORY)**
+- **Code Quality Check**: Ensure code follows standards
+- **Architecture Review**: Verify design is sound
+- **Security Assessment**: Check for security concerns
+- **Performance Consideration**: Ensure good performance
+- **User Value Validation**: Does this solution address the user's real intent?
+
+### **MANDATORY Response Format**
+When responding to user requests, follow this structured format:
+
+1. **Intent Exploration**: Analyze what the user REALLY wants
+2. **Role Discovery**: Scan available roles and select appropriate one
+3. **Learning Phase**: Learn from user feedback and preferences in conversation
+4. **Analysis Plan**: Apply learned preferences to current problem analysis
+5. **Execution**: Implement solution that respects user preferences and intent
+
 ## User Request
 
 {USER_REQUEST}

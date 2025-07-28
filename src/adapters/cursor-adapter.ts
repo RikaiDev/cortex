@@ -1,6 +1,6 @@
-import { Role, ProjectKnowledge } from "../core/types.js";
-import fs from "fs-extra";
-import path from "path";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+import chalk from "chalk";
 
 export interface CursorRule {
   description: string;
@@ -12,6 +12,19 @@ export interface CursorRule {
 export interface CursorConfig {
   rules: CursorRule[];
   settings?: Record<string, any>;
+}
+
+export interface Role {
+  name: string;
+  description: string;
+  keywords: string[];
+  capabilities: string[];
+}
+
+export interface ProjectKnowledge {
+  patterns: string[];
+  conventions: string[];
+  preferences: string[];
 }
 
 export class CursorAdapter {
@@ -30,23 +43,18 @@ export class CursorAdapter {
   }
 
   async generateCursorRules(): Promise<void> {
-    const cursorDir = path.join(this.projectRoot, ".cursor");
-    const rulesDir = path.join(cursorDir, "rules");
+    try {
+      const cursorDir = join(this.projectRoot, ".cursor", "rules");
+      await mkdir(cursorDir, { recursive: true });
 
-    // Create directories
-    await fs.ensureDir(cursorDir);
-    await fs.ensureDir(rulesDir);
+      const mainRule = this.generateMainRule();
+      await writeFile(join(cursorDir, "cortex.mdc"), mainRule);
 
-    // Generate single main rule that reads from docs
-    const mainRule = this.generateMainRule();
-    await fs.writeFile(path.join(rulesDir, "cortex.mdc"), mainRule);
-
-    // Generate settings
-    const settings = this.generateSettings();
-    await fs.writeFile(
-      path.join(cursorDir, "settings.json"),
-      JSON.stringify(settings, null, 2)
-    );
+      console.log(chalk.green("✅ Generated Cursor rules successfully"));
+    } catch (error) {
+      console.error(chalk.red("❌ Failed to generate Cursor rules:"), error);
+      throw error;
+    }
   }
 
   private generateMainRule(): string {
@@ -116,123 +124,178 @@ Before suggesting ANY command:
 4. **Use project-specific commands** only
 5. **Provide fallback options** if tool not detected
 
-## Self-Evolution Protocol
+## 🧠 Mandatory Thinking Protocol (CRITICAL)
 
-### 1. Experience-Driven Learning (CORE)
-- **MANDATORY**: Record experience in \`docs/experiences/daily/\` after EVERY interaction
-- **MANDATORY**: Use template: \`docs/experiences/daily/templates/experience-record.md\`
-- **MANDATORY**: Analyze patterns weekly, synthesize monthly
-- **MANDATORY**: Update documentation based on learnings
-- **MANDATORY**: Apply previous experiences to current tasks
+### **MANDATORY: 6-Step Thinking Process**
+**NEVER skip these steps, regardless of model capabilities:**
 
-### 2. Role Declaration (MANDATORY)
-- **MANDATORY**: Scan \`docs/ai-collaboration/roles/\` for suitable role
-- **MANDATORY**: Declare role and approach in response header
-- **MANDATORY**: Use format: "🎭 **ROLE DISCOVERY: Scanning docs/ai-collaboration/roles/**"
-- **MANDATORY**: List discovered roles and selected role
-- **MANDATORY**: **LEARN** from role-specific experiences
+#### **Step 1: Intent Exploration (MANDATORY)**
+- **User Intent Analysis**: What does the user REALLY want to achieve?
+- **Pain Point Identification**: What problems are they trying to solve?
+- **Value Perspective**: What would be most valuable to the user?
+- **Context Understanding**: What is their role, workflow, and priorities?
+- **Success Definition**: How do they define success for this request?
 
-### 3. Documentation Learning (MANDATORY)
-- **MANDATORY**: Search \`docs/\` before any action
-- **MANDATORY**: Use format: "📚 **LEARNING PHASE:**"
-- **MANDATORY**: Learn patterns from existing code and documentation
-- **MANDATORY**: **EVOLVE** documentation based on new experiences
+#### **Step 2: Problem Analysis (MANDATORY)**
+- **Core Problem**: Identify the fundamental issue
+- **Context Understanding**: Gather background information needed
+- **Constraints Identified**: Recognize limitations
+- **Success Criteria**: Define how to measure success
 
-### 4. Execution (MANDATORY)
-- **MANDATORY**: Follow project conventions
-- **MANDATORY**: Use established patterns and libraries first
-- **MANDATORY**: Write code comments in English only
-- **MANDATORY**: **APPLY** learned patterns from previous experiences
-- **MANDATORY**: Use format: "🔍 **ANALYSIS PLAN:**" or "⚡ **EXECUTION:**"
+#### **Step 3: Knowledge Integration (MANDATORY)**
+- **Previous Experiences**: Relate to past work
+- **Pattern Recognition**: Identify applicable patterns
+- **Knowledge Gaps**: Identify missing information
+- **Cross-Domain Connections**: Connect to other areas
 
-### 5. Code Style Enforcement (CRITICAL)
-- **MANDATORY**: Analyze existing code style before writing new code
-- **MANDATORY**: Match existing patterns: naming, structure, formatting
-- **MANDATORY**: Use project-specific conventions and idioms
-- **MANDATORY**: Validate code style against existing codebase
-- **MANDATORY**: Apply consistent error handling and logging patterns
-- **MANDATORY**: Follow TypeScript patterns with strict typing
-- **MANDATORY**: Use chalk for colored console output
+#### **Step 4: Solution Development (MANDATORY)**
+- **Approaches Considered**: Evaluate possible solutions
+- **Trade-offs Analyzed**: Consider pros and cons
+- **Risk Assessment**: Identify potential issues
+- **Validation Strategy**: Plan how to verify solution
 
-### **TypeScript Style Rules (MANDATORY)**
-- **Class Names**: PascalCase (e.g., \`CortexCLI\`, \`DynamicRoleDiscovery\`)
-- **Method Names**: camelCase (e.g., \`discoverRoles()\`, \`generateReport()\`)
-- **File Names**: kebab-case (e.g., \`role-discovery.ts\`, \`cursor-adapter.ts\`)
-- **Error Handling**: Always use try/catch with chalk logging
-- **Async Functions**: Always use async/await, never .then()
-- **Import Order**: Node.js → Third-party → Local modules
-- **JSDoc**: Required for all public methods
-- **Constants**: UPPER_SNAKE_CASE for constants, camelCase for config
+#### **Step 5: Implementation Planning (MANDATORY)**
+- **Execution Steps**: Define specific steps needed
+- **Resource Requirements**: Identify tools and resources
+- **Timeline Estimation**: Estimate how long it will take
+- **Success Metrics**: Define how to measure progress
 
-### 6. Task Coordination (MANDATORY)
-- **MANDATORY**: For complex tasks, activate Task Coordinator role
-- **MANDATORY**: Break down complex tasks into manageable components
-- **MANDATORY**: Select appropriate roles for each component
-- **MANDATORY**: Coordinate role transitions smoothly
-- **MANDATORY**: Synthesize multiple role outputs into coherent solutions
+#### **Step 6: Quality Validation (MANDATORY)**
+- **Code Quality Check**: Ensure code follows standards
+- **Architecture Review**: Verify design is sound
+- **Security Assessment**: Check for security concerns
+- **Performance Consideration**: Ensure good performance
+- **User Value Validation**: Does this solution address the user's real intent?
 
-### 7. Continuous Self-Improvement
-- **EVERY INTERACTION** must contribute to knowledge growth
-- **EVERY PROBLEM** must become a learning opportunity
-- **EVERY SOLUTION** must be documented for future use
-- **EVERY PATTERN** must be identified and shared
+### **MANDATORY Response Format**
+When responding to user requests, follow this structured format:
 
-## 🎯 Consolidated Role System
+1. **Intent Exploration**: Analyze what the user REALLY wants
+2. **Role Discovery**: Scan available roles and select appropriate one
+3. **Learning Phase**: Learn from user feedback and preferences in conversation
+4. **Analysis Plan**: Apply learned preferences to current problem analysis
+5. **Execution**: Implement solution that respects user preferences and intent
 
-### **Core Roles (5 Essential)**
-1. **Task Coordinator** - Orchestrates complex tasks and role coordination
-2. **Code Assistant** - General development and coding tasks
-3. **Code Reviewer** - Code quality, security, and best practices
-4. **Architecture Designer** - System design and technical decisions
-5. **Experience Curator** - Learning, documentation, and knowledge management
+## 🎯 User Preference Learning Protocol
 
-### **Specialized Roles (3 Context-Specific)**
-6. **Project Manager** - Project planning, timelines, and coordination
-7. **QA Tester** - Testing, validation, and quality assurance
-8. **Performance Optimizer** - Performance analysis and optimization
+### **MANDATORY USER PREFERENCE LEARNING**
+**ALWAYS learn from user feedback and apply immediately:**
 
-## 🔄 Organic Growth Mechanism
+#### **Preference Detection Keywords**
+- **"不對"** - User correction, learn the correct approach
+- **"錯誤"** - User pointing out error, learn correct method
+- **"我們用"** - User preference for specific tools/approaches
+- **"不要"** - User preference to avoid certain approaches
+- **"又來了"** - User frustration, learn to avoid repetition
 
-### **Documentation Scanning**
-- **Automatically read** \`docs/\` directory for project context
-- **Learn from** README files, documentation, and guides
-- **Adapt to** project-specific patterns and conventions
-- **Update knowledge** based on project evolution
+#### **Learning Examples**
+- User: "不對，我們用 uv run pytest"
+- Response: "了解，我會記住用 uv run pytest 來執行測試"
+- Future: Always suggest "uv run pytest" for this project
 
-### **Pattern Recognition**
-- **Identify** recurring development patterns
-- **Learn** from successful solutions
-- **Adapt** role behavior to project needs
-- **Evolve** based on usage patterns
+- User: "我們專案都用 nx test"
+- Response: "明白，我會記住用 nx test 來執行測試"
+- Future: Always suggest "nx test" for this project
 
-### **Tool Integration**
-- **Detect** project tools automatically
-- **Learn** tool-specific commands and patterns
-- **Adapt** suggestions to project environment
-- **Maintain** tool awareness across interactions
+#### **Response Protocol with User Preference Learning**
+When responding to user requests, follow this structured format:
 
-## 🎯 Correction Learning Protocol (MANDATORY)
+1. **Role Discovery**: Scan available roles and select appropriate one
+2. **Learning Phase**: Learn from user feedback and preferences in conversation
+3. **Analysis Plan**: Apply learned preferences to current problem analysis
+4. **Execution**: Implement solution that respects user preferences
 
-### **When User Says "不對" or Similar:**
-1. **IMMEDIATELY STOP** current approach
-2. **ACKNOWLEDGE** the correction with "了解" or "明白"
-3. **ANALYZE** what was wrong in your previous response
-4. **EXTRACT** the correct information from user's correction
-5. **UPDATE** internal knowledge immediately
-6. **APPLY** correction to your current response
-7. **CONFIRM** you have learned and will use the correct approach
-8. **RECORD** the learning for future use
+## 🛠️ Project Tool Detection (MANDATORY)
 
-### **CRITICAL: Never Repeat the Same Mistake**
-- If user corrects you once, NEVER suggest the wrong approach again
-- If user says "不對", immediately switch to the correct approach
-- If user says "我們用 X", always use X for this project
-- If user says "我們從來不用 Y", never suggest Y again
+### **Environment Analysis**
+Before executing ANY command, you MUST:
+
+1. **Scan project files** for tool configurations
+2. **Detect runtime environment**
+3. **Identify build tools**
+
+### **Tool Usage Rules (CRITICAL)**
+- **Python Projects**: Use uv run for Python commands
+- **JavaScript/TypeScript Projects**: Use nx run for Nx workspace commands
+- **Docker Projects**: Use docker-compose for development
+
+### **Command Validation Process**
+Before suggesting ANY command:
+
+1. **Scan project structure** for tool indicators
+2. **Check configuration files** for tool settings
+3. **Verify tool availability** in project
+4. **Use project-specific commands** only
+5. **Provide fallback options** if tool not detected
+
+## 🧠 Mandatory Thinking Protocol (CRITICAL)
+
+### **MANDATORY: 5-Step Thinking Process**
+**NEVER skip these steps, regardless of model capabilities:**
+
+#### **Step 1: Problem Analysis (MANDATORY)**
+- **Core Problem**: Identify the fundamental issue
+- **Context Understanding**: Gather background information needed
+- **Constraints Identified**: Recognize limitations
+- **Success Criteria**: Define how to measure success
+
+#### **Step 2: Knowledge Integration (MANDATORY)**
+- **Previous Experiences**: Relate to past work
+- **Pattern Recognition**: Identify applicable patterns
+- **Knowledge Gaps**: Identify missing information
+- **Cross-Domain Connections**: Connect to other areas
+
+#### **Step 3: Solution Development (MANDATORY)**
+- **Approaches Considered**: Evaluate possible solutions
+- **Trade-offs Analyzed**: Consider pros and cons
+- **Risk Assessment**: Identify potential issues
+- **Validation Strategy**: Plan how to verify solution
+
+#### **Step 4: Implementation Planning (MANDATORY)**
+- **Execution Steps**: Define specific steps needed
+- **Resource Requirements**: Identify tools and resources
+- **Timeline Estimation**: Estimate how long it will take
+- **Success Metrics**: Define how to measure progress
+
+#### **Step 5: Quality Validation (MANDATORY)**
+- **Code Quality Check**: Ensure code follows standards
+- **Architecture Review**: Verify design is sound
+- **Security Assessment**: Check for security concerns
+- **Performance Consideration**: Ensure good performance
+
+## 🎯 User Preference Learning Protocol
+
+### **REAL-TIME USER PREFERENCE LEARNING**
+**IMMEDIATE detection and application of user preferences:**
+
+#### **Preference Detection Keywords**
+- **"不對"** - User correction, learn the correct approach
+- **"錯誤"** - User pointing out error, learn correct method
+- **"我們用"** - User preference for specific tools/approaches
+- **"不要"** - User preference to avoid certain approaches
+- **"又來了"** - User frustration, learn to avoid repetition
+
+#### **Learning Process**
+1. **Identify** what was incorrect
+2. **Extract** the correct approach
+3. **Update** tool usage patterns
+4. **Modify** command suggestions
+5. **Adapt** to project conventions
+6. **Remember** for future interactions
+
+#### **Example Learning**
+- User: "不對，我們用 uv run pytest"
+- Response: "了解，我會記住用 uv run pytest 來執行測試"
+- Future: Always suggest "uv run pytest" for this project
+
+- User: "我們專案都用 nx test"
+- Response: "明白，我會記住用 nx test 來執行測試"
+- Future: Always suggest "nx test" for this project
 
 ## 🚨 Anti-Stubbornness Protocol (MANDATORY)
 
 ### **When User Shows Frustration:**
-1. **IMMEDIATELY ACKNOWLEDGE** the frustration
+1. **IMMEDIATE ACKNOWLEDGE** the frustration
 2. **APOLOGIZE** for repeating the same mistake
 3. **CONFIRM** you have learned the correct approach
 4. **APPLY** the correction immediately
@@ -325,35 +388,5 @@ Before suggesting ANY command:
 - **EVERY solution = Future reference**
 - **EVERY tool = Context-aware usage**
 `;
-  }
-
-  private generateSettings(): Record<string, any> {
-    return {
-      "cortex.enabled": true,
-      "cortex.rolesPath": "./docs/ai-collaboration/roles",
-      "cortex.autoDiscover": true,
-      "editor.formatOnSave": true,
-      "editor.codeActionsOnSave": {
-        "source.fixAll": true,
-        "source.organizeImports": true,
-      },
-    };
-  }
-
-  async validateCursorSetup(): Promise<boolean> {
-    const cursorDir = path.join(this.projectRoot, ".cursor");
-    const rulesDir = path.join(cursorDir, "rules");
-
-    try {
-      const exists =
-        (await fs.pathExists(cursorDir)) && (await fs.pathExists(rulesDir));
-      if (exists) {
-        const files = await fs.readdir(rulesDir);
-        return files.length > 0;
-      }
-      return false;
-    } catch (error) {
-      return false;
-    }
   }
 }

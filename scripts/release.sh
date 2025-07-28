@@ -265,6 +265,7 @@ show_release_summary() {
     echo "✅ Tests passed"
     echo "✅ Project built"
     echo "✅ Package.json validated"
+    echo "✅ Version consistency checked"
     echo "✅ Version updated to v$version"
     echo "✅ Git tag created"
     echo "✅ Published to npm"
@@ -277,6 +278,51 @@ show_release_summary() {
     echo "3. Announce on social media"
     echo
     echo "Release notes: RELEASE_NOTES_v$version.md"
+}
+
+# Function to check version consistency
+check_version_consistency() {
+    local version=$1
+    
+    print_status "Checking version consistency across files..."
+    
+    local errors=0
+    
+    # Check package.json
+    if ! grep -q "\"version\": \"$version\"" package.json; then
+        print_error "package.json version mismatch: expected $version"
+        errors=$((errors + 1))
+    fi
+    
+    # Check README.md
+    if ! grep -q "version-v$version-blue" README.md; then
+        print_error "README.md version badge mismatch: expected v$version"
+        errors=$((errors + 1))
+    fi
+    
+    # Check README.zh-TW.md
+    if ! grep -q "version-v$version-blue" README.zh-TW.md; then
+        print_error "README.zh-TW.md version badge mismatch: expected v$version"
+        errors=$((errors + 1))
+    fi
+    
+    # Check CHANGELOG.md
+    if ! grep -q "## \[$version\]" CHANGELOG.md; then
+        print_error "CHANGELOG.md version entry mismatch: expected $version"
+        errors=$((errors + 1))
+    fi
+    
+    if [ $errors -eq 0 ]; then
+        print_success "Version consistency check passed"
+    else
+        print_error "Version consistency check failed with $errors errors"
+        print_warning "Please update version numbers in the following files:"
+        echo "  - package.json"
+        echo "  - README.md"
+        echo "  - README.zh-TW.md"
+        echo "  - CHANGELOG.md"
+        exit 1
+    fi
 }
 
 # Main release logic
@@ -309,12 +355,22 @@ main() {
     local current_version=$(node -p "require('./package.json').version")
     print_status "Current version: $current_version"
     
+    # Check version consistency before update
+    check_version_consistency "$current_version"
+    
+    # Get current version
+    local current_version=$(node -p "require('./package.json').version")
+    print_status "Current version: $current_version"
+    
     # Update version
     update_version "$version_type"
     
     # Get new version
     local new_version=$(node -p "require('./package.json').version")
     print_status "New version: $new_version"
+    
+    # Check version consistency after update
+    check_version_consistency "$new_version"
     
     # Create git tag
     create_git_tag "$new_version"

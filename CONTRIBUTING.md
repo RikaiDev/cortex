@@ -49,9 +49,9 @@ Thank you for your interest in contributing to Cortex! This document provides gu
 
 ```
 src/
-├── core/           # Core engine components
-├── cli/            # Command line interface
-├── adapters/       # Platform integrations
+├── adapters/       # AI platform adapters (Brain)
+├── cli/            # Command line interface (Tools)
+├── core/           # Core types and utilities
 └── types.ts        # Type definitions
 ```
 
@@ -81,22 +81,22 @@ src/
    - Include any relevant issue numbers
    - Ensure all tests pass
 
-## 🎭 Adding New Roles
+## 🧠 Adding New AI Adapters
 
-### Role Template Structure
+### Adapter Template Structure
 
-```markdown
----
-name: "Role Name"
-description: "Brief description of the role"
-keywords: ["keyword1", "keyword2"]
-capabilities:
-  - "Capability 1"
-  - "Capability 2"
-version: "1.0.0"
-tags: ["tag1", "tag2"]
-priority: 1
----
+```typescript
+// src/adapters/your-adapter.ts
+export class YourAdapter extends BaseAdapter {
+  async generateConfig(): Promise<string> {
+    // Generate platform-specific configuration
+  }
+
+  async injectRules(): Promise<void> {
+    // Inject thinking and learning protocols
+  }
+}
+```
 
 # Role: Role Name
 
@@ -122,6 +122,7 @@ Comma-separated keywords for role discovery
 
 **Input:** "Example user input"
 **Output:** "Example AI response"
+
 ```
 
 ### Role Guidelines
@@ -159,12 +160,14 @@ Comma-separated keywords for role discovery
 ### Documentation Structure
 
 ```
+
 docs/
 ├── getting-started.md
 ├── role-authoring.md
 ├── best-practices.md
 └── api-reference.md
-```
+
+````
 
 ## 🧪 Testing
 
@@ -179,7 +182,7 @@ npm run test:watch
 
 # Run specific test file
 npm test -- path/to/test.ts
-```
+````
 
 ### Writing Tests
 

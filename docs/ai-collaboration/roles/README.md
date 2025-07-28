@@ -1,183 +1,150 @@
 [English](README.md) | [繁體中文](../i18n/zh-TW/README.md)
 
-# AI Collaboration Roles
+# AI Collaboration Brain
 
 ## Overview
 
-This directory contains role definitions for the AI Collaboration Central Brain. Each role is defined in a markdown file with YAML frontmatter and follows a consistent template structure.
+This directory contains the **brain structure** for Cortex AI - the core thinking and learning system that transforms AI models into intelligent, learning partners.
 
-## 🎯 Role System Overview
+## 🧠 **Brain Architecture**
 
-### **Current Role Structure**
+### **Core Principle**
 
-Our AI collaboration system now includes **8 focused roles** designed to handle all aspects of development:
+**Cortex AI** = **Brain** (prompt injection) + **Experience** (learning from conversation)
 
-- **Core Coordination**: Task coordination and experience management
-- **Development**: Code assistance, review, and performance optimization
-- **Project Management**: Planning, quality assurance, and testing
-- **Knowledge Management**: Learning and documentation curation
+- **🧠 Brain** - Structured thinking through prompt injection
+- **📚 Experience** - Real-time learning from user feedback
+- **🔄 Evolution** - Continuous improvement without repeating mistakes
 
-### **Consolidated Role System**
+### **How It Works**
 
-We've successfully consolidated from 21 roles to 8 focused roles that provide better tool awareness and project-specific adaptation:
-
-#### **Core Roles (5 Essential)**
-
-1. **[Task Coordinator](task-coordinator.md)** - Orchestrates complex tasks and role coordination
-2. **[Code Assistant](code-assistant.md)** - General development and coding tasks
-3. **[Code Reviewer](code-reviewer.md)** - Code quality, security, and best practices
-4. **[Architecture Designer](architecture-designer.md)** - System design and technical decisions
-5. **[Experience Curator](experience-curator.md)** - Learning, documentation, and knowledge management
-
-#### **Specialized Roles (3 Context-Specific)**
-
-6. **[Project Manager](project-manager.md)** - Project planning, timelines, and coordination
-7. **[QA Tester](qa-tester.md)** - Testing, validation, and quality assurance
-8. **[Performance Optimizer](performance-optimizer.md)** - Performance analysis and optimization
-
-### **Key Benefits**
-
-- **Focused Expertise**: Each role has clear, specific responsibilities
-- **Tool Awareness**: Automatic detection and use of project-specific tools
-- **Context Adaptation**: Roles adapt to your project's environment and patterns
-- **Organic Growth**: System learns and evolves based on your project's needs
-
-## Enhanced MDC Design Principles
-
-### **1. Project-Specific Tool Configuration**
-
-```yaml
-project_tools:
-  package_manager: "uv" # or "npm", "yarn", "pnpm"
-  build_tool: "nx" # or "vite", "webpack", "rollup"
-  test_framework: "jest" # or "vitest", "mocha"
-  lint_tool: "eslint" # or "prettier", "stylelint"
-  container_tool: "docker" # or "podman", "kubernetes"
+```
+User Input → Brain Processing → Learning → Experience Storage → Future Application
 ```
 
-### **2. Environment Detection**
+1. **User provides feedback** (e.g., "不對", "我們用", "不要")
+2. **Brain processes** with structured thinking
+3. **System learns** the preference immediately
+4. **Experience stored** in long-term memory
+5. **Applied to future** responses automatically
 
-```yaml
-environment:
-  runtime: "node" # or "python", "go", "rust"
-  framework: "react" # or "vue", "angular", "express"
-  database: "postgresql" # or "mongodb", "redis"
-  deployment: "docker" # or "kubernetes", "serverless"
+## 🎯 **Learning System**
+
+### **Preference Detection**
+
+The system learns from these keywords:
+
+- **Corrections**: "不對", "錯誤", "錯了", "不是這樣"
+- **Preferences**: "我們用", "我們專案用", "我們團隊習慣"
+- **Prohibitions**: "不要", "從來不用", "禁止"
+- **Frustration**: "又來了", "還是這樣", "跟你說過"
+
+### **Learning Examples**
+
+```
+User: "註解又開始寫中文了？"
+AI: [Learns] Write all comments in English
+
+User: "我們用 uv run pytest"
+AI: [Learns] Always use uv run for Python commands
+
+User: "我們專案都用 nx test"
+AI: [Learns] Always use nx test for testing
+
+User: "又來了"
+AI: [Learns] Don't repeat the same mistake
 ```
 
-### **3. Organic Growth Mechanism**
+## 🧠 **Structured Thinking**
 
-- **Documentation Scanning**: Automatically read project docs for context
-- **Pattern Recognition**: Learn from existing code patterns
-- **Tool Detection**: Auto-detect project tools and configurations
-- **Role Adaptation**: Modify role behavior based on project context
+### **6-Step Thinking Process**
 
-### **4. Stable MDC Updates**
+Every AI response follows this mandatory structure:
 
-- **Version Control**: Track MDC changes with semantic versioning
-- **Change Validation**: Require review for significant changes
-- **Backward Compatibility**: Ensure changes don't break existing workflows
-- **Gradual Evolution**: Implement changes incrementally
+1. **🎯 Intent Exploration** - What does the user REALLY want to achieve?
+2. **🔍 Problem Analysis** - Understanding the issue
+3. **📚 Knowledge Integration** - Applying learned preferences
+4. **💡 Solution Development** - Considering user patterns
+5. **⚡ Implementation Planning** - Respecting user preferences
+6. **✅ Quality Validation** - Ensuring preference compliance
 
-## Role Definition Format
+### **Response Format**
 
-Each role follows this enhanced structure:
+```
+🎯 INTENT EXPLORATION: What does the user REALLY want?
+
+🎭 ROLE DISCOVERY: Scanning docs/ai-collaboration/roles/
+
+📚 LEARNING PHASE:
+[Learn from user feedback and preferences in conversation]
+
+🔍 ANALYSIS PLAN:
+[Apply learned preferences to current problem analysis]
+
+⚡ EXECUTION:
+[Implement solution that respects user preferences and intent]
+```
+
+## 🛠️ **Basic Role Definitions**
+
+### **Simple Role Structure**
+
+Each role follows this simplified format:
 
 ```yaml
 ---
 name: "Role Name"
-description: "Brief description of the role's purpose"
+description: "Brief description"
 capabilities:
   - "Capability 1"
   - "Capability 2"
 keywords:
   - "keyword1"
   - "keyword2"
-tools:
-  - name: "tool_name"
-    command: "actual_command"
-    context: "when_to_use"
-    project_specific: true
-metadata:
-  category: "Core|Specialized"
-  complexity: "Simple|Medium|Complex"
-  priority: "High|Medium|Low"
-  version: "1.0.0"
-  last_updated: "2025-01-XX"
+version: "1.0.0"
 ---
 ```
 
-## Tool-Aware Role Selection
+### **Core Roles**
 
-### **Enhanced Role Discovery**
+- **Code Assistant** - General development and coding
+- **Code Reviewer** - Code quality and best practices
+- **Architecture Designer** - System design and patterns
+- **Experience Curator** - Learning and knowledge management
 
-```yaml
-tool_patterns:
-  python:
-    - package_manager: "uv"
-    - test_command: "uv run pytest"
-    - lint_command: "uv run ruff check"
-  javascript:
-    - package_manager: "npm"
-    - build_command: "nx build"
-    - test_command: "nx test"
-  docker:
-    - build_command: "docker build"
-    - run_command: "docker run"
-    - compose_command: "docker-compose"
-```
+## 🔄 **Cross-Platform Consistency**
 
-### **Context-Aware Commands**
+### **Unified Behavior**
 
-```yaml
-context_commands:
-  development:
-    - context: "python_project"
-      command: "uv run python -m module"
-    - context: "nx_project"
-      command: "nx run project:target"
-    - context: "docker_project"
-      command: "docker-compose up"
-```
+The same brain works across all platforms:
 
-## How It Works
+- **Cursor** - Enhanced MDC with preference learning
+- **Claude** - Context-aware system messages
+- **Gemini** - Platform-specific prompt engineering
 
-### **Automatic Role Selection**
+### **Same Learning Everywhere**
 
-The system automatically selects the best role for your task by:
+- **Same preferences** applied across all platforms
+- **Same thinking** process on all platforms
+- **Same evolution** through conversation
+- **Same consistency** in behavior
 
-1. **Analyzing your request** - Understanding what you need to accomplish
-2. **Detecting project context** - Reading your project's tools and patterns
-3. **Matching to roles** - Finding the role with the right expertise
-4. **Providing specialized help** - Giving you role-specific guidance
+## 🎯 **Key Benefits**
 
-### **Tool-Aware Commands**
+- **🧠 Structured Thinking** - Systematic approach to problem-solving
+- **📚 Real-Time Learning** - Immediate preference detection and application
+- **🔄 No Repetition** - Never repeats corrected mistakes
+- **🌐 Cross-Platform** - Consistent behavior everywhere
+- **⚡ Simple Setup** - Just initialize and start learning
 
-The AI automatically detects and uses your project's specific tools:
+## 🚀 **Getting Started**
 
-- **Python projects**: Uses `uv run` instead of `python -m`
-- **Nx workspaces**: Uses `nx run` instead of `npm run`
-- **Docker projects**: Uses `docker-compose` for development
-- **Custom scripts**: Detects and uses your project's scripts
-
-## Quality Standards
-
-### **Role Design Principles**
-
-- **Clear Purpose**: Each role must have a well-defined, specific purpose
-- **Tool Awareness**: Roles must be aware of project-specific tools
-- **Context Adaptation**: Roles must adapt to project context
-- **Consistent Format**: All roles must follow the same structure
-- **Practical Examples**: Include real-world usage examples
-
-### **MDC Design Principles**
-
-- **Stability**: Minimize frequent changes to MDC
-- **Organic Growth**: Allow natural evolution based on project needs
-- **Tool Integration**: Seamlessly integrate with project tools
-- **Context Awareness**: Adapt to project environment and patterns
-- **Performance**: Optimize for fast role selection and execution
+1. **Initialize** - `cortex init`
+2. **Generate IDE configs** - `cortex generate-ide`
+3. **Start coding** - The AI learns from your feedback
+4. **Provide feedback** - Use preference keywords
+5. **Watch it learn** - See immediate improvements
 
 ---
 
-**This enhanced role system provides a more focused, tool-aware, and organically growing AI collaboration framework that adapts to project needs while maintaining stability and consistency.**
+**Transform your AI interactions from frustrating repetitions to intelligent, learning partnerships with Cortex AI.**

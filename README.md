@@ -1,67 +1,75 @@
 # Cortex AI
 
-[![Version](https://img.shields.io/badge/version-v0.1.2-blue.svg)](https://github.com/RikaiDev/cortex/releases)
+[![Version](https://img.shields.io/badge/version-v0.3.0-blue.svg)](https://github.com/RikaiDev/cortex/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Bun](https://img.shields.io/badge/runtime-Bun-yellow.svg)](https://bun.sh)
 
 [English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Updates](docs/updates/) | [Changelog](CHANGELOG.md)
 
-## 🧠 AI Collaboration Central Brain
+## 🧠 AI Collaboration Brain
 
-**Cortex AI** is an AI collaboration system that learns from project documentation and adapts to your development needs. It provides dynamic role discovery, intelligent task coordination, and continuous self-improvement through experience learning.
+**Cortex AI** is an AI collaboration system that transforms AI models into intelligent, learning partners. It solves the core problem of AI inconsistency and lack of memory through **prompt injection** and **real-time preference learning**.
 
-### ✨ Latest Updates (v0.1.2)
+### 🎯 **Why Cortex?**
 
-🚀 **New Features:**
+**The Problem:**
 
-- **Task Coordinator**: Intelligent orchestration of complex tasks by coordinating multiple AI roles
-- **Experience Curator**: Systematic collection and analysis of development experiences
-- **Self-Evolution Protocol**: Mandatory experience-driven learning and continuous improvement
-- **Experience Recording System**: Daily experience records with templates and analysis
+- AI models lack stable thinking processes (Chain-of-Thought)
+- AI forgets user preferences and repeats the same mistakes
+- Different AI platforms behave inconsistently
+- No personalization or learning from conversation
 
-📚 **Enhanced Documentation:**
+**The Solution:**
 
-- Comprehensive role definitions and usage examples
-- Detailed coordination mechanisms and learning protocols
-- Improved Cursor rules with evolution protocols
+- **🧠 Brain** - Structured thinking through prompt injection
+- **📚 Experience** - Real-time learning from user feedback
+- **🔄 Evolution** - Continuous improvement without repeating mistakes
 
-🔧 **CLI Improvements:**
+### 🏗️ **Architecture**
 
-- `cortex check-updates` - Check for available updates
-- `cortex version` - Show current version
-- Enhanced role discovery and coordination
+```
+🧠 Brain (MDC/GEMINI/CLAUDE)
+├── Real-time thinking and decision making
+├── Structured 5-step thinking process
+├── User preference learning from conversation
+└── Cross-platform consistency
 
-[📋 View Full Changelog](CHANGELOG.md) | [🚀 Check for Updates](#staying-updated)
+📚 Experience (docs)
+├── Long-term memory and knowledge base
+├── Project-specific patterns and conventions
+├── Learning from successful interactions
+└── Continuous knowledge evolution
 
-## 🎯 Core Features
+🛠️ Essential Tools
+├── Prompt injection for AI enhancement
+├── User preference detection and application
+├── Cross-platform adapter system
+└── Simplified CLI for core operations
+```
 
-### **Dynamic Role Discovery**
+## ✨ **Core Features**
 
-- Automatically discovers roles from `docs/ai-collaboration/roles/`
-- Intelligent role selection based on task requirements
-- Language-agnostic design with future language-specific extensions
+### **🧠 Structured Thinking**
 
-### **Task Coordination**
+- **6-Step Thinking Process**: Intent Exploration → Problem Analysis → Knowledge Integration → Solution Development → Implementation Planning → Quality Validation
+- **Mandatory Protocol**: Forces AI to think systematically, regardless of model capabilities
+- **Quality Validation**: Ensures complete and logical thinking
 
-- **Task Coordinator** orchestrates complex multi-domain tasks
-- Breaks down complex tasks into manageable components
-- Coordinates multiple roles for comprehensive solutions
-- Smooth role transitions and output synthesis
+### **📚 Real-Time Learning**
 
-### **Experience Learning**
+- **User Preference Detection**: Learns from keywords like "不對", "我們用", "不要"
+- **Immediate Application**: Applies learned preferences to current response
+- **No Repetition**: Never repeats corrected mistakes
+- **Frustration Detection**: Recognizes and learns from user frustration
 
-- **Experience Curator** records every interaction and learning
-- Systematic pattern recognition and knowledge synthesis
-- Continuous process improvement based on real experience
-- Self-evolving documentation and role definitions
+### **🔄 Cross-Platform Consistency**
 
-### **IDE Integration**
+- **Cursor Integration**: Enhanced MDC with preference learning
+- **Claude Support**: Context-aware system messages
+- **Gemini Support**: Platform-specific prompt engineering
+- **Unified Behavior**: Same learning and thinking across all platforms
 
-- **Cursor**: Primary integration with dynamic role reading
-- **VS Code**: Extension development in progress
-- **Other IDEs**: Windsurf, Cline, Roo Code planned
-
-## 🚀 Quick Start
+## 🚀 **Quick Start**
 
 ### **Installation**
 
@@ -79,85 +87,59 @@ npx @rikaidev/cortex
 # Initialize Cortex AI in your project
 cortex init
 
-# Discover available roles
-cortex discover
-
 # Generate IDE configurations
 cortex generate-ide
 ```
 
-### **Start Collaborating**
+### **Start Learning**
 
 ```bash
-# Interactive collaboration mode
+# Start AI collaboration
 cortex start
-
-# Check for updates
-cortex check-updates
 
 # Show version
 cortex version
 ```
 
-## 📚 Documentation
+## 🎯 **How It Works**
+
+### **1. Learning from Conversation**
+
+```
+User: "註解又開始寫中文了？"
+AI: [Learns] Write all comments in English
+User: "我們用 uv run pytest"
+AI: [Learns] Always use uv run for Python commands
+User: "又來了"
+AI: [Learns] Don't repeat the same mistake
+```
+
+### **2. Structured Thinking**
+
+```
+🔍 ANALYSIS PHASE: [Problem understanding]
+📚 KNOWLEDGE INTEGRATION: [Apply learned preferences]
+💡 SOLUTION DEVELOPMENT: [Consider user preferences]
+⚡ IMPLEMENTATION PLAN: [Respect user patterns]
+✅ QUALITY VALIDATION: [Ensure preference compliance]
+```
+
+### **3. Cross-Platform Consistency**
+
+- **Same learning** across Cursor, Claude, and Gemini
+- **Same thinking** process on all platforms
+- **Same preferences** applied everywhere
+- **Same evolution** through conversation
+
+## 📚 **Documentation**
 
 - **[Getting Started](docs/getting-started.md)** - Quick setup guide
-- **[Role System](docs/ai-collaboration/roles/)** - Available roles and coordination
+- **[AI Collaboration](docs/ai-collaboration/)** - System architecture and roles
 - **[Experience Learning](docs/experiences/)** - Learning and improvement system
 - **[Updates & Notifications](docs/updates/)** - Stay informed about changes
 - **[Roadmap](ROADMAP.md)** - Future development plans
 
-## 🎭 Available Roles
-
-### **Core Coordination**
-
-- **[Task Coordinator](docs/ai-collaboration/roles/task-coordinator.md)** - Orchestrates complex tasks
-- **[Experience Curator](docs/ai-collaboration/roles/experience-curator.md)** - Manages learning and knowledge
-
-### **Development**
-
-- **[Code Assistant](docs/ai-collaboration/roles/code-assistant.md)** - General development and coding
-- **[Code Reviewer](docs/ai-collaboration/roles/code-reviewer.md)** - Code quality, security, and performance
-- **[Performance Optimizer](docs/ai-collaboration/roles/performance-optimizer.md)** - Performance analysis
-
-### **Project Management**
-
-- **[Project Manager](docs/ai-collaboration/roles/project-manager.md)** - Project planning and coordination
-- **[QA Tester](docs/ai-collaboration/roles/qa-tester.md)** - Testing and quality assurance
-
-## 🛠️ Enhanced Features
-
-### **Tool-Aware Development**
-
-- **Automatic Tool Detection**: Detects project-specific tools (uv, nx, docker, etc.)
-- **Smart Command Generation**: Uses correct commands for your project setup
-- **Context-Aware Suggestions**: Adapts to your project's patterns and conventions
-
-### **Unified AI Platform Support**
-
-- **Cursor Integration**: Enhanced MDC with tool detection and organic growth
-- **Gemini Support**: Platform-specific prompt engineering
-- **Claude Support**: Context-aware system messages
-- **Extensible Architecture**: Easy to add new AI platforms
-
-### **Organic Growth System**
-
-- **Documentation Learning**: Learns from your project's docs and patterns
-- **Experience Recording**: Captures and learns from successful interactions
-- **Pattern Recognition**: Identifies and applies project-specific patterns
-- **Stable Evolution**: Maintains consistency while adapting to project needs
-
-## 🔄 Self-Evolution Protocol
-
-Cortex AI continuously improves through systematic experience learning:
-
-1. **Experience Recording** - Every interaction is recorded
-2. **Pattern Recognition** - Recurring issues and solutions identified
-3. **Knowledge Integration** - Learnings applied to documentation
-4. **Process Optimization** - Workflows improved based on experience
-5. **Role Evolution** - Role definitions updated based on performance
-
-## 🛠️ Development
+## 🛠️ **Development**
 
 ### **Prerequisites**
 
@@ -190,40 +172,17 @@ bun run dev
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Development Setup](docs/development/)
 
-## 📈 Staying Updated
+## 🎯 **Why "Cortex"?**
 
-### **Automatic Updates**
+**Cortex (大腦皮質)** represents the brain's advanced cognitive functions:
 
-```bash
-# Check for updates
-cortex check-updates
+- **🧠 Thinking** - Structured reasoning and problem-solving
+- **📚 Memory** - Learning and storing experiences
+- **🔄 Evolution** - Continuous improvement through experience
+- **🎯 Decision** - Making informed choices based on learning
 
-# Update to latest version
-bun update @rikaidev/cortex
-```
-
-### **Manual Updates**
-
-- **[GitHub Releases](https://github.com/RikaiDev/cortex/releases)** - Detailed changelog
-- **[Changelog](CHANGELOG.md)** - Complete version history
-- **[Updates Documentation](docs/updates/)** - Migration guides and notifications
-
-### **Community**
-
-- **[GitHub Issues](https://github.com/RikaiDev/cortex/issues)** - Bug reports and feature requests
-- **[Discussions](https://github.com/RikaiDev/cortex/discussions)** - Community discussions
-- **[Discord](https://discord.gg/cortex)** - Real-time community support
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Inspired by the [Hygieia](https://github.com/weemed-ai/hygieia) project's AI collaboration patterns
-- Built with modern TypeScript and Bun for optimal performance
-- Community-driven development and continuous improvement
+Just like the human cerebral cortex, **Cortex AI** is the "brain" for AI systems - responsible for thinking, memory, learning, and decision-making.
 
 ---
 
-**🧠 Every project deserves its own AI brain. Let Cortex AI evolve with yours!**
+**Transform your AI interactions from frustrating repetitions to intelligent, learning partnerships with Cortex AI.**
