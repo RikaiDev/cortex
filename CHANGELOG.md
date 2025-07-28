@@ -2,8 +2,37 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [0.3.5] - 2025-07-29
+
+### Fixed
+
+- Fixed executable permissions for CLI binary
+- Added chmod +x to dist/cli/index.js before publishing
+- CLI command now works correctly after installation
+
+## [0.3.4] - 2025-07-29
+
+### Fixed
+
+- Removed postinstall build script that caused installation failures
+- Fixed npm install issues by using pre-built dist files
+- Package now installs without requiring TypeScript compilation
+
+## [0.3.3] - 2025-07-29
+
+### Fixed
+
+- Fixed missing Node.js types during npm install
+- Added bun-types to TypeScript configuration
+- Removed broken 0.3.1 version from npm registry
+
+## [0.3.2] - 2025-07-29
+
+### Fixed
+
+- Fixed TypeScript compilation issues during npm install
+- Added proper Node.js types configuration in tsconfig.json
+- Added DOM library support for console and process globals
 
 ## [0.3.1] - 2025-07-29
 
