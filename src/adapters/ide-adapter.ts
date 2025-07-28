@@ -1,4 +1,4 @@
-import { Role, ProjectKnowledge } from "./types.js";
+import { Role, ProjectKnowledge } from "../core/types.js";
 import fs from "fs-extra";
 import path from "path";
 
@@ -185,9 +185,9 @@ export abstract class IDEAdapter {
 }
 
 export class VSCodeAdapter extends IDEAdapter {
-    async generateConfig(): Promise<IDEConfig> {
+  async generateConfig(): Promise<IDEConfig> {
     const rules = this.generateRules();
-    
+
     return {
       name: "VSCode",
       version: "1.0.0",
@@ -251,7 +251,7 @@ export class VSCodeAdapter extends IDEAdapter {
 export class CursorAdapter extends IDEAdapter {
   async generateConfig(): Promise<IDEConfig> {
     const rules = this.generateRules();
-    
+
     return {
       name: "Cursor",
       version: "1.0.0",

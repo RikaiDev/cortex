@@ -20,12 +20,10 @@ program
     "-p, --project-path <path>",
     "Project path (default: current directory)"
   )
-  .option("--quick", "Use default configuration")
-  .option("--config <file>", "Custom configuration file")
   .action(async (options) => {
     try {
       const cli = new CortexCLI(options.projectPath);
-      await cli.setup({ quick: options.quick, config: options.config });
+      await cli.setup();
     } catch (error) {
       console.error(chalk.red("❌ Setup failed:"), error);
       process.exit(1);

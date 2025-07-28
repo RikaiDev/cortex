@@ -116,27 +116,36 @@ cortex version
 
 ### **Development**
 
-- **[Code Reviewer](docs/ai-collaboration/roles/code-reviewer.md)** - Code quality analysis
-- **[QA Tester](docs/ai-collaboration/roles/qa-tester.md)** - Testing and quality assurance
-- **[Architecture Designer](docs/ai-collaboration/roles/architecture-designer.md)** - System design
-- **[Security Specialist](docs/ai-collaboration/roles/security-specialist.md)** - Security analysis
-- **[Performance Optimizer](docs/ai-collaboration/roles/performance-optimizer.md)** - Performance optimization
+- **[Code Assistant](docs/ai-collaboration/roles/code-assistant.md)** - General development and coding
+- **[Code Reviewer](docs/ai-collaboration/roles/code-reviewer.md)** - Code quality, security, and performance
+- **[Performance Optimizer](docs/ai-collaboration/roles/performance-optimizer.md)** - Performance analysis
 
 ### **Project Management**
 
-- **[Product Manager](docs/ai-collaboration/roles/product-manager.md)** - Product strategy
-- **[Release Quality Gatekeeper](docs/ai-collaboration/roles/release-quality-gatekeeper.md)** - Release management
-- **[Git Analyzer](docs/ai-collaboration/roles/git-analyzer.md)** - Version control analysis
+- **[Project Manager](docs/ai-collaboration/roles/project-manager.md)** - Project planning and coordination
+- **[QA Tester](docs/ai-collaboration/roles/qa-tester.md)** - Testing and quality assurance
 
-### **Specialized Analysis**
+## 🛠️ Enhanced Features
 
-- **[TODO Analyzer](docs/ai-collaboration/roles/todo-analyzer.md)** - Task analysis
-- **[Legacy Code Analyzer](docs/ai-collaboration/roles/legacy-code-analyzer.md)** - Legacy system analysis
-- **[Date Verification Specialist](docs/ai-collaboration/roles/date-verification-specialist.md)** - Time accuracy
-- **[Cognitive Evolution Specialist](docs/ai-collaboration/roles/cognitive-evolution-specialist.md)** - Cognitive pattern evolution
-- **[TDD Development Specialist](docs/ai-collaboration/roles/tdd-development-specialist.md)** - Test-driven development
-- **[Code Quality Gatekeeper](docs/ai-collaboration/roles/code-quality-gatekeeper.md)** - Code quality standards
-- **[Monorepo Architect](docs/ai-collaboration/roles/monorepo-architect.md)** - Monorepo architecture
+### **Tool-Aware Development**
+
+- **Automatic Tool Detection**: Detects project-specific tools (uv, nx, docker, etc.)
+- **Smart Command Generation**: Uses correct commands for your project setup
+- **Context-Aware Suggestions**: Adapts to your project's patterns and conventions
+
+### **Unified AI Platform Support**
+
+- **Cursor Integration**: Enhanced MDC with tool detection and organic growth
+- **Gemini Support**: Platform-specific prompt engineering
+- **Claude Support**: Context-aware system messages
+- **Extensible Architecture**: Easy to add new AI platforms
+
+### **Organic Growth System**
+
+- **Documentation Learning**: Learns from your project's docs and patterns
+- **Experience Recording**: Captures and learns from successful interactions
+- **Pattern Recognition**: Identifies and applies project-specific patterns
+- **Stable Evolution**: Maintains consistency while adapting to project needs
 
 ## 🔄 Self-Evolution Protocol
 

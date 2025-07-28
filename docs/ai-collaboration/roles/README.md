@@ -6,32 +6,82 @@
 
 This directory contains role definitions for the AI Collaboration Central Brain. Each role is defined in a markdown file with YAML frontmatter and follows a consistent template structure.
 
-## Role Categories
+## 🎯 Role System Overview
 
-### **Core Coordination Roles**
-- **[Task Coordinator](task-coordinator.md)** - Orchestrates complex tasks by intelligently selecting and coordinating multiple AI roles
-- **[Experience Curator](experience-curator.md)** - Systematically collects, analyzes, and transforms development experiences into actionable knowledge
+### **Current Role Structure**
 
-### **Development Roles**
-- **[Code Reviewer](code-reviewer.md)** - Comprehensive code quality analysis and improvement recommendations
-- **[QA Tester](qa-tester.md)** - End-to-end testing, edge case analysis, and test strategy
-- **[Architecture Designer](architecture-designer.md)** - System design, API design, and component structure
-- **[Security Specialist](security-specialist.md)** - Security analysis, vulnerability assessment, and security best practices
-- **[Performance Optimizer](performance-optimizer.md)** - Performance analysis, optimization recommendations, and monitoring
+Our AI collaboration system now includes **8 focused roles** designed to handle all aspects of development:
 
-### **Project Management Roles**
-- **[Product Manager](product-manager.md)** - Product strategy, feature planning, and user experience design
-- **[Release Quality Gatekeeper](release-quality-gatekeeper.md)** - Release readiness assessment and quality assurance
-- **[Git Analyzer](git-analyzer.md)** - Git workflow analysis, commit history review, and version management
+- **Core Coordination**: Task coordination and experience management
+- **Development**: Code assistance, review, and performance optimization
+- **Project Management**: Planning, quality assurance, and testing
+- **Knowledge Management**: Learning and documentation curation
 
-### **Specialized Analysis Roles**
-- **[TODO Analyzer](todo-analyzer.md)** - Task analysis, prioritization, and project management
-- **[Legacy Code Analyzer](legacy-code-analyzer.md)** - Legacy system analysis, modernization strategies, and technical debt assessment
-- **[Date Verification Specialist](date-verification-specialist.md)** - Time accuracy verification, tool version checking, and documentation freshness validation
+### **Consolidated Role System**
+
+We've successfully consolidated from 21 roles to 8 focused roles that provide better tool awareness and project-specific adaptation:
+
+#### **Core Roles (5 Essential)**
+
+1. **[Task Coordinator](task-coordinator.md)** - Orchestrates complex tasks and role coordination
+2. **[Code Assistant](code-assistant.md)** - General development and coding tasks
+3. **[Code Reviewer](code-reviewer.md)** - Code quality, security, and best practices
+4. **[Architecture Designer](architecture-designer.md)** - System design and technical decisions
+5. **[Experience Curator](experience-curator.md)** - Learning, documentation, and knowledge management
+
+#### **Specialized Roles (3 Context-Specific)**
+
+6. **[Project Manager](project-manager.md)** - Project planning, timelines, and coordination
+7. **[QA Tester](qa-tester.md)** - Testing, validation, and quality assurance
+8. **[Performance Optimizer](performance-optimizer.md)** - Performance analysis and optimization
+
+### **Key Benefits**
+
+- **Focused Expertise**: Each role has clear, specific responsibilities
+- **Tool Awareness**: Automatic detection and use of project-specific tools
+- **Context Adaptation**: Roles adapt to your project's environment and patterns
+- **Organic Growth**: System learns and evolves based on your project's needs
+
+## Enhanced MDC Design Principles
+
+### **1. Project-Specific Tool Configuration**
+
+```yaml
+project_tools:
+  package_manager: "uv" # or "npm", "yarn", "pnpm"
+  build_tool: "nx" # or "vite", "webpack", "rollup"
+  test_framework: "jest" # or "vitest", "mocha"
+  lint_tool: "eslint" # or "prettier", "stylelint"
+  container_tool: "docker" # or "podman", "kubernetes"
+```
+
+### **2. Environment Detection**
+
+```yaml
+environment:
+  runtime: "node" # or "python", "go", "rust"
+  framework: "react" # or "vue", "angular", "express"
+  database: "postgresql" # or "mongodb", "redis"
+  deployment: "docker" # or "kubernetes", "serverless"
+```
+
+### **3. Organic Growth Mechanism**
+
+- **Documentation Scanning**: Automatically read project docs for context
+- **Pattern Recognition**: Learn from existing code patterns
+- **Tool Detection**: Auto-detect project tools and configurations
+- **Role Adaptation**: Modify role behavior based on project context
+
+### **4. Stable MDC Updates**
+
+- **Version Control**: Track MDC changes with semantic versioning
+- **Change Validation**: Require review for significant changes
+- **Backward Compatibility**: Ensure changes don't break existing workflows
+- **Gradual Evolution**: Implement changes incrementally
 
 ## Role Definition Format
 
-Each role follows this structure:
+Each role follows this enhanced structure:
 
 ```yaml
 ---
@@ -43,161 +93,91 @@ capabilities:
 keywords:
   - "keyword1"
   - "keyword2"
-examples:
-  - input: "Example user request"
-    output: "Expected role response"
+tools:
+  - name: "tool_name"
+    command: "actual_command"
+    context: "when_to_use"
+    project_specific: true
 metadata:
-  category: "Development|Project Management|Specialized Analysis"
+  category: "Core|Specialized"
   complexity: "Simple|Medium|Complex"
   priority: "High|Medium|Low"
+  version: "1.0.0"
+  last_updated: "2025-01-XX"
 ---
 ```
 
-## Task Coordination Mechanism
+## Tool-Aware Role Selection
 
-### **When Task Coordinator Activates**
+### **Enhanced Role Discovery**
 
-The Task Coordinator role automatically activates for:
-- **Complex Multi-Domain Tasks**: Tasks requiring expertise from multiple areas
-- **Unclear Role Requirements**: When the optimal role is not immediately obvious
-- **Sequential Task Execution**: Tasks with multiple dependent steps
-- **Quality Assurance**: When comprehensive analysis is required
-
-### **Coordination Process**
-
-1. **Task Analysis**: Break down complex tasks into manageable components
-2. **Role Selection**: Choose appropriate roles for each component
-3. **Execution Planning**: Create step-by-step execution plan
-4. **Role Orchestration**: Coordinate role transitions and synthesize outputs
-5. **Quality Integration**: Combine multiple role outputs into coherent solutions
-
-### **Example Coordination**
-
-```markdown
-🎭 **TASK COORDINATION**: Complex feature development detected
-
-## Task Analysis
-**Task Type**: Feature Development
-**Complexity**: Complex (Multi-domain)
-**Domains**: Frontend, Backend, Database, Security
-
-## Role Selection
-1. **Architecture Designer** - System design and API planning
-2. **Security Specialist** - Authentication security review
-3. **Code Reviewer** - Code quality assurance
-4. **QA Tester** - End-to-end testing
-
-## Execution Plan
-**Phase 1**: Architecture Design (Architecture Designer)
-**Phase 2**: Implementation (Code Reviewer + Security Specialist)
-**Phase 3**: Testing (QA Tester)
+```yaml
+tool_patterns:
+  python:
+    - package_manager: "uv"
+    - test_command: "uv run pytest"
+    - lint_command: "uv run ruff check"
+  javascript:
+    - package_manager: "npm"
+    - build_command: "nx build"
+    - test_command: "nx test"
+  docker:
+    - build_command: "docker build"
+    - run_command: "docker run"
+    - compose_command: "docker-compose"
 ```
 
-## Experience Learning System
+### **Context-Aware Commands**
 
-### **Experience Curator Integration**
-
-Every interaction is recorded and analyzed by the Experience Curator:
-
-1. **Immediate Recording**: Capture learnings after each interaction
-2. **Pattern Recognition**: Identify recurring issues and successful solutions
-3. **Knowledge Integration**: Update documentation with new insights
-4. **Process Optimization**: Improve workflows based on experience
-
-### **Learning Templates**
-
-```markdown
-# Experience Record Template
-
-## Context
-- **Date**: [Call 'date' command]
-- **Task Type**: [Code review, bug fix, feature development, etc.]
-- **Project Area**: [Frontend, Backend, Documentation, etc.]
-- **User Request**: [Original user query]
-
-## Experience Details
-- **Problem Encountered**: [What went wrong or could be improved]
-- **Solution Applied**: [How the problem was solved]
-- **Time Spent**: [How long it took to resolve]
-- **Success Metrics**: [How well the solution worked]
-
-## Learning Outcomes
-- **New Pattern Discovered**: [Any new patterns or approaches]
-- **Documentation Gap**: [What was missing from docs]
-- **Tool Improvement**: [How tools could be better]
-- **Process Enhancement**: [How workflow could be improved]
-
-## Action Items
-- [ ] Update specific documentation
-- [ ] Create new guide or tutorial
-- [ ] Improve tool configuration
-- [ ] Share with team
+```yaml
+context_commands:
+  development:
+    - context: "python_project"
+      command: "uv run python -m module"
+    - context: "nx_project"
+      command: "nx run project:target"
+    - context: "docker_project"
+      command: "docker-compose up"
 ```
 
-## Language Agnostic Design
+## How It Works
 
-### **Current Focus**
-All roles are designed to be **language-agnostic**, providing general development guidance that applies across programming languages and frameworks.
+### **Automatic Role Selection**
 
-### **Future Extensions**
-The role system is designed to support future language-specific contributions:
+The system automatically selects the best role for your task by:
 
-#### **Language-Specific Roles**
-- **Python Specialist** - Python-specific best practices and patterns
-- **JavaScript/TypeScript Specialist** - Frontend and Node.js expertise
-- **Go Specialist** - Go language patterns and performance optimization
-- **Rust Specialist** - Systems programming and memory safety
+1. **Analyzing your request** - Understanding what you need to accomplish
+2. **Detecting project context** - Reading your project's tools and patterns
+3. **Matching to roles** - Finding the role with the right expertise
+4. **Providing specialized help** - Giving you role-specific guidance
 
-#### **Domain-Specific Roles**
-- **Web Development Specialist** - Frontend frameworks and web technologies
-- **Mobile Development Specialist** - iOS/Android development patterns
-- **DevOps Specialist** - Infrastructure, deployment, and CI/CD
-- **Data Science Specialist** - Machine learning and data analysis
+### **Tool-Aware Commands**
 
-#### **Industry-Specific Roles**
-- **Healthcare Specialist** - HIPAA compliance and medical software patterns
-- **Financial Specialist** - Security, compliance, and financial software patterns
-- **E-commerce Specialist** - Payment processing and e-commerce patterns
+The AI automatically detects and uses your project's specific tools:
 
-## Community Contribution
+- **Python projects**: Uses `uv run` instead of `python -m`
+- **Nx workspaces**: Uses `nx run` instead of `npm run`
+- **Docker projects**: Uses `docker-compose` for development
+- **Custom scripts**: Detects and uses your project's scripts
 
-### **Role Submission Process**
-1. **Create Role Definition**: Follow the established template format
-2. **Add Examples**: Include practical input/output examples
-3. **Test Integration**: Ensure role works with existing coordination system
-4. **Submit for Review**: Community review and validation process
+## Quality Standards
 
-### **Quality Standards**
-- **Clear Purpose**: Role must have a well-defined, specific purpose
+### **Role Design Principles**
+
+- **Clear Purpose**: Each role must have a well-defined, specific purpose
+- **Tool Awareness**: Roles must be aware of project-specific tools
+- **Context Adaptation**: Roles must adapt to project context
+- **Consistent Format**: All roles must follow the same structure
 - **Practical Examples**: Include real-world usage examples
-- **Integration Ready**: Must work with Task Coordinator and Experience Curator
-- **Documentation**: Comprehensive guidelines and best practices
 
-### **Validation System**
-- **Community Review**: Peer review by experienced developers
-- **Testing**: Integration testing with existing role system
-- **Performance Metrics**: Effectiveness measurement and optimization
-- **Continuous Improvement**: Regular updates based on usage feedback
+### **MDC Design Principles**
 
-## Integration with Development Workflow
-
-### **IDE Integration**
-- **Cursor**: Primary integration with `.cursor/rules/cortex.mdc`
-- **VS Code**: Extension for role activation and coordination
-- **Other IDEs**: Planned integrations for Windsurf, Cline, Roo Code
-
-### **CLI Integration**
-- **Role Discovery**: `cortex discover` - Scan and register available roles
-- **Task Coordination**: `cortex coordinate` - Activate Task Coordinator for complex tasks
-- **Experience Recording**: `cortex record` - Record development experiences
-- **Knowledge Synthesis**: `cortex learn` - Analyze patterns and update documentation
-
-### **Continuous Learning**
-- **Automatic Recording**: Every interaction contributes to knowledge base
-- **Pattern Recognition**: Identify recurring issues and successful solutions
-- **Documentation Updates**: Real-time updates based on new learnings
-- **Process Optimization**: Continuous improvement of development workflows
+- **Stability**: Minimize frequent changes to MDC
+- **Organic Growth**: Allow natural evolution based on project needs
+- **Tool Integration**: Seamlessly integrate with project tools
+- **Context Awareness**: Adapt to project environment and patterns
+- **Performance**: Optimize for fast role selection and execution
 
 ---
 
-**This role system provides a comprehensive, self-evolving AI collaboration framework that adapts to project needs and continuously improves through experience learning.**
+**This enhanced role system provides a more focused, tool-aware, and organically growing AI collaboration framework that adapts to project needs while maintaining stability and consistency.**

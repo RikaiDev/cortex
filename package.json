@@ -1,6 +1,6 @@
 {
   "name": "@rikaidev/cortex",
-  "version": "0.1.2-dev",
+  "version": "0.2.0",
   "description": "Cortex AI - AI Collaboration Central Brain with dynamic role discovery and experience learning",
   "main": "dist/index.js",
   "type": "module",
@@ -24,7 +24,10 @@
     "cortex:integrate": "node dist/cli/index.js integrate",
     "cortex:init": "node dist/cli/index.js init",
     "cortex:generate-role": "node dist/cli/index.js generate-role",
-    "cortex:analyze-patterns": "node dist/cli/index.js analyze-patterns"
+    "cortex:analyze-patterns": "node dist/cli/index.js analyze-patterns",
+    "release:check": "chmod +x scripts/release-check.sh && ./scripts/release-check.sh",
+    "release:prepare": "npm run release:check && git add . && git commit -m 'feat: release v$(node -p \"require('./package.json').version\")' && git tag v$(node -p \"require('./package.json').version\")",
+    "release:publish": "npm run release:prepare && git push origin main --tags"
   },
   "keywords": [
     "ai",

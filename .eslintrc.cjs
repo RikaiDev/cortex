@@ -22,5 +22,13 @@ module.exports = {
       'caughtErrorsIgnorePattern': '^_'
     }],
   },
+  overrides: [
+    {
+      files: ['src/adapters/base-adapter.ts'],
+      rules: {
+        'no-unused-vars': 'off'
+      }
+    }
+  ],
   ignorePatterns: ['dist/', 'node_modules/'],
 }; 

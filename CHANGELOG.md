@@ -5,13 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.2.0] - 2025-07-28
 
 ### Added
 
-- Update notification system in CLI
-- Version checking functionality
-- Comprehensive changelog documentation
+- **Cross-Platform AI Configuration**: Support for Cursor, Claude Code, and Gemini Code
+- **Cortex Agent System**: 5-core agent orchestration (Coordinator, Builder, Architect, Validator, Manager)
+- **Code Style Enforcement**: Mandatory style consistency with TypeScript rules
+- **Correction Learning System**: AI learns from user corrections and prevents repeated mistakes
+- **Anti-Stubbornness Protocol**: Prevents AI from repeating corrected behaviors
+- **Tool Detection System**: Automatic detection and usage of project-specific tools (uv, nx, etc.)
+- **Unified Configuration**: Single source of truth for all AI platforms
+- **Role Consolidation**: Streamlined from 21 roles to 8 focused roles
+- **Enhanced MDC**: Organic growth and stable updates for Cursor
+- **Project Cleanup**: Removed outdated files and improved structure
+
+### Changed
+
+- **File Structure**: Moved adapters to `src/adapters/` for better organization
+- **Configuration Files**: Generate single files (CLAUDE, GEMINI) instead of folders
+- **ROADMAP**: Updated to reflect Cortex Agent system and cross-platform support
+- **Documentation**: Enhanced with code style guide and Cortex Agent documentation
+
+### Improved
+
+- **Cross-Platform Consistency**: All platforms use identical core protocols
+- **Code Quality**: Enforced consistent TypeScript patterns and error handling
+- **User Experience**: Simplified configuration and better error prevention
+- **System Stability**: Reduced configuration complexity and improved maintainability
+
+## [Unreleased]
 
 ## [0.1.1] - 2025-07-27
 

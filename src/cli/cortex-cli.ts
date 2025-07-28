@@ -4,7 +4,9 @@ import fs from "fs-extra";
 import path from "path";
 import { DynamicRoleDiscovery } from "../core/role-discovery.js";
 import { IntelligentRoleSelector } from "../core/role-selector.js";
-import { CursorAdapter } from "../core/cursor-adapter.js";
+import { CursorAdapter } from "../adapters/cursor-adapter.js";
+import { ClaudeAdapter } from "../adapters/claude-adapter.js";
+import { GeminiAdapter } from "../adapters/gemini-adapter.js";
 import { ProjectDetector } from "../core/project-detector.js";
 import { Role, Task } from "../core/types.js";
 
@@ -13,6 +15,8 @@ export class CortexCLI {
   private roleDiscovery: DynamicRoleDiscovery;
   private roleSelector: IntelligentRoleSelector;
   private projectDetector: ProjectDetector;
+  private claudeAdapter: ClaudeAdapter;
+  private geminiAdapter: GeminiAdapter;
 
   constructor(projectPath?: string) {
     this.projectPath = projectPath || process.cwd();
@@ -25,6 +29,8 @@ export class CortexCLI {
       constraints: [],
     });
     this.projectDetector = new ProjectDetector(this.projectPath);
+    this.claudeAdapter = new ClaudeAdapter(this.projectPath);
+    this.geminiAdapter = new GeminiAdapter(this.projectPath);
   }
 
   /**
@@ -68,9 +74,7 @@ export class CortexCLI {
   /**
    * One-click setup for Cortex
    */
-  async setup(
-    options: { quick?: boolean; config?: string } = {}
-  ): Promise<void> {
+  async setup(): Promise<void> {
     console.log(chalk.blue("🚀 Setting up Cortex AI..."));
 
     try {
@@ -244,27 +248,39 @@ export class CortexCLI {
     // Generate Cursor configurations
     await cursorAdapter.generateCursorRules();
 
+    // Generate Claude Code configurations
+    await this.claudeAdapter.generateClaudeConfig();
+
+    // Generate Gemini Code configurations
+    await this.geminiAdapter.generateGeminiConfig();
+
     console.log(
-      chalk.green("\n✅ Cursor configurations generated successfully!")
+      chalk.green("\n✅ All IDE configurations generated successfully!")
     );
     console.log(chalk.yellow("\nGenerated files:"));
-    console.log(
-      chalk.gray("   • .cursor/rules/cortex.mdc (dynamic role reader)")
-    );
+    console.log(chalk.gray("   • .cursor/rules/cortex.mdc (Cursor MDC)"));
     console.log(chalk.gray("   • .cursor/settings.json"));
+    console.log(chalk.gray("   • CLAUDE (Claude system message)"));
+    console.log(chalk.gray("   • GEMINI (Gemini prompt template)"));
 
     console.log(chalk.yellow("\nNext steps:"));
     console.log(
-      chalk.gray("1. Open Cursor - rules will be automatically loaded")
+      chalk.gray("1. Cursor: Open Cursor - rules will be automatically loaded")
+    );
+    console.log(
+      chalk.gray("2. Claude Code: Copy CLAUDE file to Claude Code settings")
+    );
+    console.log(
+      chalk.gray("3. Gemini Code: Use GEMINI file as your prompt template")
     );
     console.log(
       chalk.gray(
-        "2. Start chatting - AI will dynamically read roles from docs/"
+        "4. Start chatting - AI will dynamically read roles from docs/"
       )
     );
     console.log(
       chalk.gray(
-        "3. To modify roles, edit files in docs/ai-collaboration/roles/"
+        "5. To modify roles, edit files in docs/ai-collaboration/roles/"
       )
     );
   }
@@ -715,13 +731,14 @@ ${templateData.keywords.join(", ")}
   }
 
   private async getLatestVersion(): Promise<string> {
-    try {
-      // In a real implementation, this would fetch from npm registry
-      // For now, return a mock version
-      return "0.1.1";
-    } catch {
-      return "unknown";
-    }
+    // In a real implementation, this would fetch from npm registry
+    // For now, return current version + 0.0.1 as mock
+    const currentVersion = this.getCurrentVersion();
+    if (currentVersion === "unknown") return "unknown";
+    
+    const parts = currentVersion.split(".").map(Number);
+    parts[2] = (parts[2] || 0) + 1;
+    return parts.join(".");
   }
 
   private isUpdateAvailable(current: string, latest: string): boolean {
