@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-07-29
+
+### Added
+
+- **🛡️ AI Error Prevention System**: Comprehensive protection against common AI mistakes across all roles
+- **🚀 Proactive Behavior Principles**: 8 core principles for proactive AI collaboration
+- **🎯 Enhanced Role System**: Deep domain expertise with practical frameworks and code examples
+- **📚 Advanced Learning System**: Extended preference detection with proactive behavior keywords
+- **🔄 Real-World Focus**: All roles prioritize practical solutions over theoretical perfection
+
+### Enhanced
+
+- **Code Assistant**: Production-ready coding with context awareness and maintainable patterns
+- **Code Reviewer**: Priority-based review with actionable feedback and real-world impact analysis
+- **Architecture Designer**: Requirements-first design with trade-off analysis and implementation reality checks
+- **UI/UX Designer**: Action-oriented design with workflow integration and cognitive load management
+- **Experience Curator**: Learning optimization with pattern recognition and knowledge evolution
+
+### Improved
+
+- **AI Error Prevention**: Built-in protection against context ignorance, over-engineering, and generic responses
+- **Proactive Collaboration**: AI now provides solutions directly instead of saying "I can't"
+- **Practical Examples**: Each role includes before/after code examples and real-world scenarios
+- **Decision Standards**: Elevated solution quality with innovative approaches and boundary-breaking thinking
+- **Trust-Based Collaboration**: Partnership mindset with positive intent assumption
+
+### Fixed
+
+- **Role Documentation**: Complete overhaul of all role definitions with comprehensive frameworks
+- **Learning Integration**: Enhanced preference detection with proactive behavior keywords
+- **Cross-Role Consistency**: Unified approach to AI error prevention and practical focus
+
 ## [0.3.0] - 2025-07-28
 
 ### Added

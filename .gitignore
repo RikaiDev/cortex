@@ -100,6 +100,10 @@ temp/
 .cortex/
 cortex-config.json
 
+# Generated AI configuration files
+CLAUDE
+GEMINI
+
 # Generated files
 docs/ai-collaboration/project-knowledge.json
 
