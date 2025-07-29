@@ -1,0 +1,16 @@
+{
+  "id": "exp-1753740264568",
+  "timestamp": "2025-07-28T22:04:24.568Z",
+  "action": "mcp-tool-execution:experience-recorder",
+  "context": "{\"action\":\"documentation-language-validation\",\"context\":\"User questioned Chinese documentation, MCP provided validation\",\"success\":true,\"feedback\":\"MCP successfully validated documentation language rules\"}",
+  "success": true,
+  "feedback": "Tool executed successfully",
+  "patterns": [
+    "MCP 工具執行",
+    "成功模式"
+  ],
+  "learnings": [
+    "此方法有效，可以重複使用",
+    "遵循了最佳實踐"
+  ]
+}

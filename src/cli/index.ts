@@ -3,14 +3,25 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import { CortexCLI } from "./cortex-cli.js";
+import { addMCPCommands } from "./mcp-commands.js";
+import fs from "fs-extra";
+import path from "path";
 
 const program = new Command();
+
+// Read version from package.json
+const packageJson = JSON.parse(
+  fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8")
+);
 
 // Set up CLI
 program
   .name("cortex")
   .description("🧠 Cortex - AI Collaboration Brain")
-  .version("0.1.0");
+  .version(packageJson.version);
+
+// Add MCP commands
+addMCPCommands(program);
 
 // Initialize command
 program
@@ -45,6 +56,24 @@ program
       await cli.generateIDE();
     } catch (error) {
       console.error(chalk.red("❌ IDE generation failed:"), error);
+      process.exit(1);
+    }
+  });
+
+// Generate MCP rules command
+program
+  .command("generate-mcp-rules")
+  .description("Generate MCP-integrated rules for stable AI responses")
+  .option(
+    "-p, --project-path <path>",
+    "Project path (default: current directory)"
+  )
+  .action(async (options) => {
+    try {
+      const cli = new CortexCLI(options.projectPath);
+      await cli.generateMCPRules();
+    } catch (error) {
+      console.error(chalk.red("❌ MCP rules generation failed:"), error);
       process.exit(1);
     }
   });

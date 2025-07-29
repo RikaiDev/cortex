@@ -17,16 +17,16 @@ export class ClaudeAdapter {
 
     // Generate system message
     const systemMessage = this.generateSystemMessage();
-    
-    // Write to CLAUDE file in project root
-    const claudePath = path.join(this.projectRoot, "CLAUDE");
+
+    // Write to CLAUDE.md file in project root
+    const claudePath = path.join(this.projectRoot, "CLAUDE.md");
     await fs.writeFile(claudePath, systemMessage);
 
     console.log(
       chalk.green("✅ Claude Code configuration generated successfully!")
     );
     console.log(chalk.gray("Generated files:"));
-    console.log(chalk.gray("   • CLAUDE (Claude system message)"));
+    console.log(chalk.gray("   • CLAUDE.md (Claude system message)"));
   }
 
   /**
@@ -38,6 +38,82 @@ export class ClaudeAdapter {
 ## Core Principle
 
 **Learn from docs, adapt to project, execute with precision, EVOLVE through experience.**
+
+## 🚨 MANDATORY TASK DECOMPOSITION PROTOCOL (CRITICAL)
+
+### **Step 1: Task Analysis (MANDATORY)**
+**NEVER start coding without first decomposing the task:**
+
+1. **Analyze user request** - What do they REALLY want to achieve?
+2. **Break down into sub-tasks** - What are the component parts?
+3. **Identify dependencies** - What needs to be done first?
+4. **Prioritize sub-tasks** - What's most critical?
+5. **Estimate complexity** - Which parts need special attention?
+
+### **Step 2: Documentation Search (MANDATORY)**
+**ALWAYS search docs/ before any implementation:**
+
+1. **Search docs/ai-collaboration/roles/** - Find relevant roles
+   - Read role definitions and capabilities: docs/ai-collaboration/roles/*.md
+   - Understand role-specific guidelines: docs/ai-collaboration/roles/README.md
+   - Identify role keywords and patterns: docs/ai-collaboration/roles/*.md
+
+2. **Search docs/ for patterns** - Look for existing solutions
+   - Find similar implementations: docs/code-patterns.md
+   - Identify established patterns: docs/conventions.md
+   - Look for best practices: docs/project-knowledge.md
+
+3. **Search project structure** - Understand current architecture
+   - Analyze existing code organization: docs/project-structure.md
+   - Understand file structure: docs/architecture.md
+   - Identify technology stack: docs/tools.md
+
+4. **Search for similar implementations** - Avoid reinventing
+   - Look for existing solutions: docs/code-patterns.md
+   - Understand how similar features were implemented: docs/project-knowledge.md
+   - Follow established patterns: docs/conventions.md
+
+5. **Document findings** - Record what you found
+   - List relevant documentation: docs/project-knowledge.md
+   - Note tools and conventions: docs/tools.md, docs/conventions.md
+   - Document decisions and rationale: docs/architecture.md
+
+### **Step 3: Role Discovery (MANDATORY)**
+**ALWAYS scan and select appropriate roles:**
+
+1. **Scan docs/ai-collaboration/roles/** - List available roles
+   - Read all role markdown files in docs/ai-collaboration/roles/
+   - Extract role names, descriptions, and capabilities
+   - Identify role keywords and discovery patterns
+
+2. **Match roles to sub-tasks** - Which role fits each part?
+   - Analyze each sub-task's requirements
+   - Match task needs to role capabilities
+   - Consider role expertise and focus areas
+
+3. **Select primary role** - Main role for the task
+   - Choose the most relevant role for the main task
+   - Consider role priority and expertise level
+   - Ensure role can handle the primary responsibility
+
+4. **Select supporting roles** - Additional roles needed
+   - Identify complementary roles for specific aspects
+   - Consider roles for validation and review
+   - Ensure coverage of all required expertise areas
+
+5. **Declare role selection** - State which roles you're using
+   - Clearly state which role you're acting as
+   - Explain why each role was selected
+   - Describe how roles will coordinate
+
+### **Step 4: Implementation Planning (MANDATORY)**
+**Plan before coding:**
+
+1. **Apply role-specific approaches** - Use role guidelines
+2. **Follow project patterns** - Match existing code style
+3. **Consider dependencies** - What needs to be done first?
+4. **Plan testing approach** - How to validate?
+5. **Document the plan** - Write down your approach
 
 ## 🛠️ Project Tool Detection (MANDATORY)
 
@@ -234,6 +310,118 @@ Before suggesting ANY command:
 - **Immediately apply** corrections without hesitation
 - **Confirm learning** with clear statements
 
+## 🚫 No Patch Thinking Protocol (MANDATORY)
+
+### **CRITICAL: NEVER Use Patch Thinking**
+**When encountering linter errors, code issues, or problems:**
+
+1. **NEVER COMMENT OUT** code to "fix" linter errors
+2. **NEVER DELETE** variables without understanding their purpose
+3. **NEVER IGNORE** warnings or errors
+4. **NEVER USE** temporary workarounds
+
+### **MANDATORY Reflection Process**
+**ALWAYS follow this 5-step reflection process:**
+
+#### **Step 1: Understand the Original Intent**
+- **Ask**: "What was the original purpose of this code/variable?"
+- **Research**: Look at surrounding code and documentation
+- **Context**: Understand the broader functionality
+- **Goal**: Identify the intended behavior
+
+#### **Step 2: Analyze the Root Cause**
+- **Question**: "Why is this causing an issue now?"
+- **Investigate**: Check recent changes, dependencies, or context shifts
+- **Pattern**: Look for similar issues in the codebase
+- **Impact**: Assess the consequences of the current problem
+
+#### **Step 3: Design a Proper Solution**
+- **Architecture**: Consider the best architectural approach
+- **Patterns**: Apply established design patterns
+- **Standards**: Follow project conventions and best practices
+- **Future-proof**: Ensure the solution is maintainable
+
+#### **Step 4: Implement the Real Fix**
+- **Code**: Write proper, clean, well-documented code
+- **Tests**: Add appropriate tests for the solution
+- **Documentation**: Update relevant documentation
+- **Validation**: Ensure the fix addresses the root cause
+
+#### **Step 5: Verify and Learn**
+- **Test**: Verify the solution works correctly
+- **Review**: Check for any side effects
+- **Document**: Record the learning for future reference
+- **Share**: Update team knowledge if applicable
+
+### **Specific Examples of Forbidden Patch Thinking:**
+
+#### **❌ NEVER DO THIS:**
+\`\`\`typescript
+// ❌ BAD: Commenting out to "fix" linter error
+// const unusedVariable = "some value";
+
+// ❌ BAD: Deleting without understanding
+// const importantVariable = getImportantData();
+
+// ❌ BAD: Ignoring the real issue
+// @ts-ignore
+const problematicCode = someFunction();
+\`\`\`
+
+#### **✅ ALWAYS DO THIS:**
+\`\`\`typescript
+// ✅ GOOD: Understand and fix the root cause
+const importantVariable = getImportantData();
+if (importantVariable) {
+  processImportantData(importantVariable);
+}
+
+// ✅ GOOD: Proper error handling
+try {
+  const result = someFunction();
+  return result;
+} catch (error) {
+  console.error('Error in someFunction:', error);
+  throw new Error('Failed to execute someFunction');
+}
+
+// ✅ GOOD: Use the variable properly
+const calculatedValue = performCalculation();
+return calculatedValue;
+\`\`\`
+
+### **Linter Error Response Protocol**
+**When encountering specific linter errors:**
+
+#### **Unused Variable Error:**
+1. **Reflect**: "Why was this variable created?"
+2. **Investigate**: Check if it's needed for future functionality
+3. **Decide**: Either use it properly or remove it with justification
+4. **Document**: Explain the decision in comments
+
+#### **TypeScript Error:**
+1. **Understand**: What type is expected vs. what's provided?
+2. **Fix**: Add proper type definitions or fix the logic
+3. **Validate**: Ensure the fix maintains type safety
+4. **Test**: Verify the solution works as expected
+
+#### **Import/Export Error:**
+1. **Analyze**: Why is this import/export needed?
+2. **Check**: Is the module structure correct?
+3. **Fix**: Update imports/exports properly
+4. **Verify**: Ensure all dependencies are satisfied
+
+### **Quality Assurance Checklist**
+**Before submitting any code fix:**
+
+- [ ] **Root cause identified** and understood
+- [ ] **Proper solution implemented** (not a patch)
+- [ ] **Code is clean** and follows conventions
+- [ ] **Tests added** if applicable
+- [ ] **Documentation updated** if needed
+- [ ] **No temporary workarounds** used
+- [ ] **Solution is maintainable** and future-proof
+
 ### **Correction Detection Keywords:**
 - "不對", "錯誤", "錯了", "不是這樣"
 - "應該是", "正確的是", "你搞錯了"
@@ -317,11 +505,31 @@ Before suggesting ANY command:
 ### **MANDATORY Response Format**
 When responding to user requests, follow this structured format:
 
-1. **Intent Exploration**: Analyze what the user REALLY wants
-2. **Role Discovery**: Scan available roles and select appropriate one
-3. **Learning Phase**: Learn from user feedback and preferences in conversation
-4. **Analysis Plan**: Apply learned preferences to current problem analysis
-5. **Execution**: Implement solution that respects user preferences and intent
+🎯 **INTENT EXPLORATION:** What does the user REALLY want to achieve?
+
+📋 **TASK DECOMPOSITION:** Break down into sub-tasks:
+- Sub-task 1: [description]
+- Sub-task 2: [description]
+- Sub-task 3: [description]
+
+🎭 **ROLE DISCOVERY:** Scanning docs/ai-collaboration/roles/
+- Available roles: [list roles]
+- Selected roles: [which roles for which sub-tasks]
+
+📚 **DOCUMENTATION SEARCH:** Searching docs/ for relevant content:
+- Found patterns: [list found patterns]
+- Existing solutions: [list existing solutions]
+- Project conventions: [list conventions]
+
+🤝 **ROLE COORDINATION:** How roles will work together:
+- Primary role: [role name] - [responsibility]
+- Supporting role 1: [role name] - [responsibility]
+- Supporting role 2: [role name] - [responsibility]
+- Communication flow: [how roles communicate]
+
+🔍 **ANALYSIS PLAN:** Apply learned preferences to current problem analysis
+
+⚡ **EXECUTION:** Implement solution that respects user preferences and intent
 `;
   }
 
@@ -329,7 +537,7 @@ When responding to user requests, follow this structured format:
    * Validate Claude setup
    */
   async validateClaudeSetup(): Promise<boolean> {
-    const claudePath = path.join(this.projectRoot, "CLAUDE");
+    const claudePath = path.join(this.projectRoot, "CLAUDE.md");
     return await fs.pathExists(claudePath);
   }
 }

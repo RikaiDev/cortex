@@ -1,4 +1,4 @@
-import { Role, ProjectKnowledge } from "../core/types.js";
+import { Role, ProjectKnowledge } from "../core/types";
 import fs from "fs-extra";
 import path from "path";
 
@@ -280,7 +280,7 @@ export class CursorAdapter extends IDEAdapter {
           keywords: role.discoveryKeywords,
           capabilities: role.capabilities,
         })),
-        patterns: this.projectKnowledge.codingPatterns.map((pattern) => ({
+        patterns: this.projectKnowledge.codingPatterns.map((pattern: any) => ({
           name: pattern.name,
           description: pattern.description,
           examples: pattern.examples,
@@ -361,7 +361,7 @@ export class IDEGenerator {
       const config = await adapter.generateConfig();
       const outputPath = path.join(
         this.projectRoot,
-        `.cortex/${config.name.toLowerCase()}-config.json`
+        `configs/${config.name.toLowerCase()}-config.json`
       );
 
       await fs.ensureDir(path.dirname(outputPath));
@@ -382,13 +382,13 @@ export class IDEGenerator {
         capabilities: role.capabilities,
         keywords: role.discoveryKeywords,
       })),
-      patterns: this.projectKnowledge.codingPatterns.map((pattern) => ({
+      patterns: this.projectKnowledge.codingPatterns.map((pattern: any) => ({
         name: pattern.name,
         description: pattern.description,
         frequency: pattern.frequency,
         examples: pattern.examples,
       })),
-      architecture: this.projectKnowledge.architecture.map((arch) => ({
+      architecture: this.projectKnowledge.architecture.map((arch: any) => ({
         name: arch.name,
         description: arch.description,
         benefits: arch.benefits,

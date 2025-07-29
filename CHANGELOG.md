@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.0] - 2025-07-29
+
+### Added
+
+- Enhanced MCP integration with mandatory experience reflection
+- Improved MCP workflow with 7-step process including experience reflection
+- Better code formatting and consistency in MCP rules
+- Removed test files for cleaner release
+
+### Changed
+
+- Updated version to 0.4.0 for major release
+- Enhanced MCP experience recording with reflection step
+- Improved documentation synchronization
+
+### Fixed
+
+- MCP experience reflection completion issue
+- Version consistency across all documentation
+
 ## [0.3.5] - 2025-07-29
 
 ### Fixed

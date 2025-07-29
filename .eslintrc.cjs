@@ -28,6 +28,13 @@ module.exports = {
       rules: {
         'no-unused-vars': 'off'
       }
+    },
+    {
+      files: ['src/core/mcp-server.ts'],
+      rules: {
+        'no-unused-vars': 'off',
+        'no-case-declarations': 'off'
+      }
     }
   ],
   ignorePatterns: ['dist/', 'node_modules/'],
