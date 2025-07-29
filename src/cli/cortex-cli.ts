@@ -67,6 +67,12 @@ export class CortexCLI {
     );
     await this.createMCPServerConfig();
 
+    // Step 6: Create global MCP configuration
+    console.log(
+      chalk.blue("\n🌐 Step 6: Setting up global MCP configuration...")
+    );
+    await this.createGlobalMCPConfig();
+
     console.log(chalk.green("\n🎉 Cortex AI initialization complete!"));
     console.log(chalk.yellow("\nNext steps:"));
     console.log(
@@ -74,6 +80,7 @@ export class CortexCLI {
     );
     console.log(chalk.gray('2. Run "cortex start" to begin AI collaboration'));
     console.log(chalk.gray("3. MCP server is ready for integration"));
+    console.log(chalk.gray("4. Restart Cursor to activate global MCP server"));
   }
 
   /**
@@ -262,9 +269,72 @@ The AI immediately applies learned preferences to current and future responses.
       },
     };
 
+    // Ensure .cursor directory exists
+    await fs.ensureDir(path.dirname(mcpConfigPath));
+
     await fs.writeFile(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
     console.log(
       chalk.gray("🔧 Created .cursor/mcp.json with MCP server configuration")
     );
+  }
+
+  /**
+   * Create global MCP configuration in ~/.cursor/mcp.json
+   */
+  private async createGlobalMCPConfig(): Promise<void> {
+    const homeDir = process.env.HOME || process.env.USERPROFILE;
+    if (!homeDir) {
+      console.log(chalk.yellow("⚠️  Could not determine home directory, skipping global MCP config"));
+      return;
+    }
+
+    const globalMCPPath = path.join(homeDir, ".cursor", "mcp.json");
+    
+    try {
+      // Read existing config if it exists
+      let existingConfig: { mcpServers: Record<string, any> } = { mcpServers: {} };
+      if (await fs.pathExists(globalMCPPath)) {
+        try {
+          existingConfig = await fs.readJson(globalMCPPath);
+        } catch (error) {
+          console.log(chalk.yellow("⚠️  Could not read existing MCP config, creating new one"));
+          existingConfig = { mcpServers: {} };
+        }
+      }
+
+      // Check if cortex-mcp-server already exists
+      if (existingConfig.mcpServers["cortex-mcp-server"]) {
+        console.log(chalk.gray("🔧 Global MCP config already contains cortex-mcp-server"));
+        return;
+      }
+
+      // Add cortex-mcp-server to existing config
+      existingConfig.mcpServers["cortex-mcp-server"] = {
+        command: "cortex",
+        args: ["mcp", "start"],
+        timeout: 300,
+        env: {
+          NODE_ENV: "production",
+        },
+        autoApprove: [
+          "intent-analyzer",
+          "task-decomposer",
+          "role-selector",
+          "best-practice-finder",
+          "tool-usage-validator",
+          "experience-recorder",
+        ],
+      };
+
+      // Ensure .cursor directory exists
+      await fs.ensureDir(path.dirname(globalMCPPath));
+
+      // Write updated config
+      await fs.writeFile(globalMCPPath, JSON.stringify(existingConfig, null, 2));
+      console.log(chalk.green("✅ Added cortex-mcp-server to global MCP configuration"));
+      console.log(chalk.gray(`📁 Location: ${globalMCPPath}`));
+    } catch (error) {
+      console.log(chalk.yellow("⚠️  Could not create global MCP config:"), error);
+    }
   }
 }

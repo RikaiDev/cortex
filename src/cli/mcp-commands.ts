@@ -77,6 +77,19 @@ export function addMCPCommands(program: Command): void {
     .action(async (toolName, usage) => {
       await validateToolUsage(toolName, usage);
     });
+
+  // Start MCP server command
+  mcpGroup
+    .command("start")
+    .description("Start Cortex MCP server")
+    .option(
+      "-p, --project-root <path>",
+      "Project root directory (default: current directory)",
+      process.cwd()
+    )
+    .action(async (options) => {
+      await startMCPServer(options.projectRoot);
+    });
 }
 
 /**
@@ -327,8 +340,7 @@ async function validateToolUsage(
   toolName: string,
   usage: string
 ): Promise<void> {
-  console.log(chalk.blue("🔧 Validating tool usage..."));
-  console.log(chalk.gray(`Tool: ${toolName}`));
+  console.log(chalk.blue(`🔍 Validating tool usage: ${toolName}`));
   console.log(chalk.gray(`Usage: ${usage}`));
   console.log();
 
@@ -363,6 +375,40 @@ async function validateToolUsage(
     }
   } catch (error) {
     console.error(chalk.red("❌ Tool usage validation failed:"), error);
+  }
+}
+
+/**
+ * Start MCP server
+ */
+async function startMCPServer(projectRoot: string): Promise<void> {
+  console.log(chalk.blue("🚀 Starting Cortex MCP Server..."));
+  console.log(chalk.gray(`Project root: ${projectRoot}`));
+  console.log();
+
+  try {
+    // Import and start the MCP server
+    const { CortexMCPServer } = await import("../core/mcp-server.js");
+    const server = new CortexMCPServer(projectRoot);
+    
+    console.log(chalk.green("✅ MCP server started successfully!"));
+    console.log(chalk.gray("Server is running and ready for connections"));
+    console.log(chalk.gray("Press Ctrl+C to stop the server"));
+    
+    await server.start();
+
+    // Keep the process alive
+    process.on("SIGINT", () => {
+      console.log(chalk.yellow("\n🛑 Shutting down MCP server..."));
+      process.exit(0);
+    });
+
+    process.on("SIGTERM", () => {
+      console.log(chalk.yellow("\n🛑 Shutting down MCP server..."));
+      process.exit(0);
+    });
+  } catch (error) {
+    console.error(chalk.red("❌ Failed to start MCP server:"), error);
     process.exit(1);
   }
 }

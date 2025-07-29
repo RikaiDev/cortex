@@ -21,10 +21,16 @@ import fs from "fs-extra";
 import { join } from "path";
 import { glob } from "glob";
 import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
 
-// Read package.json for version
+// Get the directory of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = join(__filename, "..");
+
+// Read package.json for version - use relative path from dist directory
+const packageJsonPath = join(__dirname, "..", "..", "package.json");
 const packageJson = JSON.parse(
-  readFileSync(new URL("../../../package.json", import.meta.url), "utf-8")
+  readFileSync(packageJsonPath, "utf-8")
 );
 
 // Intent Analysis Result
