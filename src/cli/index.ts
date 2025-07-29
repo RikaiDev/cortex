@@ -6,12 +6,18 @@ import { CortexCLI } from "./cortex-cli.js";
 import { addMCPCommands } from "./mcp-commands.js";
 import fs from "fs-extra";
 import path from "path";
+import { fileURLToPath } from "url";
 
 const program = new Command();
 
-// Read version from package.json
+// Get the directory of the current module
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Read version from package.json - use relative path from dist directory
+const packageJsonPath = path.join(__dirname, "..", "..", "package.json");
 const packageJson = JSON.parse(
-  fs.readFileSync(path.join(process.cwd(), "package.json"), "utf8")
+  fs.readFileSync(packageJsonPath, "utf8")
 );
 
 // Set up CLI
