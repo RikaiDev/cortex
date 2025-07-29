@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.4] - 2025-07-29
+
+### Fixed
+
+- **MCP Server Path Detection**: Fixed global MCP configuration to use correct installation paths
+- **Path Resolution**: Corrected MCP server path detection for npm global installations
+- **Configuration Generation**: Improved global MCP configuration generation with proper path detection
+- **Development vs Production**: Separated development and production path detection logic
+
+### Technical
+
+- **Build Output**: Changed compilation output directory from `dist` to `cortex`
+- **Path Detection**: Added support for multiple npm global installation paths
+- **Error Handling**: Improved error messages for missing MCP server paths
+- **Configuration**: Enhanced MCP configuration with proper environment variables
+
 ## [0.4.3] - 2025-07-29
 
 ### Fixed
