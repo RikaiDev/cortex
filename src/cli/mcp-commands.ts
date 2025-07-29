@@ -87,8 +87,13 @@ export function addMCPCommands(program: Command): void {
       "Project root directory (default: current directory)",
       process.cwd()
     )
+    .option(
+      "--global",
+      "Global mode - automatically detect project root from current working directory"
+    )
     .action(async (options) => {
-      await startMCPServer(options.projectRoot);
+      const projectRoot = options.global ? process.cwd() : options.projectRoot;
+      await startMCPServer(projectRoot);
     });
 }
 

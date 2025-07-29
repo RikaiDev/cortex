@@ -107,17 +107,9 @@ export class CortexMCPServer {
    * Start the MCP server
    */
   async start(): Promise<void> {
-    console.log(
-      chalk.green("🚀 Starting Cortex MCP Server with Official SDK...")
-    );
-    console.log(chalk.blue("📁 Project root:"), this.projectRoot);
-
     // Start receiving messages on stdin and sending messages on stdout
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-
-    console.log(chalk.green("✅ Cortex MCP Server started successfully"));
-    console.log(chalk.blue("📋 Available tools: 6 tools registered"));
   }
 
   /**
@@ -137,7 +129,6 @@ export class CortexMCPServer {
         },
       },
       async ({ userInput, context, history }) => {
-        console.log(chalk.blue("🔍 Analyzing user intent..."));
         const result = await this.analyzeIntent({
           userInput,
           context,
@@ -162,7 +153,6 @@ export class CortexMCPServer {
         },
       },
       async ({ primaryIntent, complexity, context }) => {
-        console.log(chalk.blue("📋 Decomposing task..."));
         const result = await this.decomposeTask({
           primaryIntent,
           complexity,
@@ -191,7 +181,6 @@ export class CortexMCPServer {
         },
       },
       async ({ subTasks, context }) => {
-        console.log(chalk.blue("🎭 Selecting roles..."));
         const result = await this.selectRoles({
           subTasks,
           context,
@@ -215,7 +204,6 @@ export class CortexMCPServer {
         },
       },
       async ({ query, context, searchType }) => {
-        console.log(chalk.blue("📚 Finding best practices..."));
         const result = await this.findBestPractices({
           query,
           context,
@@ -240,7 +228,6 @@ export class CortexMCPServer {
         },
       },
       async ({ toolName, usage, context }) => {
-        console.log(chalk.blue("🔧 Validating tool usage..."));
         const result = await this.validateToolUsage({
           toolName,
           usage,
@@ -266,7 +253,6 @@ export class CortexMCPServer {
         },
       },
       async ({ action, context, success, feedback }) => {
-        console.log(chalk.blue("🧠 Recording experience..."));
         const result = await this.recordExperience({
           action,
           context,

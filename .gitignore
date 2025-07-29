@@ -7,6 +7,7 @@ yarn-error.log*
 # Build outputs
 dist/
 build/
+cortex/
 *.tsbuildinfo
 
 # Environment variables

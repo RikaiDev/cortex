@@ -29,22 +29,27 @@ export class CortexCLI {
   }
 
   /**
-   * Initialize Cortex in the project
+   * Initialize Cortex AI
    */
-  async initialize(): Promise<void> {
+  public async initialize(): Promise<void> {
     console.log(chalk.blue("🧠 Initializing Cortex AI..."));
+    console.log();
 
     // Step 1: Analyze project structure
-    console.log(chalk.blue("\n🔍 Step 1: Analyzing project structure..."));
+    console.log(chalk.blue("🔍 Step 1: Analyzing project structure..."));
     const analyzer = new ProjectAnalyzer(this.projectPath);
     await analyzer.analyzeProject();
+    console.log(chalk.green("✅ Project analysis complete!"));
+    console.log();
 
     // Step 2: Generate documentation
-    console.log(chalk.blue("\n📚 Step 2: Generating documentation..."));
+    console.log(chalk.blue("📚 Step 2: Generating documentation..."));
     await analyzer.generateDocumentation();
+    console.log(chalk.green("✅ Documentation generated successfully!"));
+    console.log();
 
-    // Step 3: Create necessary directories
-    console.log(chalk.blue("\n📁 Step 3: Creating directories..."));
+    // Step 3: Create directories
+    console.log(chalk.blue("📁 Step 3: Creating directories..."));
     const dirs = [
       "docs/ai-collaboration/roles",
       "docs/ai-collaboration/templates",
@@ -56,31 +61,50 @@ export class CortexCLI {
       await fs.ensureDir(fullPath);
       console.log(chalk.gray(`📁 Created directory: ${dir}`));
     }
+    console.log(chalk.green("✅ Directories created successfully!"));
+    console.log();
 
     // Step 4: Create initial README
-    console.log(chalk.blue("\n📝 Step 4: Creating initial README..."));
+    console.log(chalk.blue("📝 Step 4: Creating initial README..."));
     await this.createInitialReadme();
+    console.log(chalk.green("✅ Initial README created"));
+    console.log();
 
     // Step 5: Create MCP server configuration
-    console.log(
-      chalk.blue("\n🔧 Step 5: Creating MCP server configuration...")
-    );
+    console.log(chalk.blue("🔧 Step 5: Creating MCP server configuration..."));
     await this.createMCPServerConfig();
+    console.log(chalk.green("✅ MCP server configuration created"));
+    console.log();
 
-    // Step 6: Create global MCP configuration
+    // Step 6: Global MCP configuration (optional)
     console.log(
-      chalk.blue("\n🌐 Step 6: Setting up global MCP configuration...")
+      chalk.blue("🌐 Step 6: Global MCP configuration (optional)...")
     );
-    await this.createGlobalMCPConfig();
+    console.log(
+      chalk.gray(
+        "💡 To install global MCP configuration, run: cortex install-global-mcp"
+      )
+    );
+    console.log(
+      chalk.gray("💡 This will make Cortex MCP available in all projects")
+    );
+    console.log();
 
-    console.log(chalk.green("\n🎉 Cortex AI initialization complete!"));
-    console.log(chalk.yellow("\nNext steps:"));
+    console.log(chalk.green("🎉 Cortex AI initialization complete!"));
+    console.log();
+    console.log(chalk.blue("Next steps:"));
     console.log(
       chalk.gray('1. Run "cortex generate-ide" to create IDE configurations')
     );
     console.log(chalk.gray('2. Run "cortex start" to begin AI collaboration'));
     console.log(chalk.gray("3. MCP server is ready for integration"));
-    console.log(chalk.gray("4. Restart Cursor to activate global MCP server"));
+    console.log(
+      chalk.gray(
+        '4. For global MCP: run "cortex install-global-mcp" then restart Cursor'
+      )
+    );
+    console.log();
+    console.log(chalk.green("✅ Cortex initialized successfully!"));
   }
 
   /**
@@ -252,10 +276,12 @@ The AI immediately applies learned preferences to current and future responses.
       mcpServers: {
         "cortex-mcp-server": {
           command: "node",
-          args: ["dist/core/mcp-server.js"],
-          timeout: 300,
+          args: ["cortex/core/mcp-server.js"],
+          timeout: 3000,
           env: {
             NODE_ENV: "production",
+            MCP_DEBUG: "true",
+            MCP_DESKTOP_MODE: "true",
           },
           autoApprove: [
             "intent-analyzer",
@@ -284,37 +310,54 @@ The AI immediately applies learned preferences to current and future responses.
   private async createGlobalMCPConfig(): Promise<void> {
     const homeDir = process.env.HOME || process.env.USERPROFILE;
     if (!homeDir) {
-      console.log(chalk.yellow("⚠️  Could not determine home directory, skipping global MCP config"));
+      console.log(
+        chalk.yellow(
+          "⚠️  Could not determine home directory, skipping global MCP config"
+        )
+      );
       return;
     }
 
     const globalMCPPath = path.join(homeDir, ".cursor", "mcp.json");
-    
+
     try {
       // Read existing config if it exists
-      let existingConfig: { mcpServers: Record<string, any> } = { mcpServers: {} };
+      let existingConfig: { mcpServers: Record<string, any> } = {
+        mcpServers: {},
+      };
       if (await fs.pathExists(globalMCPPath)) {
         try {
           existingConfig = await fs.readJson(globalMCPPath);
         } catch (error) {
-          console.log(chalk.yellow("⚠️  Could not read existing MCP config, creating new one"));
+          console.log(
+            chalk.yellow(
+              "⚠️  Could not read existing MCP config, creating new one"
+            )
+          );
           existingConfig = { mcpServers: {} };
         }
       }
 
       // Check if cortex-mcp-server already exists
       if (existingConfig.mcpServers["cortex-mcp-server"]) {
-        console.log(chalk.gray("🔧 Global MCP config already contains cortex-mcp-server"));
+        console.log(
+          chalk.gray("🔧 Global MCP config already contains cortex-mcp-server")
+        );
         return;
       }
 
+      // Detect package installation path
+      const mcpServerPath = await this.detectMCPServerPath();
+
       // Add cortex-mcp-server to existing config
       existingConfig.mcpServers["cortex-mcp-server"] = {
-        command: "cortex",
-        args: ["mcp", "start"],
-        timeout: 300,
+        command: "node",
+        args: [mcpServerPath],
+        timeout: 3000,
         env: {
           NODE_ENV: "production",
+          MCP_DEBUG: "true",
+          MCP_DESKTOP_MODE: "true",
         },
         autoApprove: [
           "intent-analyzer",
@@ -330,11 +373,77 @@ The AI immediately applies learned preferences to current and future responses.
       await fs.ensureDir(path.dirname(globalMCPPath));
 
       // Write updated config
-      await fs.writeFile(globalMCPPath, JSON.stringify(existingConfig, null, 2));
-      console.log(chalk.green("✅ Added cortex-mcp-server to global MCP configuration"));
+      await fs.writeFile(
+        globalMCPPath,
+        JSON.stringify(existingConfig, null, 2)
+      );
+      console.log(
+        chalk.green("✅ Added cortex-mcp-server to global MCP configuration")
+      );
       console.log(chalk.gray(`📁 Location: ${globalMCPPath}`));
+      console.log(chalk.gray(`🔧 MCP Server Path: ${mcpServerPath}`));
     } catch (error) {
-      console.log(chalk.yellow("⚠️  Could not create global MCP config:"), error);
+      console.log(
+        chalk.yellow("⚠️  Could not create global MCP config:"),
+        error
+      );
     }
+  }
+
+  /**
+   * Detect MCP server path based on installation type
+   */
+  private async detectMCPServerPath(): Promise<string> {
+    // Check if we're in a global npm installation
+    const globalPaths = [
+      "/usr/local/lib/node_modules/@rikaidev/cortex/cortex/core/mcp-server.js",
+      "/opt/homebrew/lib/node_modules/@rikaidev/cortex/cortex/core/mcp-server.js",
+      path.join(
+        process.env.npm_config_prefix || "",
+        "lib/node_modules/@rikaidev/cortex/cortex/core/mcp-server.js"
+      ),
+    ];
+
+    for (const globalPath of globalPaths) {
+      if (await fs.pathExists(globalPath)) {
+        return globalPath;
+      }
+    }
+
+    // Fallback: try to find the package using require.resolve
+    try {
+      const packagePath = require.resolve("@rikaidev/cortex/package.json");
+      const packageDir = path.dirname(packagePath);
+      const fallbackPath = path.join(
+        packageDir,
+        "cortex",
+        "core",
+        "mcp-server.js"
+      );
+
+      if (await fs.pathExists(fallbackPath)) {
+        return fallbackPath;
+      }
+    } catch (error) {
+      // Package not found, continue to error
+    }
+
+    throw new Error(
+      "Could not detect MCP server path. Please ensure @rikaidev/cortex is properly installed globally."
+    );
+  }
+
+  /**
+   * Install global MCP configuration
+   */
+  public async installGlobalMCP(): Promise<void> {
+    console.log(chalk.blue("🌐 Installing global MCP configuration..."));
+    await this.createGlobalMCPConfig();
+    console.log(
+      chalk.green("✅ Global MCP configuration installed successfully!")
+    );
+    console.log(
+      chalk.gray("💡 Restart Cursor to activate the global MCP server")
+    );
   }
 }

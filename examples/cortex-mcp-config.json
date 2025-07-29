@@ -2,10 +2,12 @@
   "mcpServers": {
     "cortex-mcp-server": {
       "command": "node",
-      "args": ["dist/core/mcp-server.js"],
-      "timeout": 300,
+      "args": ["cortex/core/mcp-server.js"],
+      "timeout": 3000,
       "env": {
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "MCP_DEBUG": "true",
+        "MCP_DESKTOP_MODE": "true"
       },
       "autoApprove": [
         "intent-analyzer",

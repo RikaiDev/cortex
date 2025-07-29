@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.3] - 2025-07-29
+
+### Fixed
+
+- **MCP Server Functionality**: Restored complete MCP server functionality from 0.4.0 version
+- **Tool Registration**: Fixed MCP tool registration using correct SDK API (`registerTool` instead of `tool`)
+- **Interface Definitions**: Restored all missing interface definitions (IntentAnalysis, TaskDecomposition, RoleAssignment, etc.)
+- **Intent Analysis**: Restored advanced intent analysis with pattern matching and complexity assessment
+- **Task Decomposition**: Restored task templates and role mapping functionality
+- **Best Practice Search**: Restored glob-based file search in docs directory
+- **Experience Recording**: Restored complete experience logging and pattern extraction
+- **TypeScript Errors**: Fixed all TypeScript compilation errors
+
+### Technical
+
+- **MCP SDK Integration**: Properly integrated with official MCP SDK using correct API patterns
+- **Package.json Path**: Fixed package.json path resolution for compiled JavaScript
+- **File Structure**: Maintained proper file structure and imports
+
 ## [0.4.2] - 2025-07-29
 
 ### Added

@@ -10,11 +10,9 @@ import { fileURLToPath } from "url";
 
 const program = new Command();
 
-// Get the directory of the current module
+// Get package.json version
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Read version from package.json - use relative path from dist directory
 const packageJsonPath = path.join(__dirname, "..", "..", "package.json");
 const packageJson = JSON.parse(
   fs.readFileSync(packageJsonPath, "utf8")
@@ -28,6 +26,15 @@ program
 
 // Add MCP commands
 addMCPCommands(program);
+
+// Add global MCP installation command
+program
+  .command("install-global-mcp")
+  .description("Install global MCP configuration for Cursor")
+  .action(async () => {
+    const cli = new CortexCLI();
+    await cli.installGlobalMCP();
+  });
 
 // Initialize command
 program
