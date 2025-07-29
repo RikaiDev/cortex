@@ -2,7 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.1] - 2025-07-29
+
+### Fixed
+
+- **CRITICAL**: Fixed CLI package.json path issue when running from different directories
+- **CRITICAL**: Resolved ENOENT error when executing cortex commands from non-project directories
+- **CRITICAL**: Removed problematic 0.4.0 version from npm registry to prevent user confusion
+
+### Changed
+
+- Updated CLI to use `__dirname` instead of `process.cwd()` for package.json path resolution
+- Improved CLI reliability across different working directories
+
 ## [0.4.0] - 2025-07-29
+
+**⚠️ DEPRECATED**: This version has been removed from npm registry due to critical CLI path issues.
 
 ### Added
 
