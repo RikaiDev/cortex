@@ -128,5 +128,13 @@ docs/project-knowledge.md
 docs/project-structure.md
 docs/tools.md
 
+# Experience files (runtime generated, not for repository)
+docs/experiences/
+
+# Generated configuration files (runtime generated)
+.cursorrules
+.gitmessage
+.cortex/
+
 # Internal development documents (not for release)
 internal/

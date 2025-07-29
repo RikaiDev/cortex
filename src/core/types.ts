@@ -24,6 +24,8 @@ export interface RoleMetadata {
   version: string;
   tags: string[];
   priority: number;
+  author?: string;
+  customFields?: Record<string, any>;
 }
 
 export interface ProjectKnowledge {
