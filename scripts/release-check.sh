@@ -92,18 +92,18 @@ fi
 
 # 7. CLI Functionality Check
 print_status $BLUE "📋 Step 7: CLI Functionality Check"
-if ! node dist/cli/index.js --version > /dev/null 2>&1; then
+if ! node cortex/cli/index.js --version > /dev/null 2>&1; then
     print_status $RED "❌ CLI version command failed"
-    node dist/cli/index.js --version
+    node cortex/cli/index.js --version
     exit 1
 fi
 print_status $GREEN "✅ CLI functionality check passed"
 
 # 8. MCP Server Check
 print_status $BLUE "📋 Step 8: MCP Server Check"
-if ! timeout 10s node dist/cli/index.js mcp start > /dev/null 2>&1; then
+if ! timeout 10s node cortex/cli/index.js mcp start > /dev/null 2>&1; then
     print_status $RED "❌ MCP server start failed"
-    timeout 10s node dist/cli/index.js mcp start || true
+    timeout 10s node cortex/cli/index.js mcp start || true
     exit 1
 fi
 print_status $GREEN "✅ MCP server check passed"
@@ -122,8 +122,8 @@ required_files=(
     "package.json"
     "README.md"
     "CHANGELOG.md"
-    "dist/cli/index.js"
-    "dist/core/mcp-server.js"
+    "cortex/cli/index.js"
+    "cortex/core/mcp-server.js"
 )
 
 for file in "${required_files[@]}"; do
@@ -160,9 +160,9 @@ fi
 
 # 13. Bundle Size Check
 print_status $BLUE "📋 Step 13: Bundle Size Check"
-dist_size=$(du -sh dist/ | cut -f1)
-echo "📦 Distribution size: $dist_size"
-if [ -d "dist" ]; then
+cortex_size=$(du -sh cortex/ | cut -f1)
+echo "📦 Distribution size: $cortex_size"
+if [ -d "cortex" ]; then
     print_status $GREEN "✅ Bundle size check passed"
 else
     print_status $RED "❌ Distribution directory missing"
