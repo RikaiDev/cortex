@@ -2,6 +2,68 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.5.0] - 2025-07-30
+
+### Added
+
+- **User Role Extension System**: Complete role management system allowing users to create, update, delete, and manage custom AI collaboration roles
+  - `RoleManager` class with full CRUD operations for custom roles
+  - Role validation with errors, warnings, and suggestions
+  - Import/export functionality for role templates
+  - Custom role directory structure (`docs/ai-collaboration/roles/custom/`)
+  
+- **Professional Release Manager Role**: Comprehensive release management with structured commit messages
+  - Integrated git-commit-guide functionality into role-based system
+  - Structured commit message templates with major changes, warnings, tests, technical details
+  - Release workflow automation and best practices
+  - Commit type standards (feat, fix, docs, style, refactor, perf, test, chore)
+  
+- **Experience Editor System**: Automated knowledge extraction and cleanup
+  - Automatic scanning and processing of experience files
+  - Knowledge pattern extraction with frequency and confidence scoring
+  - Documentation updates based on extracted patterns
+  - Intelligent file cleanup (keeps only latest 10 files)
+  
+- **Environment Configuration Documentation**: Structured documentation for different development environments
+  - Docker + uv environment patterns
+  - Local development configurations
+  - Best practices for environment detection
+
+### Changed
+
+- **RoleMetadata Interface**: Extended with `author` and `customFields` support for enhanced role customization
+- **Git Repository Structure**: Added `.gitignore` rules for runtime-generated files
+  - Excluded `docs/experiences/` directory from repository
+  - Excluded `.cursorrules`, `.gitmessage`, `.cortex/` generated configurations
+  
+### Removed
+
+- **Redundant Scripts**: Cleaned up scripts directory removing 7 obsolete files
+  - `setup-git-commit.sh` - functionality moved to Release Manager role
+  - `generate-commit.js` - replaced by structured commit templates
+  - `commit-msg-hook.sh` - integrated into Release Manager role
+  - `test-mcp-workflow.js` - functionality moved to `src/cli/mcp-commands.ts`
+  - `test-quality.js` - redundant quality checking script
+  - `init-philosophy-extractor.js` - large obsolete file (26KB)
+  - `install.sh` - npm install is sufficient
+  
+- **Legacy Configuration Files**: Removed obsolete MCP configuration files
+  - `CLAUDE-MCP` - replaced by role-based system
+  - `GEMINI-MCP` - replaced by role-based system
+
+### Fixed
+
+- **Release Check Script**: Corrected build output paths from `dist/` to `cortex/`
+- **MCP Server Health Check**: Improved server startup validation with proper timeout handling
+- **TypeScript Compilation**: Resolved interface compatibility issues with extended RoleMetadata
+
+### Technical
+
+- **Role System Architecture**: Comprehensive role extension framework with validation and quality gates
+- **Experience Management**: Automated knowledge extraction and pattern recognition system  
+- **Build Process**: Enhanced release validation with correct path detection
+- **Documentation Structure**: Systematic approach to capturing and organizing learned patterns
+
 ## [0.4.4] - 2025-07-29
 
 ### Fixed
