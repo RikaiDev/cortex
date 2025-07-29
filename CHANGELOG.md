@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.4.2] - 2025-07-29
+
+### Added
+
+- **🌐 Global MCP Configuration**: `cortex init` now automatically installs MCP server configuration to `~/.cursor/mcp.json`
+- **🚀 MCP Start Command**: Added `cortex mcp start` command to launch MCP server directly
+- **🔧 Enhanced Init Process**: Added Step 6 to setup global MCP configuration during initialization
+
+### Fixed
+
+- **CRITICAL**: Fixed MCP server package.json path issues when running from different directories
+- **CRITICAL**: Fixed CLI package.json path issues in MCP server startup
+- **CRITICAL**: Ensured .cursor directory creation before writing MCP configuration files
+
+### Changed
+
+- **Improved User Experience**: Global MCP configuration is now automatically set up during project initialization
+- **Better Error Handling**: Enhanced error handling for MCP configuration creation
+- **Seamless Integration**: MCP server can now be started from any directory without path issues
+
 ## [0.4.1] - 2025-07-29
 
 ### Fixed
