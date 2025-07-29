@@ -23,15 +23,11 @@ import { glob } from "glob";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 
-// Get the directory of the current module
+// Get package.json version
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = join(__filename, "..");
-
-// Read package.json for version - use relative path from dist directory
 const packageJsonPath = join(__dirname, "..", "..", "package.json");
-const packageJson = JSON.parse(
-  readFileSync(packageJsonPath, "utf-8")
-);
+const packageJson = JSON.parse(readFileSync(packageJsonPath, "utf-8"));
 
 // Intent Analysis Result
 export interface IntentAnalysis {
@@ -129,7 +125,7 @@ export class CortexMCPServer {
    */
   private initializeCoreTools(): void {
     // Intent Analyzer Tool
-    this.server.tool(
+    this.server.registerTool(
       "intent-analyzer",
       {
         title: "Intent Analyzer",
@@ -154,7 +150,7 @@ export class CortexMCPServer {
     );
 
     // Task Decomposer Tool
-    this.server.tool(
+    this.server.registerTool(
       "task-decomposer",
       {
         title: "Task Decomposer",
@@ -179,7 +175,7 @@ export class CortexMCPServer {
     );
 
     // Role Selector Tool
-    this.server.tool(
+    this.server.registerTool(
       "role-selector",
       {
         title: "Role Selector",
@@ -207,7 +203,7 @@ export class CortexMCPServer {
     );
 
     // Best Practice Finder Tool
-    this.server.tool(
+    this.server.registerTool(
       "best-practice-finder",
       {
         title: "Best Practice Finder",
@@ -232,7 +228,7 @@ export class CortexMCPServer {
     );
 
     // Tool Usage Validator Tool
-    this.server.tool(
+    this.server.registerTool(
       "tool-usage-validator",
       {
         title: "Tool Usage Validator",
@@ -257,7 +253,7 @@ export class CortexMCPServer {
     );
 
     // Experience Recorder Tool
-    this.server.tool(
+    this.server.registerTool(
       "experience-recorder",
       {
         title: "Experience Recorder",
@@ -671,6 +667,7 @@ export class CortexMCPServer {
         "experiences",
         "mcp"
       );
+      await fs.ensureDir(experiencesDir);
       await fs.writeFile(
         join(experiencesDir, `${experience.id}.json`),
         JSON.stringify(experience, null, 2)
