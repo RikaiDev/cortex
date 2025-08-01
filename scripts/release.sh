@@ -69,104 +69,69 @@ validate_version_consistency() {
     print_status $GREEN "✅ Version consistency validated: $target_version"
 }
 
-# Function to analyze git commits and generate changelog
-generate_changelog_from_git() {
+# Function to check if changelog exists for version
+check_changelog_exists() {
     local version=$1
-    local date=$(date +"%Y-%m-%d")
-    local last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
     
-    print_status $BLUE "📝 Analyzing git commits for changelog..."
+    print_status $BLUE "📝 Checking CHANGELOG for version $version..."
     
-    # Get commits since last tag (or all commits if no tag)
-    local commit_range=""
-    if [ -n "$last_tag" ]; then
-        commit_range="$last_tag..HEAD"
+    if grep -q "^## \[$version\]" CHANGELOG.md; then
+        print_status $GREEN "✅ CHANGELOG entry found for version $version"
+        return 0
     else
-        commit_range="HEAD"
+        print_status $RED "❌ No CHANGELOG entry found for version $version"
+        print_status $YELLOW "💡 Please add a CHANGELOG entry before releasing"
+        print_status $YELLOW "   Example:"
+        print_status $YELLOW "   ## [$version] - $(date +%Y-%m-%d)"
+        print_status $YELLOW "   ### Added"
+        print_status $YELLOW "   - [Add new features here]"
+        print_status $YELLOW "   ### Changed"
+        print_status $YELLOW "   - [Add changes here]"
+        print_status $YELLOW "   ### Fixed"
+        print_status $YELLOW "   - [Add fixes here]"
+        return 1
     fi
-    
-    # Initialize changelog sections
-    local added=""
-    local changed=""
-    local fixed=""
-    local technical=""
-    local breaking=""
-    
-    # Parse git log and categorize commits
-    while IFS= read -r line; do
-        if [[ $line =~ ^([a-f0-9]+)\|(feat|fix|docs|style|refactor|perf|test|chore|breaking):\ (.+)$ ]]; then
-            local hash="${BASH_REMATCH[1]}"
-            local type="${BASH_REMATCH[2]}"
-            local message="${BASH_REMATCH[3]}"
-            
-            case $type in
-                "feat")
-                    added+="- $message\n"
-                    ;;
-                "fix")
-                    fixed+="- $message\n"
-                    ;;
-                "docs"|"style")
-                    technical+="- $message\n"
-                    ;;
-                "refactor"|"perf")
-                    changed+="- $message\n"
-                    ;;
-                "test"|"chore")
-                    technical+="- $message\n"
-                    ;;
-                "breaking")
-                    breaking+="- $message\n"
-                    ;;
-            esac
-        fi
-    done < <(git log --pretty=format:"%H|%s" $commit_range | grep -E "^(feat|fix|docs|style|refactor|perf|test|chore|breaking):")
-    
-    # Build changelog entry
-    local changelog_entry="## [$version] - $date\n\n"
-    
-    if [ -n "$breaking" ]; then
-        changelog_entry+="### ⚠️ Breaking Changes\n$breaking\n"
-    fi
-    
-    if [ -n "$added" ]; then
-        changelog_entry+="### Added\n$added\n"
-    fi
-    
-    if [ -n "$changed" ]; then
-        changelog_entry+="### Changed\n$changed\n"
-    fi
-    
-    if [ -n "$fixed" ]; then
-        changelog_entry+="### Fixed\n$fixed\n"
-    fi
-    
-    if [ -n "$technical" ]; then
-        changelog_entry+="### Technical\n$technical\n"
-    fi
-    
-    # If no commits found, add placeholder
-    if [ -z "$added$changed$fixed$technical$breaking" ]; then
-        changelog_entry+="### Changed\n- General improvements and bug fixes\n\n"
-    fi
-    
-    # Create temporary changelog entry
-    cat > /tmp/changelog_entry.md << EOF
-$changelog_entry
-EOF
+}
 
-    # Insert at the top of CHANGELOG.md (after the header)
-    sed -i.bak "3r /tmp/changelog_entry.md" CHANGELOG.md
-    rm /tmp/changelog_entry.md
-    rm CHANGELOG.md.bak
+# Function to check version differences
+check_version_differences() {
+    local version=$1
     
-    print_status $GREEN "✅ CHANGELOG generated from git commits for version $version"
+    print_status $BLUE "🔍 Checking version differences..."
+    
+    # Get the last published version
+    local last_published=$(npm view @rikaidev/cortex version 2>/dev/null || echo "none")
+    print_status $BLUE "Last published version: $last_published"
+    
+    if [ "$last_published" = "none" ]; then
+        print_status $GREEN "✅ First release, no previous version to compare"
+        return 0
+    fi
+    
+    if [ "$last_published" = "$version" ]; then
+        print_status $YELLOW "⚠️  Version $version is already published"
+        print_status $YELLOW "💡 Consider using a different version or unpublishing first"
+        return 1
+    fi
+    
+    # Get commits since last published version
+    local commit_count=$(git log --oneline "v$last_published..HEAD" 2>/dev/null | wc -l)
+    print_status $BLUE "Commits since v$last_published: $commit_count"
+    
+    if [ "$commit_count" -eq 0 ]; then
+        print_status $YELLOW "⚠️  No new commits since last published version"
+        print_status $YELLOW "💡 Consider if a new release is necessary"
+    else
+        print_status $GREEN "✅ Found $commit_count new commits since last release"
+    fi
+    
+    return 0
 }
 
 # Function to update CHANGELOG (legacy function for backward compatibility)
 update_changelog() {
     local version=$1
-    generate_changelog_from_git $version
+    check_changelog_exists $version
 }
 
 # Function to perform pre-release checks
@@ -203,9 +168,17 @@ perform_release() {
         print_status $BLUE "📦 Releasing current version: $target_version"
     fi
     
-    # 3. Generate CHANGELOG from git commits
-    print_status $BLUE "📝 Generating CHANGELOG from git commits..."
-    generate_changelog_from_git $target_version
+    # 3. Check CHANGELOG exists
+    print_status $BLUE "📝 Checking CHANGELOG..."
+    if ! check_changelog_exists $target_version; then
+        exit 1
+    fi
+    
+    # 4. Check version differences
+    print_status $BLUE "🔍 Checking version differences..."
+    if ! check_version_differences $target_version; then
+        print_status $YELLOW "⚠️  Version check failed, but continuing..."
+    fi
     
     # 3. Build project
     print_status $BLUE "🔨 Building project..."
@@ -307,18 +280,11 @@ show_help() {
     echo "  $0 --dry-run   Test release process without publishing"
     echo ""
     echo "Release Process:"
-    echo "  1. Make commits with conventional commit messages:"
-    echo "     feat: new feature"
-    echo "     fix: bug fix"
-    echo "     docs: documentation changes"
-    echo "     style: formatting changes"
-    echo "     refactor: code refactoring"
-    echo "     perf: performance improvements"
-    echo "     test: adding tests"
-    echo "     chore: maintenance tasks"
-    echo "  2. Run: $0 current (to release current version)"
-    echo "  3. Or run: $0 patch|minor|major (to bump and release)"
-    echo "  4. CHANGELOG will be automatically generated from git commits"
+    echo "  1. Write CHANGELOG.md entry for the target version"
+    echo "  2. Update package.json version if needed"
+    echo "  3. Run: $0 current (to release current version)"
+    echo "  4. Or run: $0 patch|minor|major (to bump and release)"
+    echo "  5. Script will check if CHANGELOG entry exists"
 }
 
 # Function to perform dry run
