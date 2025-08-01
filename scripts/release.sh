@@ -39,10 +39,34 @@ get_next_version() {
         "major")
             echo "$current_version" | awk -F. '{print $1+1".0.0"}'
             ;;
+        "current")
+            echo "$current_version"
+            ;;
         *)
             echo "$current_version"
             ;;
     esac
+}
+
+# Function to validate version consistency
+validate_version_consistency() {
+    local target_version=$1
+    local package_version=$(get_current_version)
+    local changelog_version=$(grep -E "^## \[[0-9]+\.[0-9]+\.[0-9]+\]" CHANGELOG.md | head -1 | sed 's/## \[\([0-9]*\.[0-9]*\.[0-9]*\)\].*/\1/')
+    
+    if [ "$package_version" != "$target_version" ]; then
+        print_status $RED "❌ Version mismatch: package.json=$package_version, target=$target_version"
+        print_status $YELLOW "💡 Please update package.json to match target version first"
+        exit 1
+    fi
+    
+    if [ "$changelog_version" != "$target_version" ]; then
+        print_status $RED "❌ Version mismatch: CHANGELOG.md=$changelog_version, target=$target_version"
+        print_status $YELLOW "💡 Please update CHANGELOG.md to match target version first"
+        exit 1
+    fi
+    
+    print_status $GREEN "✅ Version consistency validated: $target_version"
 }
 
 # Function to update CHANGELOG
@@ -92,43 +116,69 @@ pre_release_checks() {
 perform_release() {
     local version_type=$1
     local current_version=$(get_current_version)
-    local next_version=$(get_next_version $version_type)
+    local target_version=$(get_next_version $version_type)
     
     print_status $BLUE "🚀 Starting release process..."
     print_status $BLUE "Current version: $current_version"
-    print_status $BLUE "Next version: $next_version"
+    print_status $BLUE "Target version: $target_version"
     
-    # 1. Update version
-    print_status $BLUE "📦 Updating version to $next_version..."
-    npm version $version_type --no-git-tag-version
+    # 1. Validate version consistency
+    print_status $BLUE "🔍 Validating version consistency..."
+    validate_version_consistency $target_version
     
-    # 2. Update CHANGELOG
-    print_status $BLUE "📝 Updating CHANGELOG..."
-    update_changelog $next_version
+    # 2. Update version (only if not current)
+    if [ "$version_type" != "current" ]; then
+        print_status $BLUE "📦 Updating version to $target_version..."
+        npm version $version_type --no-git-tag-version
+        
+        # 3. Update CHANGELOG
+        print_status $BLUE "📝 Updating CHANGELOG..."
+        update_changelog $target_version
+    else
+        print_status $BLUE "📦 Releasing current version: $target_version"
+    fi
     
     # 3. Build project
     print_status $BLUE "🔨 Building project..."
     npm run build
     
-    # 4. Commit changes
+    # 4. Build project
+    print_status $BLUE "🔨 Building project..."
+    npm run build
+    
+    # 5. Commit changes
     print_status $BLUE "📝 Committing changes..."
     git add .
-    git commit -m "feat: release v$next_version"
+    git commit -m "feat: release v$target_version"
     
-    # 5. Create git tag
+    # 6. Create git tag
     print_status $BLUE "🏷️  Creating git tag..."
-    git tag "v$next_version"
+    git tag "v$target_version"
     
-    # 6. Push to remote
+    # 7. Push to remote
     print_status $BLUE "📤 Pushing to remote..."
     git push origin main
-    git push origin "v$next_version"
+    git push origin "v$target_version"
     
-    # 7. Publish to npm
+    # 8. Publish to npm
     print_status $BLUE "📦 Publishing to npm..."
     npm publish
     
-    print_status $GREEN "🎉 Release v$next_version completed successfully!"
+    print_status $GREEN "🎉 Release v$target_version completed successfully!"
+}
+
+# Function to unpublish a version
+unpublish_version() {
+    local version=$1
+    
+    print_status $YELLOW "🗑️  Unpublishing version $version..."
+    
+    if npm unpublish "@rikaidev/cortex@$version" > /dev/null 2>&1; then
+        print_status $GREEN "✅ Successfully unpublished $version"
+    else
+        print_status $RED "❌ Failed to unpublish $version"
+        exit 1
+    fi
 }
 
 # Function to perform post-release checks
@@ -173,6 +223,7 @@ show_help() {
     echo "Usage: $0 [OPTIONS]"
     echo ""
     echo "Options:"
+    echo "  current        Release current version (no version bump)"
     echo "  patch          Release patch version (0.0.x)"
     echo "  minor          Release minor version (0.x.0)"
     echo "  major          Release major version (x.0.0)"
@@ -180,10 +231,17 @@ show_help() {
     echo "  --dry-run      Perform all checks without releasing"
     echo ""
     echo "Examples:"
-    echo "  $0 patch       Release patch version"
-    echo "  $0 minor       Release minor version"
-    echo "  $0 major       Release major version"
+    echo "  $0 current     Release current version (e.g., 0.6.1)"
+    echo "  $0 patch       Release patch version (e.g., 0.6.1 → 0.6.2)"
+    echo "  $0 minor       Release minor version (e.g., 0.6.1 → 0.7.0)"
+    echo "  $0 major       Release major version (e.g., 0.6.1 → 1.0.0)"
     echo "  $0 --dry-run   Test release process without publishing"
+    echo ""
+    echo "Release Process:"
+    echo "  1. Write CHANGELOG.md with target version"
+    echo "  2. Update package.json version to match"
+    echo "  3. Run: $0 current (to release current version)"
+    echo "  4. Or run: $0 patch|minor|major (to bump and release)"
 }
 
 # Function to perform dry run
@@ -219,9 +277,26 @@ main() {
     
     # Parse arguments
     case "$1" in
+        "current")
+            local version_type=$1
+            local target_version=$(get_next_version $version_type)
+            
+            print_status $BLUE "🚀 Starting release process for current version..."
+            
+            # Pre-release checks
+            pre_release_checks
+            
+            # Perform release
+            perform_release $version_type
+            
+            # Post-release checks
+            post_release_checks $target_version
+            
+            print_status $GREEN "🎉 Release v$target_version completed successfully!"
+            ;;
         "patch"|"minor"|"major")
             local version_type=$1
-            local next_version=$(get_next_version $version_type)
+            local target_version=$(get_next_version $version_type)
             
             print_status $BLUE "🚀 Starting release process for $version_type version..."
             
@@ -232,9 +307,16 @@ main() {
             perform_release $version_type
             
             # Post-release checks
-            post_release_checks $next_version
+            post_release_checks $target_version
             
-            print_status $GREEN "🎉 Release v$next_version completed successfully!"
+            print_status $GREEN "🎉 Release v$target_version completed successfully!"
+            ;;
+        "unpublish")
+            if [ -z "$2" ]; then
+                print_status $RED "❌ Please specify version to unpublish: $0 unpublish <version>"
+                exit 1
+            fi
+            unpublish_version $2
             ;;
         "--dry-run"|"-d")
             dry_run

@@ -1,6 +1,6 @@
 {
   "name": "@rikaidev/cortex",
-  "version": "0.6.2",
+  "version": "0.6.1",
   "description": "Cortex AI - AI Collaboration Brain with real-time preference learning and structured thinking",
   "main": "dist/index.js",
   "type": "module",
@@ -23,9 +23,11 @@
     "lint:future:verbose": "node scripts/future-vars-check.js --verbose",
     "release:check": "./scripts/release-check.sh",
     "release:dry-run": "./scripts/release.sh --dry-run",
+    "release:current": "./scripts/release.sh current",
     "release:patch": "./scripts/release.sh patch",
     "release:minor": "./scripts/release.sh minor",
     "release:major": "./scripts/release.sh major",
+    "release:unpublish": "./scripts/release.sh unpublish",
     "unpublish:version": "echo \"Usage: npm unpublish @rikaidev/cortex@VERSION\"",
     "install:global-mcp": "cortex install-global-mcp"
   },
