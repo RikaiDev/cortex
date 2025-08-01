@@ -69,27 +69,90 @@ validate_version_consistency() {
     print_status $GREEN "✅ Version consistency validated: $target_version"
 }
 
-# Function to update CHANGELOG
-update_changelog() {
+# Function to analyze git commits and generate changelog
+generate_changelog_from_git() {
     local version=$1
     local date=$(date +"%Y-%m-%d")
+    local last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+    
+    print_status $BLUE "📝 Analyzing git commits for changelog..."
+    
+    # Get commits since last tag (or all commits if no tag)
+    local commit_range=""
+    if [ -n "$last_tag" ]; then
+        commit_range="$last_tag..HEAD"
+    else
+        commit_range="HEAD"
+    fi
+    
+    # Initialize changelog sections
+    local added=""
+    local changed=""
+    local fixed=""
+    local technical=""
+    local breaking=""
+    
+    # Parse git log and categorize commits
+    while IFS= read -r line; do
+        if [[ $line =~ ^([a-f0-9]+)\|(feat|fix|docs|style|refactor|perf|test|chore|breaking):\ (.+)$ ]]; then
+            local hash="${BASH_REMATCH[1]}"
+            local type="${BASH_REMATCH[2]}"
+            local message="${BASH_REMATCH[3]}"
+            
+            case $type in
+                "feat")
+                    added+="- $message\n"
+                    ;;
+                "fix")
+                    fixed+="- $message\n"
+                    ;;
+                "docs"|"style")
+                    technical+="- $message\n"
+                    ;;
+                "refactor"|"perf")
+                    changed+="- $message\n"
+                    ;;
+                "test"|"chore")
+                    technical+="- $message\n"
+                    ;;
+                "breaking")
+                    breaking+="- $message\n"
+                    ;;
+            esac
+        fi
+    done < <(git log --pretty=format:"%H|%s" $commit_range | grep -E "^(feat|fix|docs|style|refactor|perf|test|chore|breaking):")
+    
+    # Build changelog entry
+    local changelog_entry="## [$version] - $date\n\n"
+    
+    if [ -n "$breaking" ]; then
+        changelog_entry+="### ⚠️ Breaking Changes\n$breaking\n"
+    fi
+    
+    if [ -n "$added" ]; then
+        changelog_entry+="### Added\n$added\n"
+    fi
+    
+    if [ -n "$changed" ]; then
+        changelog_entry+="### Changed\n$changed\n"
+    fi
+    
+    if [ -n "$fixed" ]; then
+        changelog_entry+="### Fixed\n$fixed\n"
+    fi
+    
+    if [ -n "$technical" ]; then
+        changelog_entry+="### Technical\n$technical\n"
+    fi
+    
+    # If no commits found, add placeholder
+    if [ -z "$added$changed$fixed$technical$breaking" ]; then
+        changelog_entry+="### Changed\n- General improvements and bug fixes\n\n"
+    fi
     
     # Create temporary changelog entry
     cat > /tmp/changelog_entry.md << EOF
-## [$version] - $date
-
-### Added
-- [Add new features here]
-
-### Changed
-- [Add changes here]
-
-### Fixed
-- [Add fixes here]
-
-### Technical
-- [Add technical details here]
-
+$changelog_entry
 EOF
 
     # Insert at the top of CHANGELOG.md (after the header)
@@ -97,7 +160,13 @@ EOF
     rm /tmp/changelog_entry.md
     rm CHANGELOG.md.bak
     
-    print_status $GREEN "✅ CHANGELOG updated for version $version"
+    print_status $GREEN "✅ CHANGELOG generated from git commits for version $version"
+}
+
+# Function to update CHANGELOG (legacy function for backward compatibility)
+update_changelog() {
+    local version=$1
+    generate_changelog_from_git $version
 }
 
 # Function to perform pre-release checks
@@ -130,13 +199,13 @@ perform_release() {
     if [ "$version_type" != "current" ]; then
         print_status $BLUE "📦 Updating version to $target_version..."
         npm version $version_type --no-git-tag-version
-        
-        # 3. Update CHANGELOG
-        print_status $BLUE "📝 Updating CHANGELOG..."
-        update_changelog $target_version
     else
         print_status $BLUE "📦 Releasing current version: $target_version"
     fi
+    
+    # 3. Generate CHANGELOG from git commits
+    print_status $BLUE "📝 Generating CHANGELOG from git commits..."
+    generate_changelog_from_git $target_version
     
     # 3. Build project
     print_status $BLUE "🔨 Building project..."
@@ -238,10 +307,18 @@ show_help() {
     echo "  $0 --dry-run   Test release process without publishing"
     echo ""
     echo "Release Process:"
-    echo "  1. Write CHANGELOG.md with target version"
-    echo "  2. Update package.json version to match"
-    echo "  3. Run: $0 current (to release current version)"
-    echo "  4. Or run: $0 patch|minor|major (to bump and release)"
+    echo "  1. Make commits with conventional commit messages:"
+    echo "     feat: new feature"
+    echo "     fix: bug fix"
+    echo "     docs: documentation changes"
+    echo "     style: formatting changes"
+    echo "     refactor: code refactoring"
+    echo "     perf: performance improvements"
+    echo "     test: adding tests"
+    echo "     chore: maintenance tasks"
+    echo "  2. Run: $0 current (to release current version)"
+    echo "  3. Or run: $0 patch|minor|major (to bump and release)"
+    echo "  4. CHANGELOG will be automatically generated from git commits"
 }
 
 # Function to perform dry run

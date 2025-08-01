@@ -1,20 +1,6 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [0.6.2] - 2025-08-01
-
-### Added
-- [Add new features here]
-
-### Changed
-- [Add changes here]
-
-### Fixed
-- [Add fixes here]
-
-### Technical
-- [Add technical details here]
-
 
 ## [0.6.1] - 2025-07-31
 
