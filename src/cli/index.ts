@@ -14,9 +14,7 @@ const program = new Command();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const packageJsonPath = path.join(__dirname, "..", "..", "package.json");
-const packageJson = JSON.parse(
-  fs.readFileSync(packageJsonPath, "utf8")
-);
+const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
 
 // Set up CLI
 program
@@ -42,7 +40,7 @@ program
   .description("Initialize Cortex in your project")
   .option(
     "-p, --project-path <path>",
-    "Project path (default: current directory)"
+    "Project path (default: current directory)",
   )
   .action(async (options) => {
     try {
@@ -61,7 +59,7 @@ program
   .description("Generate IDE configurations and rules")
   .option(
     "-p, --project-path <path>",
-    "Project path (default: current directory)"
+    "Project path (default: current directory)",
   )
   .action(async (options) => {
     try {
@@ -75,11 +73,11 @@ program
 
 // Generate MCP rules command
 program
-  .command("generate-mcp-rules")
-  .description("Generate MCP-integrated rules for stable AI responses")
+  .command("generate-rules")
+  .description("Generate platform-specific rules for all AI platforms")
   .option(
     "-p, --project-path <path>",
-    "Project path (default: current directory)"
+    "Project path (default: current directory)",
   )
   .action(async (options) => {
     try {
@@ -97,7 +95,7 @@ program
   .description("Start AI collaboration")
   .option(
     "-p, --project-path <path>",
-    "Project path (default: current directory)"
+    "Project path (default: current directory)",
   )
   .action(async (options) => {
     try {

@@ -3,18 +3,15 @@
     "cortex-mcp-server": {
       "command": "node",
       "args": ["cortex/core/mcp-server.js"],
-      "timeout": 3000,
+      "timeout": 600,
       "env": {
         "NODE_ENV": "production",
-        "MCP_DEBUG": "true",
-        "MCP_DESKTOP_MODE": "true"
+        "MCP_DEBUG": "false"
       },
       "autoApprove": [
         "intent-analyzer",
         "task-decomposer", 
         "role-selector",
-        "best-practice-finder",
-        "tool-usage-validator",
         "experience-recorder"
       ]
     }

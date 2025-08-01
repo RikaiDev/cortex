@@ -1,6 +1,15 @@
+/**
+ * Cursor Adapter
+ *
+ * This module provides integration with the Cursor IDE.
+ */
+
 import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import chalk from "chalk";
+import { MCPWorkflow } from "../core/mcp/mcp-workflow.js";
+import { createPromptInjector } from "../core/thinking/prompt-injection.js";
+import { createCoTEmulation } from "../core/thinking/cot-emulation.js";
 
 export interface CursorRule {
   description: string;
@@ -27,19 +36,166 @@ export interface ProjectKnowledge {
   preferences: string[];
 }
 
+export interface CursorAdapterConfig {
+  enableThinking: boolean;
+  enhancePrompts: boolean;
+  projectRoot: string;
+  debugMode: boolean;
+}
+
+/**
+ * Default configuration for the Cursor adapter
+ */
+const DEFAULT_CONFIG: CursorAdapterConfig = {
+  enableThinking: true,
+  enhancePrompts: true,
+  projectRoot: process.cwd(),
+  debugMode: false,
+};
+
 export class CursorAdapter {
   private projectRoot: string;
   private roles: Role[];
   private projectKnowledge: ProjectKnowledge;
+  private promptInjector: ReturnType<typeof createPromptInjector>;
+  private mcpWorkflow?: MCPWorkflow;
+  private cotEmulation?: ReturnType<typeof createCoTEmulation>;
+  private config: CursorAdapterConfig;
+  private isInitialized: boolean = false;
 
   constructor(
     projectRoot: string,
-    roles: Role[],
-    projectKnowledge: ProjectKnowledge
+    roles: Role[] = [],
+    projectKnowledge: ProjectKnowledge = {
+      patterns: [],
+      conventions: [],
+      preferences: [],
+    },
+    customConfig?: Partial<CursorAdapterConfig>,
   ) {
     this.projectRoot = projectRoot;
     this.roles = roles;
     this.projectKnowledge = projectKnowledge;
+    this.config = { ...DEFAULT_CONFIG, ...customConfig };
+    this.promptInjector = createPromptInjector(projectRoot);
+  }
+
+  /**
+   * Initialize the adapter with MCP workflow
+   * @param mcpWorkflow - MCP workflow instance
+   */
+  async initialize(mcpWorkflow: MCPWorkflow): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+
+    this.mcpWorkflow = mcpWorkflow;
+
+    // Initialize CoT emulation if enabled
+    if (this.config.enableThinking) {
+      this.cotEmulation = createCoTEmulation(mcpWorkflow, {
+        debugMode: this.config.debugMode,
+      });
+
+      await this.cotEmulation.initialize();
+    }
+
+    // Record initialization
+    if (this.config.debugMode && this.mcpWorkflow) {
+      await this.recordEvent("cursor-adapter-initialized", {
+        config: this.config,
+      });
+    }
+
+    this.isInitialized = true;
+  }
+
+  /**
+   * Process a user message with CoT-like thinking
+   * @param message - User message
+   * @param context - Additional context
+   * @returns Processed message result
+   */
+  async processUserMessage(
+    message: string,
+    context: Record<string, any> = {},
+  ): Promise<string> {
+    // Ensure adapter is initialized with MCP workflow
+    if (!this.isInitialized || !this.mcpWorkflow) {
+      throw new Error("CursorAdapter not initialized with MCP workflow");
+    }
+
+    // Use CoT emulation to process message if enabled
+    if (this.cotEmulation && this.config.enableThinking) {
+      return this.cotEmulation.processMessage(
+        message,
+        this.defaultMessageProcessor.bind(this),
+        context,
+      );
+    }
+
+    // Otherwise process message normally
+    return this.defaultMessageProcessor(message, context);
+  }
+
+  /**
+   * Default message processor
+   * This is a simulation of AI model processing for development/testing.
+   * In production, this would be replaced with actual AI model API calls.
+   *
+   * @param message - User message
+   * @param context - Additional context (user preferences, conversation history, etc.)
+   * @returns Processed message result
+   */
+  private async defaultMessageProcessor(
+    message: string,
+    context: Record<string, any> = {},
+  ): Promise<string> {
+    // In a real implementation, this would call the model API
+    // For now, we'll simulate a response that includes context information
+    const contextInfo =
+      Object.keys(context).length > 0
+        ? `[Context: ${JSON.stringify(context)}] `
+        : "";
+    return `${contextInfo}Processed response for: ${message}`;
+  }
+
+  /**
+   * Enhance a system prompt with thinking process instructions
+   * @param basePrompt - Base system prompt
+   * @returns Enhanced system prompt
+   */
+  enhanceSystemPrompt(basePrompt: string): string {
+    // Use CoT emulation to enhance prompt if enabled
+    if (this.cotEmulation && this.config.enhancePrompts) {
+      return this.cotEmulation.enhanceSystemPrompt(basePrompt);
+    }
+
+    // Otherwise use basic prompt injection
+    return this.promptInjector.injectThinkingTrigger(basePrompt);
+  }
+
+  /**
+   * Record an event for debugging and analysis
+   * @param eventType - Type of event
+   * @param data - Event data
+   */
+  private async recordEvent(
+    eventType: string,
+    data: Record<string, any>,
+  ): Promise<void> {
+    try {
+      if (this.mcpWorkflow) {
+        await this.mcpWorkflow.executeTool("experience-recorder", {
+          action: eventType,
+          context: JSON.stringify(data),
+          success: true,
+          feedback: `Event ${eventType} recorded`,
+        });
+      }
+    } catch (error) {
+      console.error(`Error recording event ${eventType}:`, error);
+    }
   }
 
   async generateCursorRules(): Promise<void> {
@@ -82,10 +238,10 @@ alwaysApply: true
 ### **Step 2: Documentation Search (MANDATORY)**
 **ALWAYS search docs/ before any implementation:**
 
-1. **Search docs/ai-collaboration/roles/** - Find relevant roles
-   - Read role definitions and capabilities: docs/ai-collaboration/roles/*.md
-   - Understand role-specific guidelines: docs/ai-collaboration/roles/README.md
-   - Identify role keywords and patterns: docs/ai-collaboration/roles/*.md
+1. **Search docs/cortex/roles/** - Find relevant roles
+   - Read role definitions and capabilities: docs/cortex/roles/*.md
+   - Understand role-specific guidelines: docs/cortex/roles/README.md
+   - Identify role keywords and patterns: docs/cortex/roles/*.md
 
 2. **Search docs/ for patterns** - Look for existing solutions
    - Find similar implementations: docs/code-patterns.md
@@ -110,28 +266,28 @@ alwaysApply: true
 ### **Step 3: Role Discovery (MANDATORY)**
 **ALWAYS scan and select appropriate roles:**
 
-1. **Scan docs/ai-collaboration/roles/** - List available roles
-   - Read all role markdown files: docs/ai-collaboration/roles/*.md
-   - Extract role names, descriptions, and capabilities: docs/ai-collaboration/roles/README.md
-   - Identify role keywords and discovery patterns: docs/ai-collaboration/roles/*.md
+1. **Scan docs/cortex/roles/** - List available roles
+   - Read all role markdown files: docs/cortex/roles/*.md
+   - Extract role names, descriptions, and capabilities: docs/cortex/roles/README.md
+   - Identify role keywords and discovery patterns: docs/cortex/roles/*.md
 
 2. **Match roles to sub-tasks** - Which role fits each part?
    - Analyze each sub-task's requirements: docs/project-knowledge.md
-   - Match task needs to role capabilities: docs/ai-collaboration/roles/*.md
+   - Match task needs to role capabilities: docs/cortex/roles/*.md
    - Consider role expertise and focus areas: docs/architecture.md
 
 3. **Select primary role** - Main role for the task
-   - Choose the most relevant role for the main task: docs/ai-collaboration/roles/*.md
+   - Choose the most relevant role for the main task: docs/cortex/roles/*.md
    - Consider role priority and expertise level: docs/project-knowledge.md
    - Ensure role can handle the primary responsibility: docs/conventions.md
 
 4. **Select supporting roles** - Additional roles needed
-   - Identify complementary roles for specific aspects: docs/ai-collaboration/roles/*.md
+   - Identify complementary roles for specific aspects: docs/cortex/roles/*.md
    - Consider roles for validation and review: docs/code-patterns.md
    - Ensure coverage of all required expertise areas: docs/architecture.md
 
 5. **Declare role selection** - State which roles you're using
-   - Clearly state which role you're acting as: docs/ai-collaboration/roles/*.md
+   - Clearly state which role you're acting as: docs/cortex/roles/*.md
    - Explain why each role was selected: docs/project-knowledge.md
    - Describe how roles will coordinate: docs/conventions.md
 
@@ -262,7 +418,7 @@ When responding to user requests, follow this structured format:
 - Sub-task 2: [description]
 - Sub-task 3: [description]
 
-🎭 **ROLE DISCOVERY:** Scanning docs/ai-collaboration/roles/
+🎭 **ROLE DISCOVERY:** Scanning docs/cortex/roles/
 - Available roles: [list roles]
 - Selected roles: [which roles for which sub-tasks]
 

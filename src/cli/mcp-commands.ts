@@ -6,7 +6,7 @@
 
 import chalk from "chalk";
 import { Command } from "commander";
-import { CortexMCPWorkflow } from "../core/mcp-workflow.js";
+import { MCPWorkflow } from "../core/mcp/mcp-workflow.js";
 
 /**
  * Add MCP commands to the CLI
@@ -23,7 +23,7 @@ export function addMCPCommands(program: Command): void {
     .option(
       "-i, --input <input>",
       "User input to test",
-      "我們需要導入 MCP 來讓每個步驟都變成可控的"
+      "我們需要導入 MCP 來讓每個步驟都變成可控的",
     )
     .option("-c, --context <context>", "Additional context", "")
     .action(async (options) => {
@@ -85,11 +85,11 @@ export function addMCPCommands(program: Command): void {
     .option(
       "-p, --project-root <path>",
       "Project root directory (default: current directory)",
-      process.cwd()
+      process.cwd(),
     )
     .option(
       "--global",
-      "Global mode - automatically detect project root from current working directory"
+      "Global mode - automatically detect project root from current working directory",
     )
     .action(async (options) => {
       const projectRoot = options.global ? process.cwd() : options.projectRoot;
@@ -102,7 +102,7 @@ export function addMCPCommands(program: Command): void {
  */
 async function testMCPWorkflow(
   userInput: string,
-  context: string
+  context: string,
 ): Promise<void> {
   console.log(chalk.blue("🧪 Testing Cortex MCP Workflow..."));
   console.log(chalk.gray(`Input: ${userInput}`));
@@ -112,8 +112,9 @@ async function testMCPWorkflow(
   console.log();
 
   try {
-    const workflow = new CortexMCPWorkflow(process.cwd());
-    const result = await workflow.executeWorkflow(userInput, context);
+    const workflow = new MCPWorkflow(process.cwd());
+    const contextObj = context ? { context } : {};
+    const result = await workflow.executeWorkflow(userInput, contextObj);
 
     console.log(chalk.green("✅ Workflow completed successfully!"));
     console.log();
@@ -141,7 +142,7 @@ async function testMCPWorkflow(
       console.log(chalk.cyan("📋 Task Decomposition:"));
       tasks.subTasks.forEach((task: any, index: number) => {
         console.log(
-          `${index + 1}. ${task.description} (${task.priority} priority)`
+          `${index + 1}. ${task.description} (${task.priority} priority)`,
         );
       });
       console.log();
@@ -169,7 +170,7 @@ async function testMCPWorkflow(
     // Display learnings
     if (result.learnings.length > 0) {
       console.log(chalk.cyan("🧠 Learnings:"));
-      result.learnings.forEach((learning) => {
+      result.learnings.forEach((learning: string) => {
         console.log(`- ${learning}`);
       });
       console.log();
@@ -196,10 +197,10 @@ async function listMCPTools(): Promise<void> {
   console.log();
 
   try {
-    const workflow = new CortexMCPWorkflow(process.cwd());
+    const workflow = new MCPWorkflow(process.cwd());
     const tools = workflow.getAvailableTools();
 
-    tools.forEach((tool) => {
+    tools.forEach((tool: string) => {
       console.log(`- ${tool}`);
     });
 
@@ -216,7 +217,7 @@ async function listMCPTools(): Promise<void> {
  */
 async function executeMCPTool(
   toolName: string,
-  inputStr: string
+  inputStr: string,
 ): Promise<void> {
   console.log(chalk.blue(`🔧 Executing MCP tool: ${toolName}`));
   console.log(chalk.gray(`Input: ${inputStr}`));
@@ -236,8 +237,8 @@ async function executeMCPTool(
           message: `Tool ${toolName} executed with input: ${JSON.stringify(input)}`,
         },
         null,
-        2
-      )
+        2,
+      ),
     );
   } catch (error) {
     console.error(chalk.red("❌ Tool execution failed:"), error);
@@ -250,7 +251,7 @@ async function executeMCPTool(
  */
 async function analyzeIntent(
   userInput: string,
-  context: string
+  context: string,
 ): Promise<void> {
   console.log(chalk.blue("🔍 Analyzing user intent..."));
   console.log(chalk.gray(`Input: ${userInput}`));
@@ -287,7 +288,7 @@ async function analyzeIntent(
  */
 async function findBestPractices(
   query: string,
-  searchType: string
+  searchType: string,
 ): Promise<void> {
   console.log(chalk.blue("📚 Searching for best practices..."));
   console.log(chalk.gray(`Query: ${query}`));
@@ -316,7 +317,7 @@ async function findBestPractices(
       console.log(chalk.cyan("📚 Found Best Practices:"));
       result.results.forEach((practice: any, index: number) => {
         console.log(
-          `${index + 1}. ${practice.file} (relevance: ${practice.relevance})`
+          `${index + 1}. ${practice.file} (relevance: ${practice.relevance})`,
         );
         console.log(`   Tags: ${practice.tags.join(", ")}`);
         console.log(`   Content: ${practice.content.substring(0, 100)}...`);
@@ -343,7 +344,7 @@ async function findBestPractices(
  */
 async function validateToolUsage(
   toolName: string,
-  usage: string
+  usage: string,
 ): Promise<void> {
   console.log(chalk.blue(`🔍 Validating tool usage: ${toolName}`));
   console.log(chalk.gray(`Usage: ${usage}`));
@@ -393,13 +394,15 @@ async function startMCPServer(projectRoot: string): Promise<void> {
 
   try {
     // Import and start the MCP server
-    const { CortexMCPServer } = await import("../core/mcp-server.js");
-    const server = new CortexMCPServer(projectRoot);
-    
+    const { MCPProtocolServer } = await import(
+      "../core/mcp/mcp-protocol-server.js"
+    );
+    const server = new MCPProtocolServer(projectRoot);
+
     console.log(chalk.green("✅ MCP server started successfully!"));
     console.log(chalk.gray("Server is running and ready for connections"));
     console.log(chalk.gray("Press Ctrl+C to stop the server"));
-    
+
     await server.start();
 
     // Keep the process alive

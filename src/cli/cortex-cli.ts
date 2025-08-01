@@ -5,16 +5,16 @@ import path from "path";
 import { CursorAdapter } from "../adapters/cursor-adapter.js";
 import { ClaudeAdapter } from "../adapters/claude-adapter.js";
 import { GeminiAdapter } from "../adapters/gemini-adapter.js";
-import { MCPRulesGenerator } from "../adapters/mcp-rules-generator.js";
+import { CortexRulesGenerator } from "../adapters/mcp-rules-generator.js";
 
-import { ProjectAnalyzer } from "../core/project-analyzer.js";
+import { ProjectAnalyzer } from "../core/project/project-analyzer.js";
 
 export class CortexCLI {
   private projectPath: string;
   private claudeAdapter: ClaudeAdapter;
   private geminiAdapter: GeminiAdapter;
   private cursorAdapter: CursorAdapter;
-  private mcpRulesGenerator: MCPRulesGenerator;
+  private cortexRulesGenerator: CortexRulesGenerator;
 
   constructor(projectPath?: string) {
     this.projectPath = projectPath || process.cwd();
@@ -25,7 +25,7 @@ export class CortexCLI {
       conventions: [],
       preferences: [],
     });
-    this.mcpRulesGenerator = new MCPRulesGenerator(this.projectPath);
+    this.cortexRulesGenerator = new CortexRulesGenerator(this.projectPath);
   }
 
   /**
@@ -51,9 +51,9 @@ export class CortexCLI {
     // Step 3: Create directories
     console.log(chalk.blue("📁 Step 3: Creating directories..."));
     const dirs = [
-      "docs/ai-collaboration/roles",
-      "docs/ai-collaboration/templates",
-      "docs/ai-collaboration/examples",
+      "docs/cortex/roles",
+      "docs/cortex/templates",
+      "docs/cortex/examples",
     ];
 
     for (const dir of dirs) {
@@ -78,15 +78,15 @@ export class CortexCLI {
 
     // Step 6: Global MCP configuration (optional)
     console.log(
-      chalk.blue("🌐 Step 6: Global MCP configuration (optional)...")
+      chalk.blue("🌐 Step 6: Global MCP configuration (optional)..."),
     );
     console.log(
       chalk.gray(
-        "💡 To install global MCP configuration, run: cortex install-global-mcp"
-      )
+        "💡 To install global MCP configuration, run: cortex install-global-mcp",
+      ),
     );
     console.log(
-      chalk.gray("💡 This will make Cortex MCP available in all projects")
+      chalk.gray("💡 This will make Cortex MCP available in all projects"),
     );
     console.log();
 
@@ -94,14 +94,14 @@ export class CortexCLI {
     console.log();
     console.log(chalk.blue("Next steps:"));
     console.log(
-      chalk.gray('1. Run "cortex generate-ide" to create IDE configurations')
+      chalk.gray('1. Run "cortex generate-ide" to create IDE configurations'),
     );
     console.log(chalk.gray('2. Run "cortex start" to begin AI collaboration'));
     console.log(chalk.gray("3. MCP server is ready for integration"));
     console.log(
       chalk.gray(
-        '4. For global MCP: run "cortex install-global-mcp" then restart Cursor'
-      )
+        '4. For global MCP: run "cortex install-global-mcp" then restart Cursor',
+      ),
     );
     console.log();
     console.log(chalk.green("✅ Cortex initialized successfully!"));
@@ -127,49 +127,57 @@ export class CortexCLI {
       console.log(chalk.green("✅ Generated Gemini configuration"));
 
       console.log(
-        chalk.green("\n🎉 IDE configurations generated successfully!")
+        chalk.green("\n🎉 IDE configurations generated successfully!"),
       );
       console.log(chalk.yellow("\nNext steps:"));
       console.log(chalk.gray("1. Restart your IDE to apply configurations"));
       console.log(
-        chalk.gray('2. Run "cortex start" to begin AI collaboration')
+        chalk.gray('2. Run "cortex start" to begin AI collaboration'),
       );
     } catch (error) {
       console.error(
         chalk.red("❌ Failed to generate IDE configurations:"),
-        error
+        error,
       );
     }
   }
 
   /**
-   * Generate MCP-integrated rules
+   * Generate platform-specific rules for all supported platforms
    */
   async generateMCPRules(): Promise<void> {
-    console.log(chalk.blue("🧠 Generating MCP-integrated rules..."));
+    console.log(
+      chalk.blue(
+        "🧠 Generating platform-specific rules for all AI platforms...",
+      ),
+    );
 
     try {
-      await this.mcpRulesGenerator.generateMCPRules();
+      await this.cortexRulesGenerator.generateAllPlatformRules();
 
       console.log(
-        chalk.green("\n🎉 MCP-integrated rules generated successfully!")
+        chalk.green("\n🎉 Platform-specific rules generated successfully!"),
       );
       console.log(chalk.yellow("\nGenerated files:"));
       console.log(
-        chalk.gray("- .cursor/rules/cortex-mcp.mdc (Cursor MCP rules)")
+        chalk.gray(
+          "- .cursor/rules/cortex.mdc (Cursor rules with MCP integration)",
+        ),
       );
-      console.log(chalk.gray("- CLAUDE-MCP (Claude MCP rules)"));
-      console.log(chalk.gray("- GEMINI-MCP (Gemini MCP rules)"));
+      console.log(chalk.gray("- CLAUDE.md (Claude system message template)"));
+      console.log(chalk.gray("- GEMINI.md (Gemini prompt template)"));
       console.log(chalk.yellow("\nNext steps:"));
+      console.log(chalk.gray("1. Restart your IDE to apply the new rules"));
       console.log(
-        chalk.gray("1. Replace existing rules with MCP-integrated rules")
+        chalk.gray("2. For Cursor: AI responses will use MCP integration"),
       );
-      console.log(chalk.gray("2. Restart your IDE to apply MCP rules"));
       console.log(
-        chalk.gray("3. Every AI response will now go through MCP validation")
+        chalk.gray(
+          "3. For Claude/Gemini: Use the generated templates as system messages",
+        ),
       );
     } catch (error) {
-      console.error(chalk.red("❌ Failed to generate MCP rules:"), error);
+      console.error(chalk.red("❌ Failed to generate platform rules:"), error);
     }
   }
 
@@ -194,7 +202,7 @@ export class CortexCLI {
       case "Cursor":
         console.log(chalk.green("✅ Cursor configuration ready!"));
         console.log(
-          chalk.gray("Open Cursor and start coding with AI assistance")
+          chalk.gray("Open Cursor and start coding with AI assistance"),
         );
         break;
       case "Claude":
@@ -213,7 +221,7 @@ export class CortexCLI {
    */
   async showVersion(): Promise<void> {
     const packageJson = await fs.readJson(
-      path.join(this.projectPath, "package.json")
+      path.join(this.projectPath, "package.json"),
     );
     console.log(chalk.blue(`🧠 Cortex AI v${packageJson.version}`));
   }
@@ -222,10 +230,7 @@ export class CortexCLI {
    * Create initial README
    */
   private async createInitialReadme(): Promise<void> {
-    const readmePath = path.join(
-      this.projectPath,
-      "docs/ai-collaboration/README.md"
-    );
+    const readmePath = path.join(this.projectPath, "docs/cortex/README.md");
 
     const content = `# Cortex AI Collaboration
 
@@ -276,7 +281,7 @@ The AI immediately applies learned preferences to current and future responses.
       mcpServers: {
         "cortex-mcp-server": {
           command: "node",
-          args: ["cortex/core/mcp-server.js"],
+          args: ["cortex/core/mcp/mcp-protocol-server.js"],
           timeout: 3000,
           env: {
             NODE_ENV: "production",
@@ -300,7 +305,7 @@ The AI immediately applies learned preferences to current and future responses.
 
     await fs.writeFile(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
     console.log(
-      chalk.gray("🔧 Created .cursor/mcp.json with MCP server configuration")
+      chalk.gray("🔧 Created .cursor/mcp.json with MCP server configuration"),
     );
   }
 
@@ -312,8 +317,8 @@ The AI immediately applies learned preferences to current and future responses.
     if (!homeDir) {
       console.log(
         chalk.yellow(
-          "⚠️  Could not determine home directory, skipping global MCP config"
-        )
+          "⚠️  Could not determine home directory, skipping global MCP config",
+        ),
       );
       return;
     }
@@ -331,8 +336,8 @@ The AI immediately applies learned preferences to current and future responses.
         } catch (error) {
           console.log(
             chalk.yellow(
-              "⚠️  Could not read existing MCP config, creating new one"
-            )
+              "⚠️  Could not read existing MCP config, creating new one",
+            ),
           );
           existingConfig = { mcpServers: {} };
         }
@@ -341,7 +346,7 @@ The AI immediately applies learned preferences to current and future responses.
       // Check if cortex-mcp-server already exists
       if (existingConfig.mcpServers["cortex-mcp-server"]) {
         console.log(
-          chalk.gray("🔧 Global MCP config already contains cortex-mcp-server")
+          chalk.gray("🔧 Global MCP config already contains cortex-mcp-server"),
         );
         return;
       }
@@ -375,17 +380,17 @@ The AI immediately applies learned preferences to current and future responses.
       // Write updated config
       await fs.writeFile(
         globalMCPPath,
-        JSON.stringify(existingConfig, null, 2)
+        JSON.stringify(existingConfig, null, 2),
       );
       console.log(
-        chalk.green("✅ Added cortex-mcp-server to global MCP configuration")
+        chalk.green("✅ Added cortex-mcp-server to global MCP configuration"),
       );
       console.log(chalk.gray(`📁 Location: ${globalMCPPath}`));
       console.log(chalk.gray(`🔧 MCP Server Path: ${mcpServerPath}`));
     } catch (error) {
       console.log(
         chalk.yellow("⚠️  Could not create global MCP config:"),
-        error
+        error,
       );
     }
   }
@@ -396,11 +401,11 @@ The AI immediately applies learned preferences to current and future responses.
   private async detectMCPServerPath(): Promise<string> {
     // Check if we're in a global npm installation
     const globalPaths = [
-      "/usr/local/lib/node_modules/@rikaidev/cortex/cortex/core/mcp-server.js",
-      "/opt/homebrew/lib/node_modules/@rikaidev/cortex/cortex/core/mcp-server.js",
+      "/usr/local/lib/node_modules/@rikaidev/cortex/cortex/core/mcp/mcp-protocol-server.js",
+      "/opt/homebrew/lib/node_modules/@rikaidev/cortex/cortex/core/mcp/mcp-protocol-server.js",
       path.join(
         process.env.npm_config_prefix || "",
-        "lib/node_modules/@rikaidev/cortex/cortex/core/mcp-server.js"
+        "lib/node_modules/@rikaidev/cortex/cortex/core/mcp/mcp-protocol-server.js",
       ),
     ];
 
@@ -418,7 +423,7 @@ The AI immediately applies learned preferences to current and future responses.
         packageDir,
         "cortex",
         "core",
-        "mcp-server.js"
+        "mcp/mcp-protocol-server.js",
       );
 
       if (await fs.pathExists(fallbackPath)) {
@@ -429,7 +434,7 @@ The AI immediately applies learned preferences to current and future responses.
     }
 
     throw new Error(
-      "Could not detect MCP server path. Please ensure @rikaidev/cortex is properly installed globally."
+      "Could not detect MCP server path. Please ensure @rikaidev/cortex is properly installed globally.",
     );
   }
 
@@ -440,10 +445,10 @@ The AI immediately applies learned preferences to current and future responses.
     console.log(chalk.blue("🌐 Installing global MCP configuration..."));
     await this.createGlobalMCPConfig();
     console.log(
-      chalk.green("✅ Global MCP configuration installed successfully!")
+      chalk.green("✅ Global MCP configuration installed successfully!"),
     );
     console.log(
-      chalk.gray("💡 Restart Cursor to activate the global MCP server")
+      chalk.gray("💡 Restart Cursor to activate the global MCP server"),
     );
   }
 }

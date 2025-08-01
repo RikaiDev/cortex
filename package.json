@@ -1,11 +1,12 @@
 {
   "name": "@rikaidev/cortex",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Cortex AI - AI Collaboration Brain with real-time preference learning and structured thinking",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "cortex": "cortex/cli/index.js"
+    "cortex": "cortex/cli/index.js",
+    "cortex-mcp": "cortex/core/mcp/mcp-protocol-server.js"
   },
   "scripts": {
     "build": "tsc",
@@ -14,7 +15,12 @@
     "prebuild": "npm run clean",
     "postbuild": "chmod +x cortex/cli/index.js",
     "test": "echo \"No tests specified\" && exit 0",
-    "lint": "echo \"No linting configured\" && exit 0",
+    "lint": "node scripts/code-quality-check.js",
+    "lint:fix": "node scripts/code-quality-check.js --fix",
+    "lint:verbose": "node scripts/code-quality-check.js --verbose",
+    "lint:future": "node scripts/future-vars-check.js",
+    "lint:future:fix": "node scripts/future-vars-check.js --fix",
+    "lint:future:verbose": "node scripts/future-vars-check.js --verbose",
     "release:check": "./scripts/release-check.sh",
     "release:dry-run": "./scripts/release.sh --dry-run",
     "release:patch": "./scripts/release.sh patch",
@@ -60,6 +66,9 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/body-parser": "^1.19.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
     "@types/fs-extra": "^11.0.0",
     "@types/inquirer": "^9.0.0",
     "@types/marked": "^5.0.0",

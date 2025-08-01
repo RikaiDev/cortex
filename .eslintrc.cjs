@@ -12,11 +12,12 @@ module.exports = {
     ecmaVersion: 2022,
     sourceType: 'module',
   },
-  plugins: [],
+  plugins: ['@typescript-eslint'],
   rules: {
     'prefer-const': 'error',
     'no-var': 'error',
-    'no-unused-vars': ['error', { 
+    'no-unused-vars': 'off', // Turn off base rule
+    '@typescript-eslint/no-unused-vars': ['error', { 
       'argsIgnorePattern': '^_',
       'varsIgnorePattern': '^_',
       'caughtErrorsIgnorePattern': '^_'

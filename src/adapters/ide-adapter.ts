@@ -1,4 +1,4 @@
-import { Role, ProjectKnowledge } from "../core/types";
+import { Role, ProjectKnowledge } from "../core/common/types.js";
 import fs from "fs-extra";
 import path from "path";
 
@@ -28,7 +28,7 @@ export abstract class IDEAdapter {
   constructor(
     projectRoot: string,
     roles: Role[],
-    projectKnowledge: ProjectKnowledge
+    projectKnowledge: ProjectKnowledge,
   ) {
     this.projectRoot = projectRoot;
     this.roles = roles;
@@ -141,6 +141,10 @@ export abstract class IDEAdapter {
     const rules: IDERule[] = [];
 
     // Analyze coding patterns and generate rules
+    if (!this.projectKnowledge.codingPatterns) {
+      return rules;
+    }
+
     for (const pattern of this.projectKnowledge.codingPatterns) {
       if (pattern.name.includes("camelCase")) {
         rules.push({
@@ -280,7 +284,7 @@ export class CursorAdapter extends IDEAdapter {
           keywords: role.discoveryKeywords,
           capabilities: role.capabilities,
         })),
-        patterns: this.projectKnowledge.codingPatterns.map((pattern: any) => ({
+        patterns: this.projectKnowledge.codingPatterns?.map((pattern: any) => ({
           name: pattern.name,
           description: pattern.description,
           examples: pattern.examples,
@@ -340,7 +344,7 @@ export class IDEGenerator {
   constructor(
     projectRoot: string,
     roles: Role[],
-    projectKnowledge: ProjectKnowledge
+    projectKnowledge: ProjectKnowledge,
   ) {
     this.projectRoot = projectRoot;
     this.roles = roles;
@@ -361,7 +365,7 @@ export class IDEGenerator {
       const config = await adapter.generateConfig();
       const outputPath = path.join(
         this.projectRoot,
-        `configs/${config.name.toLowerCase()}-config.json`
+        `configs/${config.name.toLowerCase()}-config.json`,
       );
 
       await fs.ensureDir(path.dirname(outputPath));
@@ -382,13 +386,13 @@ export class IDEGenerator {
         capabilities: role.capabilities,
         keywords: role.discoveryKeywords,
       })),
-      patterns: this.projectKnowledge.codingPatterns.map((pattern: any) => ({
+      patterns: this.projectKnowledge.codingPatterns?.map((pattern: any) => ({
         name: pattern.name,
         description: pattern.description,
         frequency: pattern.frequency,
         examples: pattern.examples,
       })),
-      architecture: this.projectKnowledge.architecture.map((arch: any) => ({
+      architecture: this.projectKnowledge.architecture?.map((arch: any) => ({
         name: arch.name,
         description: arch.description,
         benefits: arch.benefits,
@@ -398,7 +402,7 @@ export class IDEGenerator {
 
     const docsPath = path.join(
       this.projectRoot,
-      "docs/ai-collaboration/project-knowledge.json"
+      "docs/cortex/project-knowledge.json",
     );
     await fs.ensureDir(path.dirname(docsPath));
     await fs.writeJson(docsPath, docsStructure, { spaces: 2 });
