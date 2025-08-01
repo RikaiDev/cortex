@@ -119,7 +119,7 @@ required_files=(
     "README.md"
     "CHANGELOG.md"
     "cortex/cli/index.js"
-    "cortex/core/mcp-server.js"
+    "cortex/core/mcp/mcp-protocol-server.js"
 )
 
 for file in "${required_files[@]}"; do
