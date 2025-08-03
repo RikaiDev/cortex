@@ -529,9 +529,6 @@ export class KnowledgeExtractor {
     // Update long-term memory documentation
     await this.updateLongTermMemory(patterns);
 
-    // Generate Cursor Adapter documentation
-    await this.generateCursorAdapterDocs(patterns);
-
     console.log(
       `Processed ${experiences.length} experiences, extracted ${patterns.length} patterns`
     );
@@ -551,17 +548,21 @@ export class KnowledgeExtractor {
   /**
    * Generate architecture documentation for Cursor Adapter
    */
-  private async generateArchitectureDoc(patterns: KnowledgePattern[]): Promise<void> {
+  private async generateArchitectureDoc(
+    patterns: KnowledgePattern[]
+  ): Promise<void> {
     const architecturePath = path.join(this.docsDir, "architecture.md");
-    
+
     let content = `# Architecture Documentation\n\n_Generated on ${new Date().toISOString()}_\n\n`;
 
     // Extract architecture decisions from patterns
-    const architecturePatterns = patterns.filter(p => p.category === "technical");
-    
+    const architecturePatterns = patterns.filter(
+      (p) => p.category === "technical"
+    );
+
     if (architecturePatterns.length > 0) {
       content += `## Architecture Decisions\n\n`;
-      
+
       architecturePatterns.forEach((pattern) => {
         content += `### ${pattern.title}\n\n`;
         content += `${pattern.description}\n\n`;
@@ -581,19 +582,23 @@ export class KnowledgeExtractor {
   /**
    * Generate code patterns documentation for Cursor Adapter
    */
-  private async generateCodePatternsDoc(patterns: KnowledgePattern[]): Promise<void> {
+  private async generateCodePatternsDoc(
+    patterns: KnowledgePattern[]
+  ): Promise<void> {
     const codePatternsPath = path.join(this.docsDir, "code-patterns.md");
-    
+
     let content = `# Code Patterns\n\n_Generated on ${new Date().toISOString()}_\n\n`;
 
     // Extract code-related patterns
-    const codePatterns = patterns.filter(p => 
-      p.category === "technical" || 
-      p.patterns.some(pattern => 
-        pattern.includes("code") || 
-        pattern.includes("implementation") || 
-        pattern.includes("function")
-      )
+    const codePatterns = patterns.filter(
+      (p) =>
+        p.category === "technical" ||
+        p.patterns.some(
+          (pattern) =>
+            pattern.includes("code") ||
+            pattern.includes("implementation") ||
+            pattern.includes("function")
+        )
     );
 
     if (codePatterns.length > 0) {
@@ -616,32 +621,38 @@ export class KnowledgeExtractor {
   /**
    * Generate project knowledge documentation for Cursor Adapter
    */
-  private async generateProjectKnowledgeDoc(patterns: KnowledgePattern[]): Promise<void> {
-    const projectKnowledgePath = path.join(this.docsDir, "project-knowledge.md");
-    
+  private async generateProjectKnowledgeDoc(
+    patterns: KnowledgePattern[]
+  ): Promise<void> {
+    const projectKnowledgePath = path.join(
+      this.docsDir,
+      "project-knowledge.md"
+    );
+
     let content = `# Project Knowledge\n\n_Generated on ${new Date().toISOString()}_\n\n`;
 
     // Extract all knowledge from patterns
-    const allKnowledge = patterns.flatMap(p => [
+    const allKnowledge = patterns.flatMap((p) => [
       ...p.patterns,
       ...p.solutions,
-      ...p.bestPractices
+      ...p.bestPractices,
     ]);
 
     const uniqueKnowledge = [...new Set(allKnowledge)];
 
     if (uniqueKnowledge.length > 0) {
       content += `## Knowledge Points\n\n`;
-      
+
       uniqueKnowledge.forEach((knowledge) => {
-        const relatedPatterns = patterns.filter(p => 
-          p.patterns.includes(knowledge) || 
-          p.solutions.includes(knowledge) || 
-          p.bestPractices.includes(knowledge)
+        const relatedPatterns = patterns.filter(
+          (p) =>
+            p.patterns.includes(knowledge) ||
+            p.solutions.includes(knowledge) ||
+            p.bestPractices.includes(knowledge)
         );
-        
+
         content += `### ${knowledge}\n\n`;
-        content += `**Related Patterns:** ${relatedPatterns.map(p => p.title).join(", ")}\n\n`;
+        content += `**Related Patterns:** ${relatedPatterns.map((p) => p.title).join(", ")}\n\n`;
         content += `**Frequency:** ${relatedPatterns.length} patterns\n\n`;
       });
     }
@@ -652,24 +663,31 @@ export class KnowledgeExtractor {
   /**
    * Generate project structure documentation for Cursor Adapter
    */
-  private async generateProjectStructureDoc(patterns: KnowledgePattern[]): Promise<void> {
-    const projectStructurePath = path.join(this.docsDir, "project-structure.md");
-    
+  private async generateProjectStructureDoc(
+    patterns: KnowledgePattern[]
+  ): Promise<void> {
+    const projectStructurePath = path.join(
+      this.docsDir,
+      "project-structure.md"
+    );
+
     let content = `# Project Structure\n\n_Generated on ${new Date().toISOString()}_\n\n`;
 
     // Extract structure-related patterns
-    const structurePatterns = patterns.filter(p => 
-      p.category === "design" || 
-      p.patterns.some(pattern => 
-        pattern.includes("structure") || 
-        pattern.includes("organization") || 
-        pattern.includes("layout")
-      )
+    const structurePatterns = patterns.filter(
+      (p) =>
+        p.category === "design" ||
+        p.patterns.some(
+          (pattern) =>
+            pattern.includes("structure") ||
+            pattern.includes("organization") ||
+            pattern.includes("layout")
+        )
     );
 
     if (structurePatterns.length > 0) {
       content += `## Structure Patterns\n\n`;
-      
+
       structurePatterns.forEach((pattern) => {
         content += `### ${pattern.title}\n\n`;
         content += `${pattern.description}\n\n`;
@@ -689,22 +707,23 @@ export class KnowledgeExtractor {
    */
   private async generateToolsDoc(patterns: KnowledgePattern[]): Promise<void> {
     const toolsPath = path.join(this.docsDir, "tools.md");
-    
+
     let content = `# Tools and Utilities\n\n_Generated on ${new Date().toISOString()}_\n\n`;
 
     // Extract tool-related patterns
-    const toolPatterns = patterns.filter(p => 
-      p.patterns.some(pattern => 
-        pattern.includes("tool") || 
-        pattern.includes("command") || 
-        pattern.includes("utility") ||
-        pattern.includes("script")
+    const toolPatterns = patterns.filter((p) =>
+      p.patterns.some(
+        (pattern) =>
+          pattern.includes("tool") ||
+          pattern.includes("command") ||
+          pattern.includes("utility") ||
+          pattern.includes("script")
       )
     );
 
     if (toolPatterns.length > 0) {
       content += `## Tool Usage Patterns\n\n`;
-      
+
       toolPatterns.forEach((pattern) => {
         content += `### ${pattern.title}\n\n`;
         content += `${pattern.description}\n\n`;

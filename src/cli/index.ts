@@ -18,7 +18,11 @@ const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
 program
   .name("cortex")
   .description("🧠 Cortex - AI Collaboration Brain")
-  .version(packageJson.version);
+  .version(packageJson.version)
+  .option(
+    "-p, --project-path <path>",
+    "Project path (default: current directory)"
+  );
 
 addMCPCommands(program);
 
@@ -99,67 +103,56 @@ program
 
 program
   .command("init")
-  .description("Initialize Cortex in your project")
-  .option(
-    "-p, --project-path <path>",
-    "Project path (default: current directory)"
-  )
-  .action(async (_options) => {
+  .description("Initialize Cortex in your project and detect project type")
+  .action(async (options) => {
     try {
-      const cli = new CortexCLI(_options.projectPath);
+      // First, detect project type
+      console.log(chalk.blue("🔍 Detecting project type..."));
+      const { ProjectAnalyzer } = await import(
+        "../core/project/project-analyzer.js"
+      );
+      const analyzer = new ProjectAnalyzer(
+        options.projectPath || process.cwd()
+      );
+      const analysis = await analyzer.analyzeProject();
+
+      console.log(chalk.blue("📋 Project Detection Results:"));
+      console.log(
+        chalk.cyan("Project Type:") +
+          ` ${analysis.projectType} (${(analysis.confidence * 100).toFixed(1)}% confidence)`
+      );
+      if (analysis.framework) {
+        console.log(chalk.cyan("Framework:") + ` ${analysis.framework}`);
+      }
+      console.log();
+      console.log(chalk.yellow("🚀 Suggested Commands:"));
+      console.log(
+        chalk.cyan("Build:") + ` ${analysis.buildCommand || "Not detected"}`
+      );
+      console.log(
+        chalk.cyan("Development:") + ` ${analysis.devCommand || "Not detected"}`
+      );
+      console.log(
+        chalk.cyan("Test:") + ` ${analysis.testCommand || "Not detected"}`
+      );
+      console.log();
+
+      // Then initialize Cortex
+      console.log(chalk.blue("🔧 Initializing Cortex..."));
+      const cli = new CortexCLI(options.projectPath || process.cwd());
       await cli.initialize();
+
       console.log(chalk.green("✅ Cortex initialized successfully!"));
+      console.log();
+      console.log(
+        chalk.green(
+          "💡 Copy the suggested commands to your Cursor project settings!"
+        )
+      );
     } catch (error) {
       console.error(chalk.red("❌ Failed to initialize Cortex:"), error);
       process.exit(1);
     }
-  });
-
-program
-  .command("generate-ide")
-  .description("Generate IDE configurations and rules")
-  .option(
-    "-p, --project-path <path>",
-    "Project path (default: current directory)"
-  )
-  .action(async (_options) => {
-    try {
-      const cli = new CortexCLI(_options.projectPath);
-      await cli.generateIDE();
-    } catch (error) {
-      console.error(chalk.red("❌ IDE generation failed:"), error);
-      process.exit(1);
-    }
-  });
-
-program
-  .command("generate-rules")
-  .description("Generate platform-specific rules for all AI platforms")
-  .option(
-    "-p, --project-path <path>",
-    "Project path (default: current directory)"
-  )
-  .action(async (_options) => {
-    console.log(chalk.yellow("This command is temporarily disabled."));
-  });
-
-program
-  .command("start")
-  .description("Start AI collaboration")
-  .option(
-    "-p, --project-path <path>",
-    "Project path (default: current directory)"
-  )
-  .action(async (_options) => {
-    console.log(chalk.yellow("This command is temporarily disabled."));
-  });
-
-program
-  .command("version")
-  .description("Show current version")
-  .action(async () => {
-    const cli = new CortexCLI();
-    await cli.showVersion();
   });
 
 program.parse();

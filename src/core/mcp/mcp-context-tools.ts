@@ -243,19 +243,13 @@ Filters applied: ${this.describeFilters(options)} -->`;
     // Boost for MCP-related experiences
     const userInput = experience.userInput || "";
     const response = experience.response || "";
-    
-    if (
-      userInput.includes("MCP") ||
-      response.includes("MCP")
-    ) {
+
+    if (userInput.includes("MCP") || response.includes("MCP")) {
       relevance += 0.2;
     }
 
     // Boost for testing experiences
-    if (
-      userInput.includes("測試") ||
-      response.includes("測試")
-    ) {
+    if (userInput.includes("測試") || response.includes("測試")) {
       relevance += 0.1;
     }
 

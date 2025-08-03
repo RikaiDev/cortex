@@ -36,6 +36,12 @@ export interface ProjectAnalysis {
   conventions: Convention[];
   tools: ToolInfo[];
   architecture: ArchitectureInfo;
+  projectType: "php" | "node" | "python" | "java" | "ruby" | "go" | "unknown";
+  framework?: string;
+  buildCommand?: string;
+  devCommand?: string;
+  testCommand?: string;
+  confidence: number;
 }
 
 /**
@@ -110,6 +116,8 @@ export class ProjectAnalyzer {
         patterns: [],
         dependencies: [],
       },
+      projectType: "unknown",
+      confidence: 0,
     };
   }
 
@@ -132,6 +140,15 @@ export class ProjectAnalyzer {
 
     // Analyze architecture
     this.analysis.architecture = await this.analyzeArchitecture();
+
+    // Detect project type and framework
+    const projectTypeInfo = await this.detectProjectType();
+    this.analysis.projectType = projectTypeInfo.type;
+    this.analysis.framework = projectTypeInfo.framework;
+    this.analysis.buildCommand = projectTypeInfo.buildCommand;
+    this.analysis.devCommand = projectTypeInfo.devCommand;
+    this.analysis.testCommand = projectTypeInfo.testCommand;
+    this.analysis.confidence = projectTypeInfo.confidence;
 
     return this.analysis;
   }
@@ -537,6 +554,283 @@ export class ProjectAnalyzer {
     }
 
     return tools;
+  }
+
+  /**
+   * Detect project type and suggest commands
+   * @returns Project type information
+   */
+  private async detectProjectType(): Promise<{
+    type: ProjectAnalysis["projectType"];
+    framework?: string;
+    buildCommand?: string;
+    devCommand?: string;
+    testCommand?: string;
+    confidence: number;
+  }> {
+    const indicators = await this.collectProjectIndicators();
+    const projectType = this.determineProjectType(indicators);
+    const framework = await this.detectFramework(indicators);
+
+    return {
+      type: projectType,
+      framework: framework?.name,
+      buildCommand: this.suggestBuildCommand(
+        projectType,
+        framework || undefined
+      ),
+      devCommand: this.suggestDevCommand(projectType, framework || undefined),
+      testCommand: this.suggestTestCommand(projectType, framework || undefined),
+      confidence: this.calculateConfidence(indicators, framework),
+    };
+  }
+
+  /**
+   * Collect project indicators
+   */
+  private async collectProjectIndicators(): Promise<string[]> {
+    const indicators: string[] = [];
+
+    // Check for package managers
+    const files = await fs.readdir(this.projectRoot);
+
+    for (const file of files) {
+      if (file === "composer.json") indicators.push("composer");
+      if (file === "package.json") indicators.push("npm");
+      if (file === "pom.xml") indicators.push("maven");
+      if (file === "requirements.txt") indicators.push("pip");
+      if (file === "Gemfile") indicators.push("bundler");
+      if (file === "go.mod") indicators.push("go-modules");
+    }
+
+    // Check for framework-specific files
+    const allFiles = await this.getAllFiles();
+    for (const file of allFiles) {
+      if (file.includes("artisan")) indicators.push("laravel");
+      if (file.includes("symfony")) indicators.push("symfony");
+      if (file.includes("wp-config.php")) indicators.push("wordpress");
+      if (file.includes("app.py")) indicators.push("flask");
+      if (file.includes("manage.py")) indicators.push("django");
+      if (file.includes("main.go")) indicators.push("go-app");
+    }
+
+    return indicators;
+  }
+
+  /**
+   * Determine project type based on indicators
+   */
+  private determineProjectType(
+    indicators: string[]
+  ): ProjectAnalysis["projectType"] {
+    if (indicators.includes("composer")) {
+      return "php";
+    }
+    if (indicators.includes("npm")) {
+      return "node";
+    }
+    if (indicators.includes("pip") || indicators.includes("requirements.txt")) {
+      return "python";
+    }
+    if (indicators.includes("maven")) {
+      return "java";
+    }
+    if (indicators.includes("bundler")) {
+      return "ruby";
+    }
+    if (indicators.includes("go-modules") || indicators.includes("go-app")) {
+      return "go";
+    }
+
+    return "unknown";
+  }
+
+  /**
+   * Detect specific framework
+   */
+  private async detectFramework(
+    indicators: string[]
+  ): Promise<{ name: string; confidence: number } | null> {
+    if (indicators.includes("laravel")) {
+      return { name: "Laravel", confidence: 0.9 };
+    }
+    if (indicators.includes("symfony")) {
+      return { name: "Symfony", confidence: 0.9 };
+    }
+    if (indicators.includes("wordpress")) {
+      return { name: "WordPress", confidence: 0.8 };
+    }
+    if (indicators.includes("django")) {
+      return { name: "Django", confidence: 0.9 };
+    }
+    if (indicators.includes("flask")) {
+      return { name: "Flask", confidence: 0.8 };
+    }
+    if (await this.hasFile("next.config.js")) {
+      return { name: "Next.js", confidence: 0.9 };
+    }
+    if (await this.hasFile("vite.config.js")) {
+      return { name: "Vite", confidence: 0.8 };
+    }
+
+    return null;
+  }
+
+  /**
+   * Suggest build command
+   */
+  private suggestBuildCommand(
+    type: ProjectAnalysis["projectType"],
+    _framework?: { name: string; confidence: number }
+  ): string {
+    switch (type) {
+      case "php":
+        return "composer install --no-dev --optimize-autoloader";
+      case "node":
+        return "npm run build";
+      case "python":
+        return "pip install -r requirements.txt";
+      case "java":
+        return "mvn clean install";
+      case "ruby":
+        return "bundle install";
+      case "go":
+        return "go build";
+      default:
+        return "";
+    }
+  }
+
+  /**
+   * Suggest development command
+   */
+  private suggestDevCommand(
+    type: ProjectAnalysis["projectType"],
+    framework?: { name: string; confidence: number }
+  ): string {
+    switch (type) {
+      case "php":
+        if (framework?.name === "Laravel") {
+          return "php artisan serve";
+        }
+        if (framework?.name === "Symfony") {
+          return "symfony server:start";
+        }
+        return "php -S localhost:8000 -t public";
+      case "node":
+        return "npm run dev";
+      case "python":
+        if (framework?.name === "Django") {
+          return "python manage.py runserver";
+        }
+        if (framework?.name === "Flask") {
+          return "python app.py";
+        }
+        return "python -m http.server 8000";
+      case "java":
+        return "mvn spring-boot:run";
+      case "ruby":
+        return "rails server";
+      case "go":
+        return "go run main.go";
+      default:
+        return "";
+    }
+  }
+
+  /**
+   * Suggest test command
+   */
+  private suggestTestCommand(
+    type: ProjectAnalysis["projectType"],
+    framework?: { name: string; confidence: number }
+  ): string {
+    switch (type) {
+      case "php":
+        if (framework?.name === "Laravel") {
+          return "php artisan test";
+        }
+        return "vendor/bin/phpunit";
+      case "node":
+        return "npm test";
+      case "python":
+        if (framework?.name === "Django") {
+          return "python manage.py test";
+        }
+        return "pytest";
+      case "java":
+        return "mvn test";
+      case "ruby":
+        return "bundle exec rspec";
+      case "go":
+        return "go test ./...";
+      default:
+        return "";
+    }
+  }
+
+  /**
+   * Calculate confidence score
+   */
+  private calculateConfidence(
+    indicators: string[],
+    framework?: { name: string; confidence: number } | null
+  ): number {
+    let confidence = 0.5; // Base confidence
+
+    // Add confidence for package manager detection
+    if (
+      indicators.includes("composer") ||
+      indicators.includes("npm") ||
+      indicators.includes("pip") ||
+      indicators.includes("maven")
+    ) {
+      confidence += 0.3;
+    }
+
+    // Add confidence for framework detection
+    if (framework) {
+      confidence += framework.confidence * 0.2;
+    }
+
+    return Math.min(confidence, 1.0);
+  }
+
+  /**
+   * Helper methods for file detection
+   */
+  private async getAllFiles(): Promise<string[]> {
+    try {
+      const files: string[] = [];
+      const walk = async (dir: string) => {
+        const items = await fs.readdir(dir, { withFileTypes: true });
+        for (const item of items) {
+          const fullPath = path.join(dir, item.name);
+          if (
+            item.isDirectory() &&
+            !item.name.startsWith(".") &&
+            item.name !== "node_modules"
+          ) {
+            await walk(fullPath);
+          } else if (item.isFile()) {
+            files.push(fullPath);
+          }
+        }
+      };
+      await walk(this.projectRoot);
+      return files;
+    } catch {
+      return [];
+    }
+  }
+
+  private async hasFile(filename: string): Promise<boolean> {
+    try {
+      await fs.access(path.join(this.projectRoot, filename));
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /**

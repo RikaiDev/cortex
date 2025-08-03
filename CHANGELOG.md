@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.1] - 2025-08-03
+
+### 🎯 **Quality Improvements**
+
+- **Code Cleanup**: Removed unused adapters (ide-adapter.ts, mcp-rules-generator.ts)
+- **Architecture Simplification**: Integrated project detection into init command
+- **CLI Streamlining**: Simplified CLI commands, removed redundant options
+- **Full Integration**: Complete integration of all adapters (Cursor, Claude, Gemini)
+
+### 🔧 **Bug Fixes**
+
+- **Project Detection**: Fixed PHP project detection priority in environment analysis
+- **MCP Tools**: Ensured all MCP tools are properly registered and functional
+- **Code Quality**: Fixed all ESLint and TypeScript errors
+- **Formatting**: Applied Prettier formatting to all source files
+
+### ✅ **Testing & Validation**
+
+- **End-to-End Testing**: Comprehensive real-world testing of all features
+- **CLI Integration**: Verified all CLI commands work correctly
+- **MCP Server**: Confirmed MCP server and tools function properly
+- **Project Initialization**: Validated complete project setup workflow
+
+### 📚 **Documentation**
+
+- **Updated README**: Reflects current architecture and capabilities
+- **Code Comments**: Improved code documentation and clarity
+- **User Guides**: Enhanced user experience with better error messages
+
 ## [0.7.0] - 2025-08-03
 
 ### 🚀 Major Architecture Overhaul

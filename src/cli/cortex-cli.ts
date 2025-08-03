@@ -2,10 +2,9 @@ import chalk from "chalk";
 import inquirer from "inquirer";
 import fs from "fs-extra";
 import path from "path";
-import { CursorAdapter } from "../adapters/cursor-adapter.js";
 import { ClaudeAdapter } from "../adapters/claude-adapter.js";
 import { GeminiAdapter } from "../adapters/gemini-adapter.js";
-import { CortexRulesGenerator } from "../adapters/mcp-rules-generator.js";
+import { CursorAdapter } from "../adapters/cursor-adapter.js";
 import { ProjectAnalyzer } from "../core/project/project-analyzer.js";
 
 interface DetectedCommands {
@@ -20,7 +19,6 @@ export class CortexCLI {
   private claudeAdapter: ClaudeAdapter;
   private geminiAdapter: GeminiAdapter;
   private cursorAdapter: CursorAdapter;
-  private cortexRulesGenerator: CortexRulesGenerator;
 
   constructor(projectPath?: string) {
     this.projectPath = projectPath || process.cwd();
@@ -31,21 +29,28 @@ export class CortexCLI {
       conventions: [],
       preferences: [],
     });
-    // Pass project path to generator so it can also access cortex.json
-    this.cortexRulesGenerator = new CortexRulesGenerator(this.projectPath);
   }
 
   /**
    * Initialize Cortex AI with an intelligent, interactive setup.
-   * It detects the project environment to provide smart defaults for user confirmation.
+   * It uses ProjectAnalyzer to detect the project environment and provide smart defaults.
    */
   public async initialize(): Promise<void> {
     console.log(chalk.blue("🧠 Initializing Cortex AI..."));
     console.log();
 
-    // Step 1: Detect project environment to provide smart defaults
+    // Step 1: Use ProjectAnalyzer to detect project environment
     console.log(chalk.gray("🔍 Detecting project environment..."));
-    const detected = await this.detectProjectEnvironment();
+    const projectAnalyzer = new ProjectAnalyzer(this.projectPath);
+    const analysis = await projectAnalyzer.analyzeProject();
+
+    const detected: DetectedCommands = {
+      build: analysis.buildCommand,
+      dev: analysis.devCommand,
+      test: analysis.testCommand,
+      framework: analysis.framework || analysis.projectType,
+    };
+
     if (detected.framework) {
       console.log(
         chalk.green(`✅ Detected ${detected.framework} environment.`)
@@ -107,14 +112,21 @@ export class CortexCLI {
     );
     console.log();
 
-    // Step 4: Analyze project structure (can leverage saved config in the future)
-    console.log(chalk.blue("🔍 Analyzing project structure..."));
-    const analyzer = new ProjectAnalyzer(this.projectPath);
-    await analyzer.analyzeProject();
-    console.log(chalk.green("✅ Project analysis complete!"));
+    // Step 4: Generate AI platform configurations
+    console.log(chalk.blue("🤖 Generating AI platform configurations..."));
+    await this.claudeAdapter.generateClaudeConfig();
+    await this.geminiAdapter.generateGeminiConfig();
+    await this.cursorAdapter.generateCursorRules();
+    console.log(chalk.green("✅ AI platform configurations generated!"));
     console.log();
 
-    // Step 5: Create directories and initial documentation
+    // Step 5: Generate project documentation
+    console.log(chalk.blue("📝 Generating project documentation..."));
+    await projectAnalyzer.generateDocumentation();
+    console.log(chalk.green("✅ Project documentation generated!"));
+    console.log();
+
+    // Step 6: Create directories and initial documentation
     console.log(chalk.blue("📁 Creating documentation structure..."));
     await this.setupDocumentation();
     console.log(
@@ -126,9 +138,7 @@ export class CortexCLI {
     console.log();
     console.log(chalk.blue("Next steps:"));
     console.log(
-      chalk.gray(
-        '1. Run "cortex generate-ide" to create IDE configurations based on your preferences.'
-      )
+      chalk.gray("1. IDE configurations have been generated automatically.")
     );
     console.log(
       chalk.gray(
@@ -149,125 +159,6 @@ export class CortexCLI {
       await fs.ensureDir(fullPath);
     }
     await this.createInitialReadme();
-  }
-
-  /**
-   * Detects the project's framework and suggests common commands.
-   * @returns An object with detected framework and suggested commands.
-   */
-  private async detectProjectEnvironment(): Promise<DetectedCommands> {
-    // Check for Nx
-    if (await fs.pathExists(path.join(this.projectPath, "nx.json"))) {
-      return {
-        build: "nx build",
-        dev: "nx serve",
-        test: "nx test",
-        framework: "Nx Workspace",
-      };
-    }
-
-    // Check for Node.js (package.json)
-    const packageJsonPath = path.join(this.projectPath, "package.json");
-    if (await fs.pathExists(packageJsonPath)) {
-      const packageManager = await this.detectPackageManager();
-      try {
-        const packageJson = await fs.readJson(packageJsonPath);
-        const scripts = packageJson.scripts || {};
-        return {
-          build: scripts.build ? `${packageManager} run build` : undefined,
-          dev:
-            scripts.dev || scripts.start
-              ? `${packageManager} run ${scripts.dev ? "dev" : "start"}`
-              : undefined,
-          test: scripts.test ? `${packageManager} run test` : undefined,
-          framework: `Node.js (${packageManager})`,
-        };
-      } catch (e) {
-        /* fall through */
-      }
-    }
-
-    // Check for Python
-    if (
-      (await fs.pathExists(path.join(this.projectPath, "pyproject.toml"))) ||
-      (await fs.pathExists(path.join(this.projectPath, "requirements.txt")))
-    ) {
-      return {
-        // No standard build/dev command, but test is common
-        test: "pytest",
-        framework: "Python",
-      };
-    }
-
-    // Check for Rust
-    if (await fs.pathExists(path.join(this.projectPath, "Cargo.toml"))) {
-      return {
-        build: "cargo build",
-        dev: "cargo run",
-        test: "cargo test",
-        framework: "Rust",
-      };
-    }
-
-    // Check for Go
-    if (await fs.pathExists(path.join(this.projectPath, "go.mod"))) {
-      return {
-        build: "go build",
-        dev: "go run .",
-        test: "go test ./...",
-        framework: "Go",
-      };
-    }
-
-    return {
-      build: "npm run build",
-      dev: "npm run dev",
-      test: "npm run test",
-    };
-  }
-
-  private async detectPackageManager(): Promise<string> {
-    if (await fs.pathExists(path.join(this.projectPath, "bun.lock"))) {
-      return "bun";
-    }
-    if (await fs.pathExists(path.join(this.projectPath, "pnpm-lock.yaml"))) {
-      return "pnpm";
-    }
-    if (await fs.pathExists(path.join(this.projectPath, "yarn.lock"))) {
-      return "yarn";
-    }
-    return "npm";
-  }
-
-  /**
-   * Generate IDE configurations based on cortex.json.
-   */
-  async generateIDE(): Promise<void> {
-    console.log(
-      chalk.blue("🔧 Generating IDE configurations from cortex.json...")
-    );
-
-    // CortexRulesGenerator now reads cortex.json in its constructor
-    await this.cortexRulesGenerator.generateAllPlatformRules();
-
-    console.log(chalk.green("\n🎉 IDE configurations generated successfully!"));
-    console.log(chalk.yellow("\nNext steps:"));
-    console.log(chalk.gray("1. Restart your IDE to apply configurations."));
-  }
-
-  // ... (showVersion, createInitialReadme and other methods can remain similar, but mcp.json logic is removed)
-
-  /**
-   * Show version
-   */
-  async showVersion(): Promise<void> {
-    const packageJsonPath = path.join(__dirname, "../../package.json"); // More robust path
-    if (await fs.pathExists(packageJsonPath)) {
-      const packageJson = await fs.readJson(packageJsonPath);
-      console.log(chalk.blue(`🧠 Cortex AI v${packageJson.version}`));
-    } else {
-      console.log(chalk.yellow("Could not determine version."));
-    }
   }
 
   /**
