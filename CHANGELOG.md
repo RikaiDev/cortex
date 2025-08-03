@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.7.1] - 2025-08-03
+## [0.7.2] - 2025-08-03
 
 ### 🔧 **Critical Bug Fixes**
 
@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 - **Enhanced CLI Tests**: Added test to simulate global installation environment
 - **Better Error Detection**: Tests now catch \_\_dirname issues before release
 - **Comprehensive Validation**: All tests pass in both local and global installation scenarios
+
+## [0.7.1] - 2025-08-03
 
 ### 🎯 **Quality Improvements**
 
