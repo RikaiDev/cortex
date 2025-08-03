@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [0.7.1] - 2025-08-03
 
+### 🔧 **Critical Bug Fixes**
+
+- **Global Installation Fix**: Resolved `__dirname is not defined` error in global installation
+- **ES Modules Compatibility**: Fixed package.json path resolution for ES modules environment
+- **Test Coverage**: Added global installation environment simulation to CLI tests
+
+### ✅ **Testing Improvements**
+
+- **Enhanced CLI Tests**: Added test to simulate global installation environment
+- **Better Error Detection**: Tests now catch \_\_dirname issues before release
+- **Comprehensive Validation**: All tests pass in both local and global installation scenarios
+
 ### 🎯 **Quality Improvements**
 
 - **Code Cleanup**: Removed unused adapters (ide-adapter.ts, mcp-rules-generator.ts)

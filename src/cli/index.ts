@@ -24,7 +24,7 @@ try {
     packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
   } catch (fallbackError) {
     // Final fallback: use a default version
-    packageJson = { version: "0.7.1" };
+    packageJson = { version: "0.7.2" };
   }
 }
 
