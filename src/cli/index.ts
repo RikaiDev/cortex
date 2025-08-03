@@ -10,10 +10,23 @@ import { fileURLToPath } from "url";
 
 const program = new Command();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const packageJsonPath = path.join(__dirname, "..", "..", "package.json");
-const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+// Get package.json version dynamically
+let packageJson: any;
+try {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+  const packageJsonPath = path.join(__dirname, "..", "..", "package.json");
+  packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+} catch (error) {
+  // Fallback: try to read from current working directory
+  try {
+    const packageJsonPath = path.join(process.cwd(), "package.json");
+    packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+  } catch (fallbackError) {
+    // Final fallback: use a default version
+    packageJson = { version: "0.7.1" };
+  }
+}
 
 program
   .name("cortex")

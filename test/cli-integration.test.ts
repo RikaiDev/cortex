@@ -10,7 +10,7 @@ const mocha = new Mocha();
 // --- Test Suite ---
 const suite = new Mocha.Suite("CLI Integration Tests");
 
-// Helper function to run CLI command
+// Helper function to run CLI command (local build)
 const runCLI = (
   args: string[]
 ): Promise<{ code: number; stdout: string; stderr: string }> => {
@@ -79,6 +79,59 @@ suite.addTest(
     // This command might fail in test environment, but should not crash
     expect(result.code).to.be.a("number");
   })
+);
+
+// Helper function to simulate global installation test
+const runGlobalCLI = (
+  args: string[]
+): Promise<{ code: number; stdout: string; stderr: string }> => {
+  return new Promise((resolve) => {
+    // Simulate global installation by changing the working directory
+    // and using a different package.json path structure
+    const child = spawn("node", ["index.js", ...args], {
+      stdio: ["pipe", "pipe", "pipe"],
+      env: {
+        ...process.env,
+        NODE_ENV: "test",
+        // Simulate global installation environment
+        GLOBAL_INSTALL: "true",
+      },
+      cwd: path.join(process.cwd(), "cortex", "cli"), // Change working directory
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    child.stdout?.on("data", (data) => {
+      stdout += data.toString();
+    });
+
+    child.stderr?.on("data", (data) => {
+      stderr += data.toString();
+    });
+
+    child.on("close", (code) => {
+      resolve({
+        code: code || 0,
+        stdout,
+        stderr,
+      });
+    });
+  });
+};
+
+suite.addTest(
+  new Mocha.Test(
+    "CLI should work in global installation environment",
+    async () => {
+      const result = await runGlobalCLI(["--version"]);
+      expect(result.code).to.equal(0);
+      expect(result.stderr).to.be.empty; // Should not have __dirname errors
+
+      const version = result.stdout.trim();
+      expect(isValidSemver(version)).to.be.true;
+    }
+  )
 );
 
 // --- Run the Suite ---
