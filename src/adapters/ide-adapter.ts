@@ -28,7 +28,7 @@ export abstract class IDEAdapter {
   constructor(
     projectRoot: string,
     roles: Role[],
-    projectKnowledge: ProjectKnowledge,
+    projectKnowledge: ProjectKnowledge
   ) {
     this.projectRoot = projectRoot;
     this.roles = roles;
@@ -233,14 +233,14 @@ export class VSCodeAdapter extends IDEAdapter {
           {
             label: "Cortex: Discover Roles",
             type: "shell",
-            command: "bun",
+            command: "npm",
             args: ["run", "cortex", "discover"],
             group: "build",
           },
           {
             label: "Cortex: Start Collaboration",
             type: "shell",
-            command: "bun",
+            command: "npm",
             args: ["run", "cortex", "start"],
             group: "test",
           },
@@ -344,7 +344,7 @@ export class IDEGenerator {
   constructor(
     projectRoot: string,
     roles: Role[],
-    projectKnowledge: ProjectKnowledge,
+    projectKnowledge: ProjectKnowledge
   ) {
     this.projectRoot = projectRoot;
     this.roles = roles;
@@ -365,7 +365,7 @@ export class IDEGenerator {
       const config = await adapter.generateConfig();
       const outputPath = path.join(
         this.projectRoot,
-        `configs/${config.name.toLowerCase()}-config.json`,
+        `configs/${config.name.toLowerCase()}-config.json`
       );
 
       await fs.ensureDir(path.dirname(outputPath));
@@ -402,7 +402,7 @@ export class IDEGenerator {
 
     const docsPath = path.join(
       this.projectRoot,
-      "docs/cortex/project-knowledge.json",
+      "docs/cortex/project-knowledge.json"
     );
     await fs.ensureDir(path.dirname(docsPath));
     await fs.writeJson(docsPath, docsStructure, { spaces: 2 });

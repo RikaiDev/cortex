@@ -14,7 +14,7 @@
     "clean": "rm -rf cortex",
     "prebuild": "npm run clean",
     "postbuild": "chmod +x cortex/cli/index.js",
-    "test": "echo \"No tests specified\" && exit 0",
+    "test": "tsx test/mcp-context-tools.test.ts",
     "lint": "node scripts/code-quality-check.js",
     "lint:fix": "node scripts/code-quality-check.js --fix",
     "lint:verbose": "node scripts/code-quality-check.js --verbose",
@@ -56,7 +56,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.0",
+    "@modelcontextprotocol/sdk": "^1.17.1",
     "chalk": "^5.0.0",
     "commander": "^11.0.0",
     "fs-extra": "^11.0.0",
@@ -69,16 +69,20 @@
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.6",
+    "@types/chai": "^5.2.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/fs-extra": "^11.0.0",
     "@types/inquirer": "^9.0.0",
     "@types/marked": "^5.0.0",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "bun-types": "latest",
+    "chai": "^5.2.1",
     "eslint": "^8.0.0",
-    "prettier": "^3.0.0"
+    "mocha": "^11.7.1",
+    "prettier": "^3.0.0",
+    "tsx": "^4.20.3"
   }
 }

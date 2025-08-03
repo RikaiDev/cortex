@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/version-v0.4.0-blue.svg)](https://github.com/RikaiDev/cortex/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Bun](https://img.shields.io/badge/runtime-Bun-yellow.svg)](https://bun.sh)
+[![Node.js](https://img.shields.io/badge/runtime-Node.js-green.svg)](https://nodejs.org/)
 
 [English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Updates](docs/updates/) | [Changelog](CHANGELOG.md)
 
@@ -75,7 +75,7 @@
 
 ```bash
 # 全域安裝
-bun install -g @rikaidev/cortex
+npm install -g @rikaidev/cortex
 
 # 或使用 npx
 npx @rikaidev/cortex
@@ -145,7 +145,7 @@ AI：[學習] 不要重複同樣的錯誤
 
 ### **先決條件**
 
-- [Bun](https://bun.sh)（推薦）或 Node.js 18+
+- Node.js 18+
 - TypeScript 知識
 
 ### **設置**
@@ -156,16 +156,16 @@ git clone https://github.com/RikaiDev/cortex.git
 cd cortex
 
 # 安裝依賴
-bun install
+npm install
 
 # 建置專案
-bun run build
+npm run build
 
 # 執行測試
-bun run test
+npm run test
 
 # 開始開發
-bun run dev
+npm run dev
 ```
 
 ### **貢獻**

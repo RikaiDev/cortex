@@ -140,7 +140,7 @@ export class ExperienceEditor {
    * @returns Array of knowledge patterns
    */
   private async extractPatterns(
-    experiences: ExperienceFile[],
+    experiences: ExperienceFile[]
   ): Promise<KnowledgePattern[]> {
     // Group experiences by patterns
     const patternMap = new Map<string, any>();
@@ -158,7 +158,7 @@ export class ExperienceEditor {
       if (experience.context) {
         try {
           const contextPatterns = this.extractContextPatterns(
-            experience.context,
+            experience.context
           );
           for (const pattern of contextPatterns) {
             this.addPattern(patternMap, pattern, experience);
@@ -202,7 +202,7 @@ export class ExperienceEditor {
 
     // Sort patterns by frequency and confidence
     patterns.sort(
-      (a, b) => b.frequency - a.frequency || b.confidence - a.confidence,
+      (a, b) => b.frequency - a.frequency || b.confidence - a.confidence
     );
 
     return patterns;
@@ -217,7 +217,7 @@ export class ExperienceEditor {
   private addPattern(
     patternMap: Map<string, any>,
     pattern: string,
-    experience: ExperienceFile,
+    experience: ExperienceFile
   ): void {
     // Normalize pattern
     const normalizedPattern = pattern.trim();
@@ -302,7 +302,7 @@ export class ExperienceEditor {
    * @returns Array of updated documentation files
    */
   private async updateDocumentation(
-    patterns: KnowledgePattern[],
+    patterns: KnowledgePattern[]
   ): Promise<string[]> {
     // Group patterns by documentation target
     const targetMap = new Map<string, KnowledgePattern[]>();
@@ -336,7 +336,7 @@ export class ExperienceEditor {
    */
   private async updateDocumentationFile(
     targetFile: string,
-    patterns: KnowledgePattern[],
+    patterns: KnowledgePattern[]
   ): Promise<void> {
     try {
       // Ensure file exists
@@ -402,7 +402,7 @@ export class ExperienceEditor {
    * @returns Number of deleted files
    */
   private async cleanupProcessedFiles(
-    processedFiles: ExperienceFile[],
+    processedFiles: ExperienceFile[]
   ): Promise<number> {
     // Identify files older than 30 days
     const thirtyDaysAgo = new Date();
@@ -455,7 +455,7 @@ export class ExperienceEditor {
     // Sort by timestamp
     experiences.sort(
       (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     );
 
     // Identify files older than 30 days
@@ -463,7 +463,7 @@ export class ExperienceEditor {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
     const oldFiles = experiences.filter(
-      (exp) => new Date(exp.timestamp) < thirtyDaysAgo,
+      (exp) => new Date(exp.timestamp) < thirtyDaysAgo
     );
 
     return {
@@ -480,7 +480,7 @@ export class ExperienceEditor {
  * @param projectRoot - Project root directory
  */
 export async function runExperienceExtraction(
-  projectRoot: string = process.cwd(),
+  projectRoot: string = process.cwd()
 ): Promise<void> {
   const editor = new ExperienceEditor(projectRoot);
 
@@ -492,7 +492,7 @@ export async function runExperienceExtraction(
   console.log(`- Processed ${result.filesProcessed} experience files`);
   console.log(`- Extracted ${result.patternsExtracted} knowledge patterns`);
   console.log(
-    `- Updated ${result.documentationUpdated.length} documentation files`,
+    `- Updated ${result.documentationUpdated.length} documentation files`
   );
   console.log(`- Cleaned up ${result.filesDeleted} old experience files`);
 }

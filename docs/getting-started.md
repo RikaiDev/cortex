@@ -12,7 +12,7 @@ Get Cortex AI up and running in your project in under 2 minutes!
 
 ## 📋 Prerequisites
 
-- Node.js 18+ or Bun
+- Node.js 18+
 - Git (for version control)
 
 ## ⚡ Super Quick Setup
@@ -25,8 +25,8 @@ Get Cortex AI up and running in your project in under 2 minutes!
 # Option A: npm (recommended)
 npm install -g @rikaidev/cortex
 
-# Option B: bun
-bun add -g @rikaidev/cortex
+# Option B: using npx (no global installation needed)
+npx @rikaidev/cortex
 
 # Option C: direct download
 curl -fsSL https://github.com/RikaiDev/cortex/releases/latest/download/cortex-cli | sh

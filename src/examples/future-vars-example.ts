@@ -34,7 +34,7 @@ function processMCPTool(
     advancedFeatures?: boolean;
     learningMode?: boolean;
     contextDepth?: number;
-  },
+  }
 ) {
   console.log(`Processing MCP tool: ${toolName}`);
 
@@ -61,7 +61,7 @@ function processMCPTool(
  */
 function _future_initializeAgentCollaboration(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  config: { advancedFeatures?: boolean; learningMode?: boolean },
+  config: { advancedFeatures?: boolean; learningMode?: boolean }
 ) {
   // Future agent collaboration logic
 }
@@ -71,7 +71,7 @@ function _future_initializeAgentCollaboration(
  */
 function _future_contextMemoryTool(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  context: Record<string, any>,
+  context: Record<string, any>
 ) {
   // Future context memory implementation
 }

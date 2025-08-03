@@ -2,17 +2,27 @@
   "mcpServers": {
     "cortex-mcp-server": {
       "command": "node",
-      "args": ["cortex/core/mcp-server.js"],
-      "timeout": 600,
+      "args": ["cortex/core/mcp/mcp-protocol-server.js"],
+      "timeout": 600000,
       "env": {
         "NODE_ENV": "production",
-        "MCP_DEBUG": "false"
+        "MCP_DEBUG": "false",
+        "PROJECT_ROOT": ".",
+        "DOCS_CACHE_TTL": "300000"
       },
       "autoApprove": [
-        "intent-analyzer",
-        "task-decomposer", 
-        "role-selector",
-        "experience-recorder"
+        "context-enhancer",
+        "experience-recorder",
+        "standards-detector",
+        "standards-applier",
+        "standards-summary",
+        "standards-export",
+        "register-standards-patterns",
+        "cortex-feedback-collector",
+        "cortex-feedback-analyzer",
+        "cortex-feedback-responder",
+        "cortex-user-simulator",
+        "cortex-learning-integrator"
       ]
     }
   }

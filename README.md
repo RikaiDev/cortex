@@ -2,7 +2,7 @@
 
 [![Version](https://img.shields.io/badge/version-v0.4.0-blue.svg)](https://github.com/RikaiDev/cortex/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Bun](https://img.shields.io/badge/runtime-Bun-yellow.svg)](https://bun.sh)
+[![Node.js](https://img.shields.io/badge/runtime-Node.js-green.svg)](https://nodejs.org/)
 
 [English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Updates](docs/updates/) | [Changelog](CHANGELOG.md)
 
@@ -47,6 +47,75 @@
 └── Simplified CLI for core operations
 ```
 
+### Cortex Philosophy
+
+**Cortex AI** represents our core philosophy for transforming AI interactions:
+
+1. **Few-Shot to Fine-Tune Transformation** - We transform simple few-shot examples into comprehensive fine-tune prompts automatically, eliminating the need for manual prompt engineering.
+
+2. **Hook-Based Interception System** - Our architecture intercepts all user inputs and processes them through a structured pipeline that guarantees consistent quality and behavior.
+
+3. **Deterministic Expansion Over Randomness** - Rather than relying on emergent behaviors, we systematically expand minimal user inputs into complete, well-structured instructions.
+
+4. **Guaranteed Processing Pipeline** - Every user input is processed through our complete pipeline with 100% execution rate, ensuring no step is ever skipped.
+
+5. **Explicit Reasoning and Documentation** - All transformations from few-shot to fine-tune are explicit, documented, and traceable through our workflow.
+
+This philosophy drives our implementation of an intelligent system that transforms simple user inputs (few-shot examples) into comprehensive, production-ready fine-tune prompts through mandatory processing steps.
+
+#### MCP Workflow Architecture
+
+```mermaid
+graph TD
+    A[User Input] --> B[Cursor Processing]
+    B --> C{MCP Interceptor}
+    C -->|Enforced Execution| D[MCP Workflow]
+    D --> E[Intent Analysis]
+    E --> F[Task Decomposition]
+    F --> G[Role Selection]
+    G --> H[Best Practice Search]
+    H --> I[Instruction Generation]
+    I --> J[User Response]
+
+    subgraph "MCP Enforcement Mechanism"
+    C
+    K[.cursor/rules/cortex.mdc]
+    L[prompt-injection.ts]
+    M[thought-interceptor.ts]
+    end
+
+    K --> C
+    L --> C
+    M --> C
+```
+
+#### MCP Processing Sequence
+
+```mermaid
+sequenceDiagram
+    participant User as User
+    participant Cursor as Cursor AI
+    participant Rules as .cursor/rules/cortex.mdc
+    participant Interceptor as Thought Interceptor
+    participant MCP as MCP Workflow
+    participant Tools as MCP Tools
+
+    User->>Cursor: Input Message
+    Cursor->>Rules: Load Rules
+    Rules->>Cursor: Enforce MCP Rules
+    Cursor->>Interceptor: Intercept User Input
+    Interceptor->>MCP: Force MCP Workflow Execution
+    MCP->>Tools: Execute Intent Analysis
+    Tools->>MCP: Return Intent Results
+    MCP->>Tools: Execute Task Decomposition
+    Tools->>MCP: Return Task Structure
+    MCP->>Tools: Execute Role Selection
+    Tools->>MCP: Return Role Assignments
+    MCP->>Interceptor: Return Complete MCP Results
+    Interceptor->>Cursor: Inject Structured Thinking
+    Cursor->>User: Return MCP-Based Response
+```
+
 ## ✨ **Core Features**
 
 ### **🧠 Structured Thinking**
@@ -75,7 +144,7 @@
 
 ```bash
 # Global installation
-bun install -g @rikaidev/cortex
+npm install -g @rikaidev/cortex
 
 # Or using npx
 npx @rikaidev/cortex
@@ -143,7 +212,7 @@ AI: [Learns] Don't repeat the same mistake
 
 ### **Prerequisites**
 
-- [Bun](https://bun.sh) (recommended) or Node.js 18+
+- Node.js 18+
 - TypeScript knowledge
 
 ### **Setup**
@@ -154,16 +223,16 @@ git clone https://github.com/RikaiDev/cortex.git
 cd cortex
 
 # Install dependencies
-bun install
+npm install
 
 # Build project
-bun run build
+npm run build
 
 # Run tests
-bun run test
+npm run test
 
 # Start development
-bun run dev
+npm run dev
 ```
 
 ### **Contributing**

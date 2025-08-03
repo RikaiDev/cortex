@@ -31,7 +31,7 @@ export interface MCPWorkflow {
   executeTool(_toolName: string, _params: Record<string, any>): Promise<any>;
   registerTool?(
     _toolName: string,
-    _handler: (_params: Record<string, any>) => Promise<any>,
+    _handler: (_params: Record<string, any>) => Promise<any>
   ): void;
   getAvailableTools?(): string[];
 }
@@ -51,7 +51,7 @@ export interface ThinkingStep {
  */
 export type MessageProcessor = (
   _message: string,
-  _context?: Record<string, any>,
+  _context?: Record<string, any>
 ) => Promise<string>;
 
 /**

@@ -75,7 +75,7 @@ export class RoleManager {
       projectRoot,
       "docs",
       "ai-collaboration",
-      "roles",
+      "roles"
     );
     this.roles = new Map();
   }
@@ -193,7 +193,7 @@ export class RoleManager {
 
       // Extract execution steps
       const executionMatch = content.match(
-        /^##\s+Execution\s+Steps\s*\n+([^#]+)/im,
+        /^##\s+Execution\s+Steps\s*\n+([^#]+)/im
       );
       if (executionMatch) {
         role.executionSteps = executionMatch[1]
@@ -204,7 +204,7 @@ export class RoleManager {
 
       // Extract compatible roles
       const compatibleMatch = content.match(
-        /^##\s+Compatible\s+Roles\s*\n+([^#]+)/im,
+        /^##\s+Compatible\s+Roles\s*\n+([^#]+)/im
       );
       if (compatibleMatch) {
         role.compatibleRoles = compatibleMatch[1]
@@ -215,7 +215,7 @@ export class RoleManager {
 
       // Extract incompatible roles
       const incompatibleMatch = content.match(
-        /^##\s+Incompatible\s+Roles\s*\n+([^#]+)/im,
+        /^##\s+Incompatible\s+Roles\s*\n+([^#]+)/im
       );
       if (incompatibleMatch) {
         role.incompatibleRoles = incompatibleMatch[1]
@@ -256,7 +256,7 @@ export class RoleManager {
    */
   assignRoles(
     tasks: Array<{ id: string; name: string; description: string }>,
-    context: Record<string, any> = {},
+    context: Record<string, any> = {}
   ): RoleAssignmentResult {
     // Initialize mappings
     const mappings: RoleMapping[] = [];
@@ -286,7 +286,7 @@ export class RoleManager {
     const executionPlan = this.generateExecutionPlan(
       mappings,
       primaryRole,
-      secondaryRoles,
+      secondaryRoles
     );
 
     return {
@@ -306,7 +306,7 @@ export class RoleManager {
   private findMatchingRole(
     task: { id: string; name: string; description: string },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    context: Record<string, any>,
+    context: Record<string, any>
   ): Role | null {
     // Match roles based on task name and description
     const taskText = `${task.name} ${task.description}`.toLowerCase();
@@ -389,7 +389,7 @@ export class RoleManager {
    */
   private determineSecondaryRoles(
     mappings: RoleMapping[],
-    primaryRole: string,
+    primaryRole: string
   ): string[] {
     // Get unique roles excluding primary
     const secondaryRoleSet = new Set<string>();
@@ -412,7 +412,7 @@ export class RoleManager {
   private generateExecutionPlan(
     mappings: RoleMapping[],
     primaryRole: string,
-    secondaryRoles: string[],
+    secondaryRoles: string[]
   ): string {
     const primary = this.roles.get(primaryRole);
     if (!primary) {
@@ -458,7 +458,7 @@ export class RoleManager {
     roleId: string,
     taskId: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    context: Record<string, any> = {},
+    context: Record<string, any> = {}
   ): Promise<RoleExecutionResult> {
     // Get the role
     const role = this.roles.get(roleId);
@@ -493,7 +493,7 @@ export class RoleManager {
   generateRoleTemplate(
     roleId: string,
     name: string,
-    description: string,
+    description: string
   ): string {
     return `# ${name}
 
@@ -554,7 +554,7 @@ Example 2: This is another example with different context.
     roleId: string,
     name: string,
     description: string,
-    capabilities: string[] = [],
+    capabilities: string[] = []
   ): Promise<Role> {
     // Check if role already exists
     if (this.roles.has(roleId)) {
@@ -621,7 +621,7 @@ Example 2: This is another example with different context.
       if (descSection) {
         markdown = markdown.replace(
           descSection[0],
-          `## Description\n\n${updates.description}\n\n`,
+          `## Description\n\n${updates.description}\n\n`
         );
       }
     }

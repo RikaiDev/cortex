@@ -215,6 +215,23 @@ export class MCPWorkflow implements IMCPWorkflow {
         nextSteps: this.generateNextSteps(taskResult),
       };
 
+      // Record the complete experience
+      try {
+        await this.executeTool("experience-recorder", {
+          context: {
+            userInput,
+            intentAnalysis: intentResult,
+            taskDecomposition: taskResult,
+            finalResult,
+            workflowId: this.workflowId,
+            timestamp: new Date().toISOString(),
+            success: true,
+          },
+        });
+      } catch (recordingError) {
+        console.warn("Failed to record experience:", recordingError);
+      }
+
       return {
         workflowId: this.workflowId,
         steps: this.workflowSteps,
@@ -224,6 +241,21 @@ export class MCPWorkflow implements IMCPWorkflow {
         learnings: this.extractLearnings(),
       };
     } catch (error) {
+      // Record failed experience
+      try {
+        await this.executeTool("experience-recorder", {
+          context: {
+            userInput,
+            error: error instanceof Error ? error.message : String(error),
+            workflowId: this.workflowId,
+            timestamp: new Date().toISOString(),
+            success: false,
+          },
+        });
+      } catch (recordingError) {
+        console.warn("Failed to record failed experience:", recordingError);
+      }
+
       return {
         workflowId: this.workflowId,
         steps: this.workflowSteps,

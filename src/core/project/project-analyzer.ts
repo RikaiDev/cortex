@@ -169,7 +169,7 @@ export class ProjectAnalyzer {
    * @returns Project structure
    */
   private async scanProjectStructure(
-    dirPath: string,
+    dirPath: string
   ): Promise<ProjectStructure> {
     const relativePath = path.relative(this.projectRoot, dirPath);
     const name = path.basename(dirPath);
@@ -231,7 +231,7 @@ export class ProjectAnalyzer {
   private analyzeFileMetadata(
     filename: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    filepath: string,
+    filepath: string
   ): any {
     const metadata: any = {};
 
@@ -282,7 +282,7 @@ export class ProjectAnalyzer {
     // Pattern detection for MCP tools
     const mcpToolPattern = /registerTool\s*\(\s*["']([^"']+)["']/g;
     const mcpToolFiles = files.filter(
-      (file) => file.includes("mcp") || file.includes("tool"),
+      (file) => file.includes("mcp") || file.includes("tool")
     );
 
     if (mcpToolFiles.length > 0) {
@@ -292,7 +292,7 @@ export class ProjectAnalyzer {
         // Limit to first 5 files
         const content = await fs.readFile(
           path.join(this.projectRoot, file),
-          "utf-8",
+          "utf-8"
         );
         let match;
         while ((match = mcpToolPattern.exec(content)) !== null) {
@@ -345,11 +345,11 @@ export class ProjectAnalyzer {
       // Check naming conventions in sample files
       const sampleFiles = filesTs.slice(0, 20); // Sample up to 20 files
       const camelCaseCount = sampleFiles.filter((file) =>
-        /^[a-z]+([A-Z][a-z0-9]+)*\.(ts|tsx)$/.test(path.basename(file)),
+        /^[a-z]+([A-Z][a-z0-9]+)*\.(ts|tsx)$/.test(path.basename(file))
       ).length;
 
       const kebabCaseCount = sampleFiles.filter((file) =>
-        /^[a-z0-9]+(-[a-z0-9]+)*\.(ts|tsx)$/.test(path.basename(file)),
+        /^[a-z0-9]+(-[a-z0-9]+)*\.(ts|tsx)$/.test(path.basename(file))
       ).length;
 
       if (camelCaseCount > kebabCaseCount) {
@@ -358,7 +358,7 @@ export class ProjectAnalyzer {
           description: "Files are named using camelCase",
           examples: sampleFiles
             .filter((file) =>
-              /^[a-z]+([A-Z][a-z0-9]+)*\.(ts|tsx)$/.test(path.basename(file)),
+              /^[a-z]+([A-Z][a-z0-9]+)*\.(ts|tsx)$/.test(path.basename(file))
             )
             .slice(0, 3),
           enforcement: "recommended",
@@ -369,7 +369,7 @@ export class ProjectAnalyzer {
           description: "Files are named using kebab-case",
           examples: sampleFiles
             .filter((file) =>
-              /^[a-z0-9]+(-[a-z0-9]+)*\.(ts|tsx)$/.test(path.basename(file)),
+              /^[a-z0-9]+(-[a-z0-9]+)*\.(ts|tsx)$/.test(path.basename(file))
             )
             .slice(0, 3),
           enforcement: "recommended",
@@ -520,7 +520,7 @@ export class ProjectAnalyzer {
     const mcpConfigPath = path.join(
       this.projectRoot,
       "examples",
-      "cortex-mcp-config.json",
+      "cortex-mcp-config.json"
     );
     if (await fs.pathExists(mcpConfigPath)) {
       try {
@@ -630,7 +630,7 @@ export class ProjectAnalyzer {
    */
   private generateStructureTree(
     structure: ProjectStructure,
-    indent: string = "",
+    indent: string = ""
   ): string {
     if (structure.type === "file") {
       return `${indent}${structure.name}\n`;
@@ -788,7 +788,7 @@ export class ProjectAnalyzer {
     if (this.analysis.architecture.dependencies.length > 0) {
       for (const dependency of this.analysis.architecture.dependencies.slice(
         0,
-        10,
+        10
       )) {
         content += `- ${dependency}\n`;
       }

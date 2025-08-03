@@ -23,7 +23,7 @@ export function addMCPCommands(program: Command): void {
     .option(
       "-i, --input <input>",
       "User input to test",
-      "我們需要導入 MCP 來讓每個步驟都變成可控的",
+      "我們需要導入 MCP 來讓每個步驟都變成可控的"
     )
     .option("-c, --context <context>", "Additional context", "")
     .action(async (options) => {
@@ -83,16 +83,13 @@ export function addMCPCommands(program: Command): void {
     .command("start")
     .description("Start Cortex MCP server")
     .option(
-      "-p, --project-root <path>",
-      "Project root directory (default: current directory)",
-      process.cwd(),
+      "-p, --project-path <path>",
+      "Project path (default: current directory)"
     )
-    .option(
-      "--global",
-      "Global mode - automatically detect project root from current working directory",
-    )
+    .option("--project-root <path>", "Project root path (for MCP integration)")
     .action(async (options) => {
-      const projectRoot = options.global ? process.cwd() : options.projectRoot;
+      const projectRoot =
+        options.projectRoot || options.projectPath || process.cwd();
       await startMCPServer(projectRoot);
     });
 }
@@ -102,7 +99,7 @@ export function addMCPCommands(program: Command): void {
  */
 async function testMCPWorkflow(
   userInput: string,
-  context: string,
+  context: string
 ): Promise<void> {
   console.log(chalk.blue("🧪 Testing Cortex MCP Workflow..."));
   console.log(chalk.gray(`Input: ${userInput}`));
@@ -112,7 +109,15 @@ async function testMCPWorkflow(
   console.log();
 
   try {
+    // Create MCP workflow and register the actual tools
     const workflow = new MCPWorkflow(process.cwd());
+
+    // Import and register the context tools
+    const { createMCPContextTools } = await import(
+      "../core/mcp/mcp-context-tools.js"
+    );
+    createMCPContextTools(workflow, process.cwd());
+
     const contextObj = context ? { context } : {};
     const result = await workflow.executeWorkflow(userInput, contextObj);
 
@@ -142,7 +147,7 @@ async function testMCPWorkflow(
       console.log(chalk.cyan("📋 Task Decomposition:"));
       tasks.subTasks.forEach((task: any, index: number) => {
         console.log(
-          `${index + 1}. ${task.description} (${task.priority} priority)`,
+          `${index + 1}. ${task.description} (${task.priority} priority)`
         );
       });
       console.log();
@@ -197,15 +202,49 @@ async function listMCPTools(): Promise<void> {
   console.log();
 
   try {
-    const workflow = new MCPWorkflow(process.cwd());
-    const tools = workflow.getAvailableTools();
+    // List the available tools
+    const tools = [
+      "context-enhancer",
+      "experience-recorder",
+      "standards-detector",
+      "standards-applier",
+      "cortex-feedback-collector",
+    ];
 
-    tools.forEach((tool: string) => {
-      console.log(`- ${tool}`);
-    });
+    if (tools.length === 0) {
+      console.log(
+        chalk.yellow(
+          "⚠️  No tools registered. This might indicate an issue with tool registration."
+        )
+      );
+    } else {
+      tools.forEach((tool: string) => {
+        console.log(`- ${tool}`);
+      });
+    }
 
     console.log();
     console.log(chalk.gray(`Total: ${tools.length} tools available`));
+
+    // Also show the tools that should be available
+    console.log();
+    console.log(chalk.cyan("📋 Expected MCP Tools:"));
+    console.log("- context-enhancer: Load project context and experiences");
+    console.log(
+      "- experience-recorder: Record user interactions and learnings"
+    );
+    console.log("- standards-detector: Detect user preferences and standards");
+    console.log("- standards-applier: Apply learned standards to content");
+    console.log(
+      "- cortex-feedback-collector: Collect and process user feedback"
+    );
+
+    // Show MCP server status
+    console.log();
+    console.log(chalk.cyan("🚀 MCP Server Status:"));
+    console.log("- MCP server provides context engineering tools");
+    console.log("- Tools are designed to work with Cursor IDE integration");
+    console.log("- Use 'cortex mcp start' to start the MCP server");
   } catch (error) {
     console.error(chalk.red("❌ Failed to list tools:"), error);
     process.exit(1);
@@ -217,7 +256,7 @@ async function listMCPTools(): Promise<void> {
  */
 async function executeMCPTool(
   toolName: string,
-  inputStr: string,
+  inputStr: string
 ): Promise<void> {
   console.log(chalk.blue(`🔧 Executing MCP tool: ${toolName}`));
   console.log(chalk.gray(`Input: ${inputStr}`));
@@ -226,20 +265,38 @@ async function executeMCPTool(
   try {
     const input = JSON.parse(inputStr);
 
-    // Note: With official SDK, tools are called through the server directly
-    // For now, we'll simulate the tool execution
+    // Create MCP server instance and execute the tool
+    const { MCPProtocolServer } = await import(
+      "../core/mcp/mcp-protocol-server.js"
+    );
+    const server = new MCPProtocolServer(process.cwd());
+
+    // Execute the tool directly
+    let result;
+    switch (toolName) {
+      case "context-enhancer":
+        result = await server["executeContextEnhancer"](input);
+        break;
+      case "experience-recorder":
+        result = await server["executeExperienceRecorder"](input);
+        break;
+      case "standards-detector":
+        result = await server["executeStandardsDetector"](input);
+        break;
+      case "standards-applier":
+        result = await server["executeStandardsApplier"](input);
+        break;
+      case "cortex-feedback-collector":
+        result = await server["executeFeedbackCollector"](input);
+        break;
+      default:
+        throw new Error(`Unknown tool: ${toolName}`);
+    }
+
     console.log(chalk.green("✅ Tool executed successfully!"));
     console.log();
     console.log(chalk.cyan("📊 Result:"));
-    console.log(
-      JSON.stringify(
-        {
-          message: `Tool ${toolName} executed with input: ${JSON.stringify(input)}`,
-        },
-        null,
-        2,
-      ),
-    );
+    console.log(JSON.stringify(result, null, 2));
   } catch (error) {
     console.error(chalk.red("❌ Tool execution failed:"), error);
     process.exit(1);
@@ -251,7 +308,7 @@ async function executeMCPTool(
  */
 async function analyzeIntent(
   userInput: string,
-  context: string,
+  context: string
 ): Promise<void> {
   console.log(chalk.blue("🔍 Analyzing user intent..."));
   console.log(chalk.gray(`Input: ${userInput}`));
@@ -288,7 +345,7 @@ async function analyzeIntent(
  */
 async function findBestPractices(
   query: string,
-  searchType: string,
+  searchType: string
 ): Promise<void> {
   console.log(chalk.blue("📚 Searching for best practices..."));
   console.log(chalk.gray(`Query: ${query}`));
@@ -317,7 +374,7 @@ async function findBestPractices(
       console.log(chalk.cyan("📚 Found Best Practices:"));
       result.results.forEach((practice: any, index: number) => {
         console.log(
-          `${index + 1}. ${practice.file} (relevance: ${practice.relevance})`,
+          `${index + 1}. ${practice.file} (relevance: ${practice.relevance})`
         );
         console.log(`   Tags: ${practice.tags.join(", ")}`);
         console.log(`   Content: ${practice.content.substring(0, 100)}...`);
@@ -344,7 +401,7 @@ async function findBestPractices(
  */
 async function validateToolUsage(
   toolName: string,
-  usage: string,
+  usage: string
 ): Promise<void> {
   console.log(chalk.blue(`🔍 Validating tool usage: ${toolName}`));
   console.log(chalk.gray(`Usage: ${usage}`));

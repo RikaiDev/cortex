@@ -29,7 +29,7 @@ export interface FeedbackResult {
 export function initCortexFeedbackTools(
   server: McpServer,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  projectRoot: string,
+  projectRoot: string
 ): void {
   // Feedback Collection Tool
   server.registerTool(
@@ -60,7 +60,7 @@ export function initCortexFeedbackTools(
       return {
         content: [{ type: "text", text: JSON.stringify(result) }],
       };
-    },
+    }
   );
 
   // Feedback Analysis Tool
@@ -90,7 +90,7 @@ export function initCortexFeedbackTools(
       return {
         content: [{ type: "text", text: JSON.stringify(result) }],
       };
-    },
+    }
   );
 
   // Feedback Response Tool
@@ -120,7 +120,7 @@ export function initCortexFeedbackTools(
       return {
         content: [{ type: "text", text: result }],
       };
-    },
+    }
   );
 
   // User Experience Simulator Tool
@@ -151,7 +151,7 @@ export function initCortexFeedbackTools(
       return {
         content: [{ type: "text", text: result }],
       };
-    },
+    }
   );
 
   // Learning Integration Tool
@@ -166,7 +166,7 @@ export function initCortexFeedbackTools(
             source: z.string(),
             content: z.string(),
             confidence: z.number(),
-          }),
+          })
         ),
         integrationTarget: z.enum([
           "prompt",
@@ -187,7 +187,7 @@ export function initCortexFeedbackTools(
       return {
         content: [{ type: "text", text: JSON.stringify(result) }],
       };
-    },
+    }
   );
 }
 
@@ -224,7 +224,7 @@ async function analyzeFeedback(
     feedbackIds?: string[];
     timeRange?: { start: string; end: string };
     analysisType: string;
-  },
+  }
 ): Promise<{
   insights: string[];
   sentimentScore?: number;
@@ -343,7 +343,7 @@ async function integrateLearnings(params: {
   // In a real implementation, this would update system components based on learnings
   // For now, we'll simulate the integration process
   const validInsights = params.insights.filter(
-    (insight) => insight.confidence > 0.7,
+    (insight) => insight.confidence > 0.7
   );
 
   return {

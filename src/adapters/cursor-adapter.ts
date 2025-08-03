@@ -8,8 +8,6 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import chalk from "chalk";
 import { MCPWorkflow } from "../core/mcp/mcp-workflow.js";
-import { createPromptInjector } from "../core/thinking/prompt-injection.js";
-import { createCoTEmulation } from "../core/thinking/cot-emulation.js";
 
 export interface CursorRule {
   description: string;
@@ -47,8 +45,8 @@ export interface CursorAdapterConfig {
  * Default configuration for the Cursor adapter
  */
 const DEFAULT_CONFIG: CursorAdapterConfig = {
-  enableThinking: true,
-  enhancePrompts: true,
+  enableThinking: false, // Disabled as the thinking module is removed
+  enhancePrompts: false, // Disabled as the thinking module is removed
   projectRoot: process.cwd(),
   debugMode: false,
 };
@@ -57,9 +55,9 @@ export class CursorAdapter {
   private projectRoot: string;
   private roles: Role[];
   private projectKnowledge: ProjectKnowledge;
-  private promptInjector: ReturnType<typeof createPromptInjector>;
+  // private promptInjector: ReturnType<typeof createPromptInjector>;
   private mcpWorkflow?: MCPWorkflow;
-  private cotEmulation?: ReturnType<typeof createCoTEmulation>;
+  // private cotEmulation?: ReturnType<typeof createCoTEmulation>;
   private config: CursorAdapterConfig;
   private isInitialized: boolean = false;
 
@@ -71,13 +69,13 @@ export class CursorAdapter {
       conventions: [],
       preferences: [],
     },
-    customConfig?: Partial<CursorAdapterConfig>,
+    customConfig?: Partial<CursorAdapterConfig>
   ) {
     this.projectRoot = projectRoot;
     this.roles = roles;
     this.projectKnowledge = projectKnowledge;
     this.config = { ...DEFAULT_CONFIG, ...customConfig };
-    this.promptInjector = createPromptInjector(projectRoot);
+    // this.promptInjector = createPromptInjector(projectRoot);
   }
 
   /**
@@ -91,14 +89,13 @@ export class CursorAdapter {
 
     this.mcpWorkflow = mcpWorkflow;
 
-    // Initialize CoT emulation if enabled
-    if (this.config.enableThinking) {
-      this.cotEmulation = createCoTEmulation(mcpWorkflow, {
-        debugMode: this.config.debugMode,
-      });
-
-      await this.cotEmulation.initialize();
-    }
+    // CoT emulation is removed.
+    // if (this.config.enableThinking) {
+    //   this.cotEmulation = createCoTEmulation(mcpWorkflow, {
+    //     debugMode: this.config.debugMode,
+    //   });
+    //   await this.cotEmulation.initialize();
+    // }
 
     // Record initialization
     if (this.config.debugMode && this.mcpWorkflow) {
@@ -118,7 +115,7 @@ export class CursorAdapter {
    */
   async processUserMessage(
     message: string,
-    context: Record<string, any> = {},
+    context: Record<string, any> = {}
   ): Promise<string> {
     // Ensure adapter is initialized with MCP workflow
     if (!this.isInitialized || !this.mcpWorkflow) {
@@ -126,13 +123,13 @@ export class CursorAdapter {
     }
 
     // Use CoT emulation to process message if enabled
-    if (this.cotEmulation && this.config.enableThinking) {
-      return this.cotEmulation.processMessage(
-        message,
-        this.defaultMessageProcessor.bind(this),
-        context,
-      );
-    }
+    // if (this.cotEmulation && this.config.enableThinking) {
+    //   return this.cotEmulation.processMessage(
+    //     message,
+    //     this.defaultMessageProcessor.bind(this),
+    //     context,
+    //   );
+    // }
 
     // Otherwise process message normally
     return this.defaultMessageProcessor(message, context);
@@ -149,7 +146,7 @@ export class CursorAdapter {
    */
   private async defaultMessageProcessor(
     message: string,
-    context: Record<string, any> = {},
+    context: Record<string, any> = {}
   ): Promise<string> {
     // In a real implementation, this would call the model API
     // For now, we'll simulate a response that includes context information
@@ -166,13 +163,9 @@ export class CursorAdapter {
    * @returns Enhanced system prompt
    */
   enhanceSystemPrompt(basePrompt: string): string {
-    // Use CoT emulation to enhance prompt if enabled
-    if (this.cotEmulation && this.config.enhancePrompts) {
-      return this.cotEmulation.enhanceSystemPrompt(basePrompt);
-    }
-
-    // Otherwise use basic prompt injection
-    return this.promptInjector.injectThinkingTrigger(basePrompt);
+    // Basic prompt enhancement can be done here if needed,
+    // but the complex injection logic is gone.
+    return basePrompt;
   }
 
   /**
@@ -182,7 +175,7 @@ export class CursorAdapter {
    */
   private async recordEvent(
     eventType: string,
-    data: Record<string, any>,
+    data: Record<string, any>
   ): Promise<void> {
     try {
       if (this.mcpWorkflow) {

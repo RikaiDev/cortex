@@ -12,7 +12,7 @@
 
 ## 📋 前置需求
 
-- Node.js 18+ 或 Bun
+- Node.js 18+
 - Git（用於版本控制）
 
 ## ⚡ 超快速設置
@@ -25,8 +25,8 @@
 # 選項 A：npm（推薦）
 npm install -g @rikaidev/cortex
 
-# 選項 B：bun
-bun add -g @rikaidev/cortex
+# 選項 B：使用 npx（無需全域安裝）
+npx @rikaidev/cortex
 
 # 選項 C：直接下載
 curl -fsSL https://github.com/RikaiDev/cortex/releases/latest/download/cortex-cli | sh

@@ -23,7 +23,7 @@ export class ClaudeAdapter {
     await fs.writeFile(claudePath, systemMessage);
 
     console.log(
-      chalk.green("✅ Claude Code configuration generated successfully!"),
+      chalk.green("✅ Claude Code configuration generated successfully!")
     );
     console.log(chalk.gray("Generated files:"));
     console.log(chalk.gray("   • CLAUDE.md (Claude system message)"));
@@ -33,37 +33,54 @@ export class ClaudeAdapter {
    * Generate Claude system message with Cortex Agent integration
    */
   private generateSystemMessage(): string {
-    return `# Cortex AI - Claude Code System Message
+    return `# Cortex AI
 
-## Core Principle
+## Core Principles
 
-**Learn from docs, adapt to project, execute with precision, EVOLVE through experience.**
+Cortex AI is an adaptive AI collaboration system that learns from user preferences and provides structured responses.
 
-## 🚨 MANDATORY RULES
+## Bash commands
+- npm run build: Build the project
+- npm run dev: Run in development mode
+- npm test: Run tests
 
-1. **ALWAYS search docs/ before any implementation**
-2. **ALWAYS follow project conventions and patterns**
-3. **ALWAYS detect and use correct project tools**
-4. **ALWAYS test your code before delivering**
+## Code style
+- Follow existing patterns in the codebase
+- Use consistent formatting and naming conventions
+
+## Workflow
+- Be sure to test your changes before submitting
+- Prefer running specific tests over the full test suite for performance
 
 ## 🧠 Structured Thinking Process
 
-1. **Intent Exploration** - What does the user REALLY want to achieve?
-2. **Problem Analysis** - Understand the core issue
-3. **Knowledge Integration** - Apply learned preferences
-4. **Solution Development** - Consider user patterns
-5. **Implementation Planning** - Respect user preferences
-6. **Quality Validation** - Ensure preference compliance
+1. **Intent Analysis** - Understand the true goal behind the request
+2. **Task Decomposition** - Break complex problems into manageable parts
+3. **Knowledge Integration** - Apply project context and user preferences
+4. **Solution Planning** - Consider multiple approaches and select optimal path
+5. **Implementation** - Execute with precision and attention to detail
+6. **Validation** - Test thoroughly against requirements
+
+## 🚫 No Patch Thinking
+
+Avoid temporary fixes or workarounds:
+- Don't comment out code to "fix" errors
+- Don't delete variables without understanding purpose
+- Don't ignore warnings or errors
+
+Instead, solve root causes:
+- Understand the underlying problem
+- Consider architectural impact
+- Design proper solutions
+- Think about long-term maintainability
 
 ## 🎯 User Preference Learning
 
 The system learns from your feedback:
-- Corrections: "不對", "錯誤", "錯了"
-- Preferences: "我們用", "我們專案用"
-- Prohibitions: "不要", "從來不用"
-- Frustration: "又來了", "還是這樣"
-
-## ALWAYS TEST YOUR CODE.`;
+- Corrections: "不對", "錯誤", "錯了" (incorrect)
+- Preferences: "我們用", "我們專案用" (we use)
+- Prohibitions: "不要", "從來不用" (don't use)
+- Frustration: "又來了", "還是這樣" (not again)`;
   }
 
   /**

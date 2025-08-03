@@ -1,33 +1,34 @@
 /**
- * Cortex Core Module Exports
- *
- * This module exports all the core functionality of the Cortex AI system.
+ * Export all core modules
  */
-
-// Common types
-export * from "./common/types.js";
-
-// MCP modules
-export { MCPWorkflow } from "./mcp/mcp-workflow.js";
-export { MCPProtocolServer } from "./mcp/mcp-protocol-server.js";
-export * from "./mcp/mcp-thinking-tools.js";
-
-// Thinking modules
-export * from "./thinking/prompt-injection.js";
-export { createThinkingProcess } from "./thinking/thinking-process.js";
-export * from "./thinking/thought-interceptor.js";
-export { createCoTEmulation } from "./thinking/cot-emulation.js";
 
 // Experience modules
 export * from "./experience/cortex-feedback.js";
 export * from "./experience/experience-editor.js";
+export * from "./experience/preference-collector.js";
+
+// Common types - explicitly export to avoid conflicts
+export {
+  type ProjectKnowledge,
+  type MCPWorkflow,
+  type ThinkingStep,
+  type MessageProcessor,
+  type CortexMCPWorkflow,
+  type Role as BaseRole, // Rename the common Role to avoid conflict
+} from "./common/types.js";
+
+// MCP modules
+export { MCPWorkflow as MCPWorkflowInterface } from "./mcp/mcp-workflow.js";
+export { MCPProtocolServer } from "./mcp/mcp-protocol-server.js";
+export * from "./mcp/mcp-context-tools.js";
 
 // Project modules
 export * from "./project/project-analyzer.js";
+// Explicitly export from role-manager and rename its Role to avoid conflict
 export {
   RoleManager,
-  Role,
-  RoleMapping,
-  RoleAssignmentResult,
-  RoleExecutionResult,
+  type Role as ManagedRole,
+  type RoleMapping,
+  type RoleAssignmentResult,
+  type RoleExecutionResult,
 } from "./project/role-manager.js";

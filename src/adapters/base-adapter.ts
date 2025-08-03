@@ -31,7 +31,7 @@ export abstract class BaseAdapter implements AIAdapter {
   constructor(
     projectPath: string,
     roles: Role[],
-    projectKnowledge: ProjectKnowledge,
+    projectKnowledge: ProjectKnowledge
   ) {
     this.projectPath = projectPath;
     this.roles = roles;

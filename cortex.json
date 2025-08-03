@@ -1,0 +1,8 @@
+{
+  "preferences": {
+    "language": "zh-TW",
+    "buildCommand": "npm run build",
+    "devCommand": "npm run dev",
+    "testCommand": "npm run test"
+  }
+}

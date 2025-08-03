@@ -23,7 +23,7 @@ export class GeminiAdapter {
     await fs.writeFile(geminiPath, promptTemplate);
 
     console.log(
-      chalk.green("✅ Gemini Code configuration generated successfully!"),
+      chalk.green("✅ Gemini Code configuration generated successfully!")
     );
     console.log(chalk.gray("Generated files:"));
     console.log(chalk.gray("   • GEMINI.md (Gemini prompt template)"));

@@ -6,8 +6,14 @@ import { CursorAdapter } from "../adapters/cursor-adapter.js";
 import { ClaudeAdapter } from "../adapters/claude-adapter.js";
 import { GeminiAdapter } from "../adapters/gemini-adapter.js";
 import { CortexRulesGenerator } from "../adapters/mcp-rules-generator.js";
-
 import { ProjectAnalyzer } from "../core/project/project-analyzer.js";
+
+interface DetectedCommands {
+  build?: string;
+  dev?: string;
+  test?: string;
+  framework?: string;
+}
 
 export class CortexCLI {
   private projectPath: string;
@@ -25,68 +31,94 @@ export class CortexCLI {
       conventions: [],
       preferences: [],
     });
+    // Pass project path to generator so it can also access cortex.json
     this.cortexRulesGenerator = new CortexRulesGenerator(this.projectPath);
   }
 
   /**
-   * Initialize Cortex AI
+   * Initialize Cortex AI with an intelligent, interactive setup.
+   * It detects the project environment to provide smart defaults for user confirmation.
    */
   public async initialize(): Promise<void> {
     console.log(chalk.blue("🧠 Initializing Cortex AI..."));
     console.log();
 
-    // Step 1: Analyze project structure
-    console.log(chalk.blue("🔍 Step 1: Analyzing project structure..."));
+    // Step 1: Detect project environment to provide smart defaults
+    console.log(chalk.gray("🔍 Detecting project environment..."));
+    const detected = await this.detectProjectEnvironment();
+    if (detected.framework) {
+      console.log(
+        chalk.green(`✅ Detected ${detected.framework} environment.`)
+      );
+    } else {
+      console.log(
+        chalk.yellow(
+          "⚠️ Could not automatically detect environment, using generic defaults."
+        )
+      );
+    }
+    console.log();
+
+    // Step 2: Interactive setup for user preferences
+    console.log(
+      chalk.yellow(
+        "Please confirm your project preferences. We've suggested defaults based on our detection."
+      )
+    );
+    const preferences = await inquirer.prompt([
+      {
+        type: "list",
+        name: "language",
+        message: "Select your preferred interaction language:",
+        choices: [
+          { name: "English", value: "en" },
+          { name: "繁體中文 (Traditional Chinese)", value: "zh-TW" },
+          { name: "日本語 (Japanese)", value: "ja" },
+        ],
+        default: "en",
+      },
+      {
+        type: "input",
+        name: "buildCommand",
+        message: "Build command:",
+        default: detected.build,
+      },
+      {
+        type: "input",
+        name: "devCommand",
+        message: "Development command:",
+        default: detected.dev,
+      },
+      {
+        type: "input",
+        name: "testCommand",
+        message: "Test command:",
+        default: detected.test,
+      },
+    ]);
+
+    // Step 3: Save preferences to the project-specific cortex.json
+    const configPath = path.join(this.projectPath, "cortex.json");
+    await fs.writeJson(configPath, { preferences }, { spaces: 2 });
+    console.log(
+      chalk.green(
+        `✅ Project-specific Cortex configuration saved to ${configPath}`
+      )
+    );
+    console.log();
+
+    // Step 4: Analyze project structure (can leverage saved config in the future)
+    console.log(chalk.blue("🔍 Analyzing project structure..."));
     const analyzer = new ProjectAnalyzer(this.projectPath);
     await analyzer.analyzeProject();
     console.log(chalk.green("✅ Project analysis complete!"));
     console.log();
 
-    // Step 2: Generate documentation
-    console.log(chalk.blue("📚 Step 2: Generating documentation..."));
-    await analyzer.generateDocumentation();
-    console.log(chalk.green("✅ Documentation generated successfully!"));
-    console.log();
-
-    // Step 3: Create directories
-    console.log(chalk.blue("📁 Step 3: Creating directories..."));
-    const dirs = [
-      "docs/cortex/roles",
-      "docs/cortex/templates",
-      "docs/cortex/examples",
-    ];
-
-    for (const dir of dirs) {
-      const fullPath = path.join(this.projectPath, dir);
-      await fs.ensureDir(fullPath);
-      console.log(chalk.gray(`📁 Created directory: ${dir}`));
-    }
-    console.log(chalk.green("✅ Directories created successfully!"));
-    console.log();
-
-    // Step 4: Create initial README
-    console.log(chalk.blue("📝 Step 4: Creating initial README..."));
-    await this.createInitialReadme();
-    console.log(chalk.green("✅ Initial README created"));
-    console.log();
-
-    // Step 5: Create MCP server configuration
-    console.log(chalk.blue("🔧 Step 5: Creating MCP server configuration..."));
-    await this.createMCPServerConfig();
-    console.log(chalk.green("✅ MCP server configuration created"));
-    console.log();
-
-    // Step 6: Global MCP configuration (optional)
+    // Step 5: Create directories and initial documentation
+    console.log(chalk.blue("📁 Creating documentation structure..."));
+    await this.setupDocumentation();
     console.log(
-      chalk.blue("🌐 Step 6: Global MCP configuration (optional)..."),
-    );
-    console.log(
-      chalk.gray(
-        "💡 To install global MCP configuration, run: cortex install-global-mcp",
-      ),
-    );
-    console.log(
-      chalk.gray("💡 This will make Cortex MCP available in all projects"),
+      chalk.green("✅ Documentation structure created successfully!")
     );
     console.log();
 
@@ -94,361 +126,165 @@ export class CortexCLI {
     console.log();
     console.log(chalk.blue("Next steps:"));
     console.log(
-      chalk.gray('1. Run "cortex generate-ide" to create IDE configurations'),
+      chalk.gray(
+        '1. Run "cortex generate-ide" to create IDE configurations based on your preferences.'
+      )
     );
-    console.log(chalk.gray('2. Run "cortex start" to begin AI collaboration'));
-    console.log(chalk.gray("3. MCP server is ready for integration"));
     console.log(
       chalk.gray(
-        '4. For global MCP: run "cortex install-global-mcp" then restart Cursor',
-      ),
+        '2. Review and customize the generated files in the "docs/" directory.'
+      )
     );
-    console.log();
-    console.log(chalk.green("✅ Cortex initialized successfully!"));
   }
 
-  /**
-   * Generate IDE configurations
-   */
-  async generateIDE(): Promise<void> {
-    console.log(chalk.blue("🔧 Generating IDE configurations..."));
-
-    try {
-      // Generate Cursor rules
-      await this.cursorAdapter.generateCursorRules();
-      console.log(chalk.green("✅ Generated Cursor rules"));
-
-      // Generate Claude configuration
-      await this.claudeAdapter.generateClaudeConfig();
-      console.log(chalk.green("✅ Generated Claude configuration"));
-
-      // Generate Gemini configuration
-      await this.geminiAdapter.generateGeminiConfig();
-      console.log(chalk.green("✅ Generated Gemini configuration"));
-
-      console.log(
-        chalk.green("\n🎉 IDE configurations generated successfully!"),
-      );
-      console.log(chalk.yellow("\nNext steps:"));
-      console.log(chalk.gray("1. Restart your IDE to apply configurations"));
-      console.log(
-        chalk.gray('2. Run "cortex start" to begin AI collaboration'),
-      );
-    } catch (error) {
-      console.error(
-        chalk.red("❌ Failed to generate IDE configurations:"),
-        error,
-      );
-    }
-  }
-
-  /**
-   * Generate platform-specific rules for all supported platforms
-   */
-  async generateMCPRules(): Promise<void> {
-    console.log(
-      chalk.blue(
-        "🧠 Generating platform-specific rules for all AI platforms...",
-      ),
-    );
-
-    try {
-      await this.cortexRulesGenerator.generateAllPlatformRules();
-
-      console.log(
-        chalk.green("\n🎉 Platform-specific rules generated successfully!"),
-      );
-      console.log(chalk.yellow("\nGenerated files:"));
-      console.log(
-        chalk.gray(
-          "- .cursor/rules/cortex.mdc (Cursor rules with MCP integration)",
-        ),
-      );
-      console.log(chalk.gray("- CLAUDE.md (Claude system message template)"));
-      console.log(chalk.gray("- GEMINI.md (Gemini prompt template)"));
-      console.log(chalk.yellow("\nNext steps:"));
-      console.log(chalk.gray("1. Restart your IDE to apply the new rules"));
-      console.log(
-        chalk.gray("2. For Cursor: AI responses will use MCP integration"),
-      );
-      console.log(
-        chalk.gray(
-          "3. For Claude/Gemini: Use the generated templates as system messages",
-        ),
-      );
-    } catch (error) {
-      console.error(chalk.red("❌ Failed to generate platform rules:"), error);
-    }
-  }
-
-  /**
-   * Start AI collaboration
-   */
-  async startCollaboration(): Promise<void> {
-    console.log(chalk.blue("🚀 Starting AI collaboration..."));
-
-    const questions = [
-      {
-        type: "list",
-        name: "platform",
-        message: "Select AI platform:",
-        choices: ["Cursor", "Claude", "Gemini"],
-      },
+  private async setupDocumentation(): Promise<void> {
+    const dirs = [
+      "docs/cortex/roles",
+      "docs/cortex/experiences",
+      "docs/cortex/conventions",
     ];
 
-    const answers = await inquirer.prompt(questions);
-
-    switch (answers.platform) {
-      case "Cursor":
-        console.log(chalk.green("✅ Cursor configuration ready!"));
-        console.log(
-          chalk.gray("Open Cursor and start coding with AI assistance"),
-        );
-        break;
-      case "Claude":
-        console.log(chalk.green("✅ Claude configuration ready!"));
-        console.log(chalk.gray("Use Claude with the generated configuration"));
-        break;
-      case "Gemini":
-        console.log(chalk.green("✅ Gemini configuration ready!"));
-        console.log(chalk.gray("Use Gemini with the generated configuration"));
-        break;
+    for (const dir of dirs) {
+      const fullPath = path.join(this.projectPath, dir);
+      await fs.ensureDir(fullPath);
     }
+    await this.createInitialReadme();
   }
+
+  /**
+   * Detects the project's framework and suggests common commands.
+   * @returns An object with detected framework and suggested commands.
+   */
+  private async detectProjectEnvironment(): Promise<DetectedCommands> {
+    // Check for Nx
+    if (await fs.pathExists(path.join(this.projectPath, "nx.json"))) {
+      return {
+        build: "nx build",
+        dev: "nx serve",
+        test: "nx test",
+        framework: "Nx Workspace",
+      };
+    }
+
+    // Check for Node.js (package.json)
+    const packageJsonPath = path.join(this.projectPath, "package.json");
+    if (await fs.pathExists(packageJsonPath)) {
+      const packageManager = await this.detectPackageManager();
+      try {
+        const packageJson = await fs.readJson(packageJsonPath);
+        const scripts = packageJson.scripts || {};
+        return {
+          build: scripts.build ? `${packageManager} run build` : undefined,
+          dev:
+            scripts.dev || scripts.start
+              ? `${packageManager} run ${scripts.dev ? "dev" : "start"}`
+              : undefined,
+          test: scripts.test ? `${packageManager} run test` : undefined,
+          framework: `Node.js (${packageManager})`,
+        };
+      } catch (e) {
+        /* fall through */
+      }
+    }
+
+    // Check for Python
+    if (
+      (await fs.pathExists(path.join(this.projectPath, "pyproject.toml"))) ||
+      (await fs.pathExists(path.join(this.projectPath, "requirements.txt")))
+    ) {
+      return {
+        // No standard build/dev command, but test is common
+        test: "pytest",
+        framework: "Python",
+      };
+    }
+
+    // Check for Rust
+    if (await fs.pathExists(path.join(this.projectPath, "Cargo.toml"))) {
+      return {
+        build: "cargo build",
+        dev: "cargo run",
+        test: "cargo test",
+        framework: "Rust",
+      };
+    }
+
+    // Check for Go
+    if (await fs.pathExists(path.join(this.projectPath, "go.mod"))) {
+      return {
+        build: "go build",
+        dev: "go run .",
+        test: "go test ./...",
+        framework: "Go",
+      };
+    }
+
+    return {
+      build: "npm run build",
+      dev: "npm run dev",
+      test: "npm run test",
+    };
+  }
+
+  private async detectPackageManager(): Promise<string> {
+    if (await fs.pathExists(path.join(this.projectPath, "bun.lock"))) {
+      return "bun";
+    }
+    if (await fs.pathExists(path.join(this.projectPath, "pnpm-lock.yaml"))) {
+      return "pnpm";
+    }
+    if (await fs.pathExists(path.join(this.projectPath, "yarn.lock"))) {
+      return "yarn";
+    }
+    return "npm";
+  }
+
+  /**
+   * Generate IDE configurations based on cortex.json.
+   */
+  async generateIDE(): Promise<void> {
+    console.log(
+      chalk.blue("🔧 Generating IDE configurations from cortex.json...")
+    );
+
+    // CortexRulesGenerator now reads cortex.json in its constructor
+    await this.cortexRulesGenerator.generateAllPlatformRules();
+
+    console.log(chalk.green("\n🎉 IDE configurations generated successfully!"));
+    console.log(chalk.yellow("\nNext steps:"));
+    console.log(chalk.gray("1. Restart your IDE to apply configurations."));
+  }
+
+  // ... (showVersion, createInitialReadme and other methods can remain similar, but mcp.json logic is removed)
 
   /**
    * Show version
    */
   async showVersion(): Promise<void> {
-    const packageJson = await fs.readJson(
-      path.join(this.projectPath, "package.json"),
-    );
-    console.log(chalk.blue(`🧠 Cortex AI v${packageJson.version}`));
+    const packageJsonPath = path.join(__dirname, "../../package.json"); // More robust path
+    if (await fs.pathExists(packageJsonPath)) {
+      const packageJson = await fs.readJson(packageJsonPath);
+      console.log(chalk.blue(`🧠 Cortex AI v${packageJson.version}`));
+    } else {
+      console.log(chalk.yellow("Could not determine version."));
+    }
   }
 
   /**
-   * Create initial README
+   * Create initial README in docs/cortex/
    */
   private async createInitialReadme(): Promise<void> {
     const readmePath = path.join(this.projectPath, "docs/cortex/README.md");
+    const content = `# Cortex AI Collaboration Framework
 
-    const content = `# Cortex AI Collaboration
+This directory contains the core configuration and learned experiences for Cortex AI in this project.
 
-This project uses Cortex AI for enhanced AI collaboration.
+- **/roles**: Defines different AI personas and their capabilities.
+- **/experiences**: Stores learned user preferences and corrections over time.
+- **/conventions**: Documents project-specific coding standards and patterns.
 
-## Quick Start
-
-1. Run \`cortex generate-ide\` to create IDE configurations
-2. Restart your IDE
-3. Start coding with AI assistance!
-
-## Features
-
-- **Real-time user preference learning** from conversation
-- **Cross-platform consistency** across Cursor, Claude, and Gemini
-- **Project-specific adaptations** based on your codebase
-- **Structured thinking process** for better AI responses
-
-## Architecture
-
-- **MDC/GEMINI/CLAUDE** = Brain (real-time thinking and decision making)
-- **docs** = Experience and long-term memory (learning and knowledge base)
-- **Scripts** = Essential tools only
-
-## User Preference Learning
-
-The system learns from your feedback:
-- Corrections: "不對", "錯誤", "錯了"
-- Preferences: "我們用", "我們專案用"
-- Prohibitions: "不要", "從來不用"
-- Frustration: "又來了", "還是這樣"
-
-The AI immediately applies learned preferences to current and future responses.
+This entire structure is the "brain" of the AI for this project, enabling it to provide consistent, context-aware, and personalized assistance.
 `;
-
     await fs.writeFile(readmePath, content);
-    console.log(chalk.gray("📝 Created initial README"));
-  }
-
-  /**
-   * Create MCP server configuration
-   */
-  private async createMCPServerConfig(): Promise<void> {
-    // Create .cursor/mcp.json with MCP server configuration only
-    const mcpConfigPath = path.join(this.projectPath, ".cursor", "mcp.json");
-
-    const mcpConfig = {
-      mcpServers: {
-        "cortex-mcp-server": {
-          command: "node",
-          args: ["cortex/core/mcp/mcp-protocol-server.js"],
-          timeout: 3000,
-          env: {
-            NODE_ENV: "production",
-            MCP_DEBUG: "true",
-            MCP_DESKTOP_MODE: "true",
-          },
-          autoApprove: [
-            "intent-analyzer",
-            "task-decomposer",
-            "role-selector",
-            "best-practice-finder",
-            "tool-usage-validator",
-            "experience-recorder",
-          ],
-        },
-      },
-    };
-
-    // Ensure .cursor directory exists
-    await fs.ensureDir(path.dirname(mcpConfigPath));
-
-    await fs.writeFile(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
-    console.log(
-      chalk.gray("🔧 Created .cursor/mcp.json with MCP server configuration"),
-    );
-  }
-
-  /**
-   * Create global MCP configuration in ~/.cursor/mcp.json
-   */
-  private async createGlobalMCPConfig(): Promise<void> {
-    const homeDir = process.env.HOME || process.env.USERPROFILE;
-    if (!homeDir) {
-      console.log(
-        chalk.yellow(
-          "⚠️  Could not determine home directory, skipping global MCP config",
-        ),
-      );
-      return;
-    }
-
-    const globalMCPPath = path.join(homeDir, ".cursor", "mcp.json");
-
-    try {
-      // Read existing config if it exists
-      let existingConfig: { mcpServers: Record<string, any> } = {
-        mcpServers: {},
-      };
-      if (await fs.pathExists(globalMCPPath)) {
-        try {
-          existingConfig = await fs.readJson(globalMCPPath);
-        } catch (error) {
-          console.log(
-            chalk.yellow(
-              "⚠️  Could not read existing MCP config, creating new one",
-            ),
-          );
-          existingConfig = { mcpServers: {} };
-        }
-      }
-
-      // Check if cortex-mcp-server already exists
-      if (existingConfig.mcpServers["cortex-mcp-server"]) {
-        console.log(
-          chalk.gray("🔧 Global MCP config already contains cortex-mcp-server"),
-        );
-        return;
-      }
-
-      // Detect package installation path
-      const mcpServerPath = await this.detectMCPServerPath();
-
-      // Add cortex-mcp-server to existing config
-      existingConfig.mcpServers["cortex-mcp-server"] = {
-        command: "node",
-        args: [mcpServerPath],
-        timeout: 3000,
-        env: {
-          NODE_ENV: "production",
-          MCP_DEBUG: "true",
-          MCP_DESKTOP_MODE: "true",
-        },
-        autoApprove: [
-          "intent-analyzer",
-          "task-decomposer",
-          "role-selector",
-          "best-practice-finder",
-          "tool-usage-validator",
-          "experience-recorder",
-        ],
-      };
-
-      // Ensure .cursor directory exists
-      await fs.ensureDir(path.dirname(globalMCPPath));
-
-      // Write updated config
-      await fs.writeFile(
-        globalMCPPath,
-        JSON.stringify(existingConfig, null, 2),
-      );
-      console.log(
-        chalk.green("✅ Added cortex-mcp-server to global MCP configuration"),
-      );
-      console.log(chalk.gray(`📁 Location: ${globalMCPPath}`));
-      console.log(chalk.gray(`🔧 MCP Server Path: ${mcpServerPath}`));
-    } catch (error) {
-      console.log(
-        chalk.yellow("⚠️  Could not create global MCP config:"),
-        error,
-      );
-    }
-  }
-
-  /**
-   * Detect MCP server path based on installation type
-   */
-  private async detectMCPServerPath(): Promise<string> {
-    // Check if we're in a global npm installation
-    const globalPaths = [
-      "/usr/local/lib/node_modules/@rikaidev/cortex/cortex/core/mcp/mcp-protocol-server.js",
-      "/opt/homebrew/lib/node_modules/@rikaidev/cortex/cortex/core/mcp/mcp-protocol-server.js",
-      path.join(
-        process.env.npm_config_prefix || "",
-        "lib/node_modules/@rikaidev/cortex/cortex/core/mcp/mcp-protocol-server.js",
-      ),
-    ];
-
-    for (const globalPath of globalPaths) {
-      if (await fs.pathExists(globalPath)) {
-        return globalPath;
-      }
-    }
-
-    // Fallback: try to find the package using require.resolve
-    try {
-      const packagePath = require.resolve("@rikaidev/cortex/package.json");
-      const packageDir = path.dirname(packagePath);
-      const fallbackPath = path.join(
-        packageDir,
-        "cortex",
-        "core",
-        "mcp/mcp-protocol-server.js",
-      );
-
-      if (await fs.pathExists(fallbackPath)) {
-        return fallbackPath;
-      }
-    } catch (error) {
-      // Package not found, continue to error
-    }
-
-    throw new Error(
-      "Could not detect MCP server path. Please ensure @rikaidev/cortex is properly installed globally.",
-    );
-  }
-
-  /**
-   * Install global MCP configuration
-   */
-  public async installGlobalMCP(): Promise<void> {
-    console.log(chalk.blue("🌐 Installing global MCP configuration..."));
-    await this.createGlobalMCPConfig();
-    console.log(
-      chalk.green("✅ Global MCP configuration installed successfully!"),
-    );
-    console.log(
-      chalk.gray("💡 Restart Cursor to activate the global MCP server"),
-    );
   }
 }

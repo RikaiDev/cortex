@@ -57,7 +57,7 @@ if [ ! -f "package.json" ]; then
     print_status $RED "❌ package.json not found"
     exit 1
 fi
-if [ ! -f "bun.lock" ] && [ ! -f "package-lock.json" ]; then
+if [ ! -f "package-lock.json" ]; then
     print_status $YELLOW "⚠️  No lock file found, installing dependencies..."
     npm install
 fi
