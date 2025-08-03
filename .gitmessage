@@ -1,0 +1,57 @@
+# Git Commit Message Template
+
+# 🔧 Type of Change
+# feat:     A new feature
+# fix:      A bug fix
+# docs:     Documentation only changes
+# style:    Changes that do not affect the meaning of the code
+# refactor: A code change that neither fixes a bug nor adds a feature
+# perf:     A code change that improves performance
+# test:     Adding missing tests or correcting existing tests
+# chore:    Changes to the build process or auxiliary tools
+
+# 📝 Brief Description (50 chars or less)
+# More detailed explanatory text, if necessary. Wrap it to about 72
+# characters or so. In some contexts, the first line is treated as the
+# subject of the commit and the rest of the text as the body. The
+# blank line separating the summary from the body is critical (unless
+# you omit the body entirely); various tools like `log`, `shortlog`
+# and `rebase` can get confused if you run the two together.
+
+# 🔧 Major Changes
+# - List major changes here
+# - Each change on a new line
+# - Use bullet points for clarity
+
+# ⚠️ Critical Warnings
+# - List any critical warnings or breaking changes
+# - Impact on deployed environments
+# - Required manual steps
+
+# 🧪 Test Verification
+# - List test results and verification steps
+# - Use checkmarks for completed tests
+# - Include test coverage information
+
+# 📝 Technical Details
+# - Implementation details
+# - Architecture changes
+# - Performance improvements
+# - Security considerations
+
+# 🔗 Related Issues
+# - Fixes #123
+# - Closes #456
+# - Related to #789
+
+# 📊 Impact Assessment
+# - Performance impact
+# - Security implications
+# - User experience changes
+# - Backward compatibility
+
+# 🚀 Deployment Notes
+# - Deployment requirements
+# - Environment considerations
+# - Rollback procedures
+# - Monitoring recommendations

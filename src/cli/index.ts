@@ -28,33 +28,71 @@ program
   .action(async (_options) => {
     try {
       console.log(chalk.blue("🔧 Installing Cortex MCP configuration..."));
-      
+
       // Get user's home directory
       const homeDir = process.env.HOME || process.env.USERPROFILE;
       if (!homeDir) {
         throw new Error("Could not determine home directory");
       }
-      
+
       // Create .cursor directory if it doesn't exist
       const cursorDir = path.join(homeDir, ".cursor");
       await fs.ensureDir(cursorDir);
-      
-      // Copy MCP configuration
-      const configSource = path.join(__dirname, "..", "..", "examples", "cortex-mcp-config.json");
-      const configDest = path.join(cursorDir, "cortex-mcp-config.json");
-      
-      await fs.copyFile(configSource, configDest);
-      
+
+      // Path to mcp.json
+      const mcpConfigPath = path.join(cursorDir, "mcp.json");
+
+      // Read existing mcp.json or create new one
+      let mcpConfig: any = { mcpServers: {} };
+      if (await fs.pathExists(mcpConfigPath)) {
+        const existingConfig = await fs.readFile(mcpConfigPath, "utf-8");
+        mcpConfig = JSON.parse(existingConfig);
+      }
+
+      // Add cortex-mcp-server configuration
+      mcpConfig.mcpServers["cortex-mcp-server"] = {
+        command: "cortex",
+        args: ["mcp", "start", "--project-root", "${workspaceRoot}"],
+        timeout: 600000,
+        env: {
+          NODE_ENV: "production",
+          MCP_DEBUG: "false",
+          PROJECT_ROOT: "${workspaceRoot}",
+          DOCS_CACHE_TTL: "300000",
+        },
+        autoApprove: [
+          "context-enhancer",
+          "experience-recorder",
+          "standards-detector",
+          "standards-applier",
+          "standards-summary",
+          "standards-export",
+          "register-standards-patterns",
+          "cortex-feedback-collector",
+          "cortex-feedback-analyzer",
+          "cortex-feedback-responder",
+          "cortex-user-simulator",
+          "cortex-learning-integrator",
+        ],
+      };
+
+      // Write updated configuration
+      await fs.writeFile(mcpConfigPath, JSON.stringify(mcpConfig, null, 2));
+
       console.log(chalk.green("✅ MCP configuration installed successfully!"));
-      console.log(chalk.cyan("📁 Configuration location:") + ` ${configDest}`);
+      console.log(
+        chalk.cyan("📁 Configuration location:") + ` ${mcpConfigPath}`
+      );
       console.log();
       console.log(chalk.yellow("📋 Next steps:"));
       console.log("1. Restart Cursor IDE");
       console.log("2. The MCP tools will be automatically available");
       console.log("3. Check Cursor settings to ensure MCP is enabled");
-      
     } catch (error) {
-      console.error(chalk.red("❌ Failed to install MCP configuration:"), error);
+      console.error(
+        chalk.red("❌ Failed to install MCP configuration:"),
+        error
+      );
       process.exit(1);
     }
   });

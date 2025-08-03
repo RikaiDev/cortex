@@ -529,9 +529,196 @@ export class KnowledgeExtractor {
     // Update long-term memory documentation
     await this.updateLongTermMemory(patterns);
 
+    // Generate Cursor Adapter documentation
+    await this.generateCursorAdapterDocs(patterns);
+
     console.log(
       `Processed ${experiences.length} experiences, extracted ${patterns.length} patterns`
     );
+  }
+
+  /**
+   * Generate Cursor Adapter documentation
+   */
+  async generateCursorAdapterDocs(patterns: KnowledgePattern[]): Promise<void> {
+    await this.generateArchitectureDoc(patterns);
+    await this.generateCodePatternsDoc(patterns);
+    await this.generateProjectKnowledgeDoc(patterns);
+    await this.generateProjectStructureDoc(patterns);
+    await this.generateToolsDoc(patterns);
+  }
+
+  /**
+   * Generate architecture documentation for Cursor Adapter
+   */
+  private async generateArchitectureDoc(patterns: KnowledgePattern[]): Promise<void> {
+    const architecturePath = path.join(this.docsDir, "architecture.md");
+    
+    let content = `# Architecture Documentation\n\n_Generated on ${new Date().toISOString()}_\n\n`;
+
+    // Extract architecture decisions from patterns
+    const architecturePatterns = patterns.filter(p => p.category === "technical");
+    
+    if (architecturePatterns.length > 0) {
+      content += `## Architecture Decisions\n\n`;
+      
+      architecturePatterns.forEach((pattern) => {
+        content += `### ${pattern.title}\n\n`;
+        content += `${pattern.description}\n\n`;
+        content += `**Patterns:**\n`;
+        pattern.patterns.forEach((p) => (content += `- ${p}\n`));
+        content += `\n**Solutions:**\n`;
+        pattern.solutions.forEach((s) => (content += `- ${s}\n`));
+        content += `\n**Best Practices:**\n`;
+        pattern.bestPractices.forEach((bp) => (content += `- ${bp}\n`));
+        content += `\n**Frequency:** ${pattern.frequency} occurrences\n\n`;
+      });
+    }
+
+    await fs.writeFile(architecturePath, content, "utf-8");
+  }
+
+  /**
+   * Generate code patterns documentation for Cursor Adapter
+   */
+  private async generateCodePatternsDoc(patterns: KnowledgePattern[]): Promise<void> {
+    const codePatternsPath = path.join(this.docsDir, "code-patterns.md");
+    
+    let content = `# Code Patterns\n\n_Generated on ${new Date().toISOString()}_\n\n`;
+
+    // Extract code-related patterns
+    const codePatterns = patterns.filter(p => 
+      p.category === "technical" || 
+      p.patterns.some(pattern => 
+        pattern.includes("code") || 
+        pattern.includes("implementation") || 
+        pattern.includes("function")
+      )
+    );
+
+    if (codePatterns.length > 0) {
+      codePatterns.forEach((pattern) => {
+        content += `## ${pattern.title}\n\n`;
+        content += `${pattern.description}\n\n`;
+        content += `**Patterns:**\n`;
+        pattern.patterns.forEach((p) => (content += `- ${p}\n`));
+        content += `\n**Solutions:**\n`;
+        pattern.solutions.forEach((s) => (content += `- ${s}\n`));
+        content += `\n**Examples:**\n`;
+        pattern.examples.forEach((e) => (content += `- ${e}\n`));
+        content += `\n**Frequency:** ${pattern.frequency} occurrences\n\n`;
+      });
+    }
+
+    await fs.writeFile(codePatternsPath, content, "utf-8");
+  }
+
+  /**
+   * Generate project knowledge documentation for Cursor Adapter
+   */
+  private async generateProjectKnowledgeDoc(patterns: KnowledgePattern[]): Promise<void> {
+    const projectKnowledgePath = path.join(this.docsDir, "project-knowledge.md");
+    
+    let content = `# Project Knowledge\n\n_Generated on ${new Date().toISOString()}_\n\n`;
+
+    // Extract all knowledge from patterns
+    const allKnowledge = patterns.flatMap(p => [
+      ...p.patterns,
+      ...p.solutions,
+      ...p.bestPractices
+    ]);
+
+    const uniqueKnowledge = [...new Set(allKnowledge)];
+
+    if (uniqueKnowledge.length > 0) {
+      content += `## Knowledge Points\n\n`;
+      
+      uniqueKnowledge.forEach((knowledge) => {
+        const relatedPatterns = patterns.filter(p => 
+          p.patterns.includes(knowledge) || 
+          p.solutions.includes(knowledge) || 
+          p.bestPractices.includes(knowledge)
+        );
+        
+        content += `### ${knowledge}\n\n`;
+        content += `**Related Patterns:** ${relatedPatterns.map(p => p.title).join(", ")}\n\n`;
+        content += `**Frequency:** ${relatedPatterns.length} patterns\n\n`;
+      });
+    }
+
+    await fs.writeFile(projectKnowledgePath, content, "utf-8");
+  }
+
+  /**
+   * Generate project structure documentation for Cursor Adapter
+   */
+  private async generateProjectStructureDoc(patterns: KnowledgePattern[]): Promise<void> {
+    const projectStructurePath = path.join(this.docsDir, "project-structure.md");
+    
+    let content = `# Project Structure\n\n_Generated on ${new Date().toISOString()}_\n\n`;
+
+    // Extract structure-related patterns
+    const structurePatterns = patterns.filter(p => 
+      p.category === "design" || 
+      p.patterns.some(pattern => 
+        pattern.includes("structure") || 
+        pattern.includes("organization") || 
+        pattern.includes("layout")
+      )
+    );
+
+    if (structurePatterns.length > 0) {
+      content += `## Structure Patterns\n\n`;
+      
+      structurePatterns.forEach((pattern) => {
+        content += `### ${pattern.title}\n\n`;
+        content += `${pattern.description}\n\n`;
+        content += `**Patterns:**\n`;
+        pattern.patterns.forEach((p) => (content += `- ${p}\n`));
+        content += `\n**Solutions:**\n`;
+        pattern.solutions.forEach((s) => (content += `- ${s}\n`));
+        content += `\n**Frequency:** ${pattern.frequency} occurrences\n\n`;
+      });
+    }
+
+    await fs.writeFile(projectStructurePath, content, "utf-8");
+  }
+
+  /**
+   * Generate tools documentation for Cursor Adapter
+   */
+  private async generateToolsDoc(patterns: KnowledgePattern[]): Promise<void> {
+    const toolsPath = path.join(this.docsDir, "tools.md");
+    
+    let content = `# Tools and Utilities\n\n_Generated on ${new Date().toISOString()}_\n\n`;
+
+    // Extract tool-related patterns
+    const toolPatterns = patterns.filter(p => 
+      p.patterns.some(pattern => 
+        pattern.includes("tool") || 
+        pattern.includes("command") || 
+        pattern.includes("utility") ||
+        pattern.includes("script")
+      )
+    );
+
+    if (toolPatterns.length > 0) {
+      content += `## Tool Usage Patterns\n\n`;
+      
+      toolPatterns.forEach((pattern) => {
+        content += `### ${pattern.title}\n\n`;
+        content += `${pattern.description}\n\n`;
+        content += `**Patterns:**\n`;
+        pattern.patterns.forEach((p) => (content += `- ${p}\n`));
+        content += `\n**Solutions:**\n`;
+        pattern.solutions.forEach((s) => (content += `- ${s}\n`));
+        content += `\n**Examples:**\n`;
+        pattern.examples.forEach((e) => (content += `- ${e}\n`));
+        content += `\n**Frequency:** ${pattern.frequency} occurrences\n\n`;
+      });
+    }
+
+    await fs.writeFile(toolsPath, content, "utf-8");
   }
 
   /**

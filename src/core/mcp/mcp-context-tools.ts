@@ -241,17 +241,20 @@ Filters applied: ${this.describeFilters(options)} -->`;
     else if (daysOld < 30) relevance += 0.1;
 
     // Boost for MCP-related experiences
+    const userInput = experience.userInput || "";
+    const response = experience.response || "";
+    
     if (
-      experience.userInput.includes("MCP") ||
-      experience.response.includes("MCP")
+      userInput.includes("MCP") ||
+      response.includes("MCP")
     ) {
       relevance += 0.2;
     }
 
     // Boost for testing experiences
     if (
-      experience.userInput.includes("測試") ||
-      experience.response.includes("測試")
+      userInput.includes("測試") ||
+      response.includes("測試")
     ) {
       relevance += 0.1;
     }

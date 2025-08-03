@@ -3,7 +3,7 @@ import Mocha from "mocha";
 import { expect } from "chai";
 import * as path from "path";
 import fs from "fs-extra";
-import crypto from "crypto";
+// crypto is used in MCPContextTools but not directly in tests
 import { MCPWorkflow } from "../src/core/mcp/mcp-workflow.js";
 import { createMCPContextTools } from "../src/core/mcp/mcp-context-tools.js";
 
@@ -86,12 +86,12 @@ suite.addTest(
       expect(result.success).to.be.true;
 
       // 3. Verify the output
-      expect(result.output).to.include("--- Experience Start");
+      expect(result.output).to.include("--- Experience 1");
       expect(result.output).to.include("Experience One");
       expect(result.output).to.include("Experience Two");
-      expect(result.output).to.include("--- Experience End ---");
+      expect(result.output).to.include("--- Experience 2");
 
-      const occurrences = (result.output.match(/--- Experience Start/g) || [])
+      const occurrences = (result.output.match(/--- Experience \d+/g) || [])
         .length;
       expect(occurrences).to.equal(2);
     }

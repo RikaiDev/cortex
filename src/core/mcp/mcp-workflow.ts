@@ -98,6 +98,9 @@ export class MCPWorkflow implements IMCPWorkflow {
    * Get available tools
    * @returns List of available tools
    */
+  getRegisteredTools(): string[] {
+    return Array.from(this.toolRegistry.keys());
+  }
   getAvailableTools(): string[] {
     return Array.from(this.toolRegistry.keys());
   }
