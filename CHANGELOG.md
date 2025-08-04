@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.7.3] - 2025-08-04
+
+### 🚀 **Role System Enhancement**
+
+- **Role Structure Reorganization**: Reorganized all role files into department-based directories
+  - Engineering: AI Engineer, Architecture Designer, Code Assistant, Code Reviewer, Frontend Developer, Rapid Prototyper
+  - Design: Brand Guardian, Experience Curator, UI/UX Designer, Whimsy Injector
+  - Product: Feedback Synthesizer, Trend Researcher
+  - Project Management: Experiment Tracker, Project Coordinator, Release Manager
+  - Studio Operations: Analytics Reporter
+  - Testing: API Tester
+- **Role Definition Standardization**: Standardized all role definitions with consistent formatting
+- **Role Documentation**: Updated README.md with complete role categorization and links
+- **Proactive Role Activation**: Added proactive role activation mechanism documentation
+
+### 🔧 **Configuration Improvements**
+
+- **Git Integration**: Updated .gitignore to properly handle role files for development and installation
+- **Documentation Structure**: Improved documentation organization and clarity
+- **Version Control**: Ensured all role definition files are properly tracked by git
+
 ## [0.7.2] - 2025-08-03
 
 ### 🔧 **Critical Bug Fixes**
