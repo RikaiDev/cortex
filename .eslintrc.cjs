@@ -1,42 +1,29 @@
 module.exports = {
-  root: true,
-  env: {
-    node: true,
-    es2022: true,
-  },
+  parser: '@typescript-eslint/parser',
   extends: [
     'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
   ],
-  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
   parserOptions: {
-    ecmaVersion: 2022,
+    ecmaVersion: 2020,
     sourceType: 'module',
   },
-  plugins: ['@typescript-eslint'],
-  rules: {
-    'prefer-const': 'error',
-    'no-var': 'error',
-    'no-unused-vars': 'off', // Turn off base rule
-    '@typescript-eslint/no-unused-vars': ['error', { 
-      'argsIgnorePattern': '^_',
-      'varsIgnorePattern': '^_',
-      'caughtErrorsIgnorePattern': '^_'
-    }],
+  env: {
+    node: true,
+    es6: true,
   },
   overrides: [
     {
-      files: ['src/adapters/base-adapter.ts'],
-      rules: {
-        'no-unused-vars': 'off'
-      }
+      files: ['test/**/*.ts'],
+      env: {
+        mocha: true,
+      },
     },
-    {
-      files: ['src/core/mcp-server.ts'],
-      rules: {
-        'no-unused-vars': 'off',
-        'no-case-declarations': 'off'
-      }
-    }
   ],
-  ignorePatterns: ['dist/', 'node_modules/'],
-}; 
+  rules: {
+    '@typescript-eslint/no-unused-vars': 'error',
+    '@typescript-eslint/explicit-function-return-type': 'error',
+    '@typescript-eslint/no-explicit-any': 'error',
+  },
+};

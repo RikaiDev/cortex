@@ -1,6 +1,6 @@
 # Cortex AI
 
-[![Version](https://img.shields.io/badge/version-v0.4.0-blue.svg)](https://github.com/RikaiDev/cortex/releases)
+[![Version](https://img.shields.io/badge/version-v0.8.0-blue.svg)](https://github.com/RikaiDev/cortex/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/runtime-Node.js-green.svg)](https://nodejs.org/)
 

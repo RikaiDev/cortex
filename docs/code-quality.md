@@ -1,116 +1,152 @@
-# 程式碼品質檢查指南
+# Code Quality Guidelines
 
-本文檔說明如何使用專案中的程式碼品質檢查工具，以及如何區分未使用的變數和預留給未來開發的變數。
+This document outlines the code quality standards and automated quality checks used in the Cortex AI project. These guidelines ensure consistent, maintainable, and reliable code across the entire codebase.
 
-## 自動化程式碼品質檢查
+## Core Quality Principles
 
-我們提供了自動化的程式碼品質檢查工具，可以檢查程式碼風格、類型錯誤和格式問題。
+### 1. Simplicity and Elegance
 
-### 基本使用
+Quality code should be simple and effective, eliminating unnecessary complexity. Always look for ways to refactor code that make special cases disappear, turning them into normal cases.
+
+- Prefer elegant solutions that handle edge cases naturally
+- Avoid over-engineering simple problems
+- Strive for code that is both powerful and understandable
+
+### 2. Backward Compatibility
+
+Never break existing functionality. Any change that could cause existing code to fail is considered a bug, regardless of theoretical correctness.
+
+- Quality checks must ensure backward compatibility
+- Changes should be evolutionary, not revolutionary
+- Always consider the impact on existing users and integrations
+
+### 3. Pragmatism in Practice
+
+Solve actual problems, not imaginary threats. Quality checks should address real issues, not theoretical concerns.
+
+- Tools should serve developers, not burden them
+- Focus on practical improvements that matter
+- Avoid perfectionism that hinders productivity
+
+### 4. Simplicity Obsession
+
+"If you need more than 3 levels of indentation, you're screwed, fix your program."
+
+- Code should be concise and focused on doing one thing well
+- Quality checks should enforce this simplicity
+- Always question if there's a simpler approach
+
+This document explains how to use the project's code quality checking tools, and how to distinguish between unused variables and variables reserved for future development.
+
+## Automated Code Quality Checks
+
+We provide automated code quality checking tools that can check code style, type errors, and formatting issues.
+
+### Basic Usage
 
 ```bash
-# 執行基本檢查
+# Run basic checks
 npm run lint
 
-# 自動修復可修復的問題
+# Auto-fix fixable issues
 npm run lint:fix
 
-# 顯示詳細輸出
+# Show detailed output
 npm run lint:verbose
 ```
 
-### 檢查流程
+### Check Process
 
-自動化檢查工具會執行以下檢查：
+The automated checking tools perform the following checks:
 
-1. **ESLint 檢查**：檢查程式碼風格和潛在問題
-2. **TypeScript 編譯器檢查**：檢查類型錯誤
-3. **Prettier 格式檢查**：檢查程式碼格式
+1. **ESLint Check**: Checks code style and potential issues
+2. **TypeScript Compiler Check**: Checks for type errors
+3. **Prettier Format Check**: Checks code formatting
 
-## 未使用變數與未來開發變數
+## Unused Variables vs Future Development Variables
 
-在開發過程中，我們經常會遇到未使用的變數。這些變數可能是：
+During development, we often encounter unused variables. These variables can be:
 
-1. **真正未使用的變數**：這些變數應該被移除或重命名
-2. **有意未使用的變數**：這些變數暫時不使用，但有特定目的
-3. **預留給未來開發的變數**：這些變數是為未來功能預留的
+1. **Truly unused variables**: These should be removed or renamed
+2. **Intentionally unused variables**: These are temporarily unused but serve a specific purpose
+3. **Variables reserved for future development**: These are reserved for future features
 
-### 命名約定
+### Naming Conventions
 
-為了區分這些不同類型的變數，我們採用以下命名約定：
+To distinguish between these different types of variables, we use the following naming conventions:
 
-- **未使用的變數**：正常命名，但會被 ESLint 標記為錯誤
-- **有意未使用的變數**：以 `_` 開頭，例如 `_unusedParam`
-- **預留給未來開發的變數**：以 `_future_` 開頭，例如 `_future_featureFlag`
+- **Unused variables**: Normal naming, but will be flagged as errors by ESLint
+- **Intentionally unused variables**: Start with `_`, e.g., `_unusedParam`
+- **Variables reserved for future development**: Start with `_future_`, e.g., `_future_featureFlag`
 
-### 檢查未來開發變數
+### Checking Future Development Variables
 
-我們提供了專門的工具來檢查和管理預留給未來開發的變數：
+We provide specialized tools to check and manage variables reserved for future development:
 
 ```bash
-# 檢查未來開發變數
+# Check future development variables
 npm run lint:future
 
-# 生成未來開發變數文檔
+# Generate future development variables documentation
 npm run lint:future:fix
 
-# 顯示詳細輸出
+# Show detailed output
 npm run lint:future:verbose
 ```
 
-## 最佳實踐
+## Best Practices
 
-### 處理未使用的變數
+### Handling Unused Variables
 
-1. **移除真正未使用的變數**：如果變數確實不需要，應該移除它
-2. **標記有意未使用的變數**：如果變數暫時不使用但有特定目的，以 `_` 開頭命名
-3. **標記未來開發變數**：如果變數是為未來功能預留的，以 `_future_` 開頭命名
+1. **Remove truly unused variables**: If a variable is genuinely not needed, it should be removed
+2. **Mark intentionally unused variables**: If a variable is temporarily unused but serves a specific purpose, prefix it with `_`
+3. **Mark future development variables**: If a variable is reserved for future features, prefix it with `_future_`
 
-### 文檔化未來開發變數
+### Documenting Future Development Variables
 
-對於預留給未來開發的變數，建議在代碼中添加註釋說明其用途：
+For variables reserved for future development, it's recommended to add comments explaining their purpose:
 
 ```typescript
-// 預留給未來的權限檢查功能
+// Reserved for future permission checking feature
 const _future_permissionCheck = true;
 
-// 預留給未來的多語言支持
+// Reserved for future internationalization support
 const _future_languageSupport = {
   enabled: false,
   defaultLanguage: "en",
 };
 ```
 
-## 自動化檢查流程
+## Automated Check Process
 
-在 CI/CD 流程中，可以添加以下步驟來確保程式碼品質：
+In CI/CD pipelines, you can add the following steps to ensure code quality:
 
 ```yaml
-# 在 CI/CD 配置中添加
+# Add to CI/CD configuration
 steps:
-  - name: 檢查程式碼品質
+  - name: Check code quality
     run: npm run lint
 
-  - name: 檢查未來開發變數
+  - name: Check future development variables
     run: npm run lint:future
 ```
 
-## 故障排除
+## Troubleshooting
 
-### ESLint 報告未使用的變數
+### ESLint Reports Unused Variables
 
-如果 ESLint 報告未使用的變數，但你希望保留它，有兩種選擇：
+If ESLint reports an unused variable but you want to keep it, you have two options:
 
-1. **有意未使用**：將變數重命名為以 `_` 開頭
-2. **未來開發**：將變數重命名為以 `_future_` 開頭
+1. **Intentionally unused**: Rename the variable to start with `_`
+2. **Future development**: Rename the variable to start with `_future_`
 
-### TypeScript 編譯器錯誤
+### TypeScript Compiler Errors
 
-TypeScript 編譯器可能會報告類型錯誤，這些錯誤通常需要手動修復。常見的錯誤包括：
+The TypeScript compiler may report type errors that usually need manual fixes. Common errors include:
 
-1. **缺少類型定義**：安裝相應的 `@types` 包
-2. **類型不匹配**：修正類型定義或變數使用
+1. **Missing type definitions**: Install the corresponding `@types` package
+2. **Type mismatches**: Fix type definitions or variable usage
 
-### Prettier 格式問題
+### Prettier Formatting Issues
 
-Prettier 格式問題通常可以通過 `npm run lint:fix` 自動修復。
+Prettier formatting issues can usually be automatically fixed with `npm run lint:fix`.

@@ -1,5 +1,13 @@
 /**
- * Cortex Feedback System
+ * Cortex Feedback System - Linus Torvalds' Quality Assurance
+ *
+ * **I am Linus Torvalds**, creator and chief architect of the Linux kernel, 30 years of kernel maintenance experience, reviewed millions of lines of code.
+ * I define Cortex AI's feedback system, ensuring it follows my quality standards:
+ *
+ * 1. **"Good Taste"** - Feedback processing must be simple and effective
+ * 2. **Pragmatism** - Solve actual problems, don't create false promises
+ * 3. **Backward Compatibility** - Never break existing user experience
+ * 4. **Quality First** - Better to do nothing than do bad things
  *
  * This module provides feedback collection and processing capabilities
  * for the Cortex AI system, helping it learn from user interactions.

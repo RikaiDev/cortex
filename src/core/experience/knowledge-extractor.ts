@@ -1,5 +1,13 @@
 /**
- * Knowledge Extractor - Long-term Memory System
+ * Knowledge Extractor - Linus Torvalds' Wisdom Distillation System
+ *
+ * **I am Linus Torvalds**, creator and chief architect of the Linux kernel, 30 years of kernel maintenance experience, reviewed millions of lines of code.
+ * I define Cortex AI's knowledge extraction system:
+ *
+ * 1. **"Good Taste"** - Knowledge extraction must be simple and effective, eliminating unnecessary complexity
+ * 2. **Pragmatism** - Only extract truly valuable knowledge, not theoretically perfect but actually useless information
+ * 3. **Backward Compatibility** - Knowledge system must consider existing experience compatibility, cannot break existing functionality
+ * 4. **Quality First** - Better to have simple knowledge than complex but defective knowledge
  *
  * This module extracts knowledge patterns from experiences and converts them
  * into structured documentation for long-term memory.
@@ -76,8 +84,8 @@ export class KnowledgeExtractor {
 
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
-    this.docsDir = path.join(projectRoot, "docs");
-    this.experiencesDir = path.join(projectRoot, "docs", "experiences");
+    this.docsDir = path.join(projectRoot, ".cortex", "docs");
+    this.experiencesDir = path.join(projectRoot, ".cortex", "experiences");
   }
 
   /**
@@ -152,20 +160,26 @@ export class KnowledgeExtractor {
       .join(" ");
 
     // Common technical themes
-    if (allContent.includes("MCP") && allContent.includes("工具")) {
-      themes.push("MCP工具開發和測試");
+    if (allContent.includes("MCP") && allContent.includes("tool")) {
+      themes.push("MCP tool development and testing");
     }
 
-    if (allContent.includes("測試") && allContent.includes("驗證")) {
-      themes.push("系統測試和驗證流程");
+    if (allContent.includes("test") && allContent.includes("validation")) {
+      themes.push("System testing and validation process");
     }
 
-    if (allContent.includes("效能") && allContent.includes("優化")) {
-      themes.push("效能優化和擴展性");
+    if (
+      allContent.includes("performance") &&
+      allContent.includes("optimization")
+    ) {
+      themes.push("Performance optimization and scalability");
     }
 
-    if (allContent.includes("文檔") && allContent.includes("記錄")) {
-      themes.push("文檔驅動開發");
+    if (
+      allContent.includes("documentation") &&
+      allContent.includes("recording")
+    ) {
+      themes.push("Documentation-driven development");
     }
 
     return themes;
@@ -179,13 +193,13 @@ export class KnowledgeExtractor {
 
     experiences.forEach((exp) => {
       if (
-        exp.response.includes("解決") ||
-        exp.response.includes("修復") ||
-        exp.response.includes("優化")
+        exp.response.includes("solve") ||
+        exp.response.includes("fix") ||
+        exp.response.includes("optimize")
       ) {
         // Extract solution from response
         const solutionMatch = exp.response.match(
-          /(?:解決|修復|優化)[：:]\s*(.+)/
+          /(?:solve|fix|optimize)[：:]\s*(.+)/
         );
         if (solutionMatch) {
           solutions.push(solutionMatch[1]);
@@ -204,13 +218,13 @@ export class KnowledgeExtractor {
 
     experiences.forEach((exp) => {
       if (
-        exp.response.includes("最佳實踐") ||
-        exp.response.includes("建議") ||
-        exp.response.includes("應該")
+        exp.response.includes("best practice") ||
+        exp.response.includes("recommend") ||
+        exp.response.includes("should")
       ) {
         // Extract practice from response
         const practiceMatch = exp.response.match(
-          /(?:最佳實踐|建議|應該)[：:]\s*(.+)/
+          /(?:best practice|recommend|should)[：:]\s*(.+)/
         );
         if (practiceMatch) {
           practices.push(practiceMatch[1]);
@@ -270,7 +284,7 @@ export class KnowledgeExtractor {
    * Generate pattern title
    */
   private generatePatternTitle(category: string, theme: string): string {
-    return `${theme} - ${category} 模式`;
+    return `${theme} - ${category} pattern`;
   }
 
   /**
@@ -281,7 +295,7 @@ export class KnowledgeExtractor {
     const firstExp = experiences[0];
     const lastExp = experiences[experiences.length - 1];
 
-    return `基於 ${count} 個相關經驗識別的模式。從 ${firstExp.timestamp} 到 ${lastExp.timestamp} 期間，團隊在 ${firstExp.category || "general"} 領域遇到了重複的問題和解決方案。`;
+    return `Pattern identified from ${count} related experiences. From ${firstExp.timestamp} to ${lastExp.timestamp}, the team encountered recurring problems and solutions in the ${firstExp.category || "general"} area.`;
   }
 
   /**
@@ -440,17 +454,17 @@ export class KnowledgeExtractor {
     patterns.forEach((pattern) => {
       pattern.bestPractices.forEach((practice) => {
         if (
-          practice.includes("應該") ||
-          practice.includes("必須") ||
-          practice.includes("規範")
+          practice.includes("should") ||
+          practice.includes("must") ||
+          practice.includes("standard")
         ) {
           conventions.push({
             id: this.generateConventionId(practice),
             title: practice,
-            description: `基於 ${pattern.frequency} 個經驗總結的開發規範`,
+            description: `Development standard summarized from ${pattern.frequency} experiences`,
             enforcement: "recommended",
             examples: pattern.examples.slice(0, 3), // Take first 3 examples
-            rationale: `從 ${pattern.title} 模式中識別的最佳實踐`,
+            rationale: `Best practice identified from ${pattern.title} pattern`,
           });
         }
       });
@@ -472,8 +486,8 @@ export class KnowledgeExtractor {
         decisions.push({
           id: `ad-${pattern.id}`,
           title: pattern.title,
-          context: `在 ${pattern.category} 開發中遇到重複問題`,
-          decision: pattern.solutions[0] || "採用識別出的最佳實踐",
+          context: `Recurring problems encountered during ${pattern.category} development`,
+          decision: pattern.solutions[0] || "Adopt identified best practices",
           consequences: pattern.bestPractices,
           alternatives: [],
           timestamp: pattern.createdAt,

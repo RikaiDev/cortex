@@ -18,8 +18,9 @@ export {
 } from "./common/types.js";
 
 // MCP modules
-export { MCPWorkflow as MCPWorkflowInterface } from "./mcp/mcp-workflow.js";
-export { MCPProtocolServer } from "./mcp/mcp-protocol-server.js";
+export { MCPServer, createMCPServer } from "./mcp/server.js";
+export { DiagnosticEngine } from "./mcp/diagnostic.js";
+export { QueryParser } from "./mcp/parse.js";
 export * from "./mcp/mcp-context-tools.js";
 
 // Project modules

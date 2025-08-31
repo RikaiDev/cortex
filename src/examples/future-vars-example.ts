@@ -9,9 +9,11 @@
 const activeFeature = true;
 
 // Intentionally unused variables (prefixed with _)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _unusedParam = "temp";
 
 // Variables reserved for future development (prefixed with _future_)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const _future_featureFlag = {
   enableMultiAgentCollaboration: false,
   enableAdvancedPatternRecognition: false,
@@ -29,13 +31,13 @@ const _future_featureFlag = {
  */
 function processMCPTool(
   toolName: string,
-  _options: any,
+  _options: unknown,
   _future_config?: {
     advancedFeatures?: boolean;
     learningMode?: boolean;
     contextDepth?: number;
   }
-) {
+): void {
   console.log(`Processing MCP tool: ${toolName}`);
 
   // Use normal variables
@@ -59,20 +61,22 @@ function processMCPTool(
  *
  * This function is not currently implemented, but is reserved for future functionality
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _future_initializeAgentCollaboration(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   config: { advancedFeatures?: boolean; learningMode?: boolean }
-) {
+): void {
   // Future agent collaboration logic
 }
 
 /**
  * Example of future MCP tool that might be added
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function _future_contextMemoryTool(
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  context: Record<string, any>
-) {
+  context: Record<string, unknown>
+): void {
   // Future context memory implementation
 }
 

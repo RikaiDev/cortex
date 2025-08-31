@@ -7,6 +7,47 @@
 import chalk from "chalk";
 import { Command } from "commander";
 import { MCPWorkflow } from "../core/mcp/mcp-workflow.js";
+import { createMCPContextTools } from "../core/mcp/mcp-context-tools.js";
+
+/**
+ * Sub-task interface for task decomposition
+ */
+interface SubTask {
+  description: string;
+  priority: "low" | "medium" | "high";
+}
+
+/**
+ * Task decomposition interface
+ */
+interface TaskDecomposition {
+  subTasks: SubTask[];
+}
+
+/**
+ * Role assignment interface
+ */
+interface RoleAssignment {
+  roleDescription: string;
+  taskId: string;
+}
+
+/**
+ * Role assignments interface
+ */
+interface RoleAssignments {
+  roleAssignments: RoleAssignment[];
+}
+
+/**
+ * Best practice result interface
+ */
+interface BestPracticeResult {
+  file: string;
+  relevance: number;
+  tags?: string[];
+  content?: string;
+}
 
 /**
  * Add MCP commands to the CLI
@@ -23,7 +64,7 @@ export function addMCPCommands(program: Command): void {
     .option(
       "-i, --input <input>",
       "User input to test",
-      "我們需要導入 MCP 來讓每個步驟都變成可控的"
+      "We need to implement proper error handling for API calls"
     )
     .option("-c, --context <context>", "Additional context", "")
     .action(async (options) => {
@@ -119,7 +160,10 @@ async function testMCPWorkflow(
     createMCPContextTools(workflow, process.cwd());
 
     const contextObj = context ? { context } : {};
-    const result = await workflow.executeWorkflow(userInput, contextObj);
+    const result: Record<string, unknown> = await workflow.executeWorkflow(
+      userInput,
+      contextObj
+    );
 
     console.log(chalk.green("✅ Workflow completed successfully!"));
     console.log();
@@ -128,55 +172,92 @@ async function testMCPWorkflow(
     console.log(chalk.cyan("📊 Workflow Results:"));
     console.log(`Workflow ID: ${result.workflowId}`);
     console.log(`Success: ${result.success}`);
-    console.log(`Steps: ${result.steps.length}`);
+    console.log(`Steps: ${(result.steps as unknown[]).length}`);
     console.log();
 
     // Display intent analysis
-    if (result.finalResult?.intentAnalysis) {
+    if (
+      result.finalResult &&
+      typeof result.finalResult === "object" &&
+      "intentAnalysis" in result.finalResult
+    ) {
       const intent = result.finalResult.intentAnalysis;
-      console.log(chalk.cyan("🎯 Intent Analysis:"));
-      console.log(`Primary Intent: ${intent.primaryIntent}`);
-      console.log(`Complexity: ${intent.complexity}`);
-      console.log(`Pain Points: ${intent.painPoints.join(", ") || "None"}`);
-      console.log();
+      if (intent && typeof intent === "object") {
+        console.log(chalk.cyan("🎯 Intent Analysis:"));
+        console.log(
+          `Primary Intent: ${(intent as Record<string, unknown>).primaryIntent || "unknown"}`
+        );
+        console.log(
+          `Complexity: ${(intent as Record<string, unknown>).complexity || "unknown"}`
+        );
+        console.log(
+          `Pain Points: ${
+            Array.isArray((intent as Record<string, unknown>).painPoints)
+              ? String((intent as Record<string, unknown>).painPoints)
+                  .split(",")
+                  .join(", ")
+              : "None"
+          }`
+        );
+        console.log();
+      }
     }
 
     // Display task decomposition
-    if (result.finalResult?.taskDecomposition) {
+    if (
+      result.finalResult &&
+      typeof result.finalResult === "object" &&
+      "taskDecomposition" in result.finalResult
+    ) {
       const tasks = result.finalResult.taskDecomposition;
-      console.log(chalk.cyan("📋 Task Decomposition:"));
-      tasks.subTasks.forEach((task: any, index: number) => {
-        console.log(
-          `${index + 1}. ${task.description} (${task.priority} priority)`
+      if (tasks && typeof tasks === "object" && "subTasks" in tasks) {
+        console.log(chalk.cyan("📋 Task Decomposition:"));
+        (tasks as TaskDecomposition).subTasks.forEach(
+          (task: SubTask, index: number) => {
+            console.log(
+              `${index + 1}. ${task.description} (${task.priority} priority)`
+            );
+          }
         );
-      });
-      console.log();
+        console.log();
+      }
     }
 
     // Display role assignments
-    if (result.finalResult?.roleAssignment) {
+    if (
+      result.finalResult &&
+      typeof result.finalResult === "object" &&
+      "roleAssignment" in result.finalResult
+    ) {
       const roles = result.finalResult.roleAssignment;
-      console.log(chalk.cyan("🎭 Role Assignments:"));
-      roles.roleAssignments.forEach((role: any) => {
-        console.log(`- ${role.roleDescription}: ${role.taskId}`);
-      });
-      console.log();
+      if (roles && typeof roles === "object" && "roleAssignments" in roles) {
+        console.log(chalk.cyan("🎭 Role Assignments:"));
+        (roles as RoleAssignments).roleAssignments.forEach(
+          (role: RoleAssignment) => {
+            console.log(`- ${role.roleDescription}: ${role.taskId}`);
+          }
+        );
+        console.log();
+      }
     }
 
     // Display recommendations
-    if (result.recommendations.length > 0) {
+    if (
+      Array.isArray(result.recommendations) &&
+      result.recommendations.length > 0
+    ) {
       console.log(chalk.cyan("💡 Recommendations:"));
-      result.recommendations.forEach((rec: string) => {
-        console.log(`- ${rec}`);
+      result.recommendations.forEach((rec: unknown) => {
+        console.log(`- ${String(rec)}`);
       });
       console.log();
     }
 
     // Display learnings
-    if (result.learnings.length > 0) {
+    if (Array.isArray(result.learnings) && result.learnings.length > 0) {
       console.log(chalk.cyan("🧠 Learnings:"));
-      result.learnings.forEach((learning: string) => {
-        console.log(`- ${learning}`);
+      result.learnings.forEach((learning: unknown) => {
+        console.log(`- ${String(learning)}`);
       });
       console.log();
     }
@@ -204,11 +285,10 @@ async function listMCPTools(): Promise<void> {
   try {
     // List the available tools
     const tools = [
-      "context-enhancer",
-      "experience-recorder",
-      "standards-detector",
-      "standards-applier",
-      "cortex-feedback-collector",
+      "natural-language-query",
+      "project-context",
+      "experience-search",
+      "code-diagnostic",
     ];
 
     if (tools.length === 0) {
@@ -229,14 +309,17 @@ async function listMCPTools(): Promise<void> {
     // Also show the tools that should be available
     console.log();
     console.log(chalk.cyan("📋 Expected MCP Tools:"));
-    console.log("- context-enhancer: Load project context and experiences");
     console.log(
-      "- experience-recorder: Record user interactions and learnings"
+      "- natural-language-query: Process natural language queries and route to appropriate tools"
     );
-    console.log("- standards-detector: Detect user preferences and standards");
-    console.log("- standards-applier: Apply learned standards to content");
     console.log(
-      "- cortex-feedback-collector: Collect and process user feedback"
+      "- project-context: Get essential project context for task understanding"
+    );
+    console.log(
+      "- experience-search: Search for relevant past experiences and solutions"
+    );
+    console.log(
+      "- code-diagnostic: Analyze code issues and provide diagnostic information"
     );
 
     // Show MCP server status
@@ -263,40 +346,38 @@ async function executeMCPTool(
   console.log();
 
   try {
-    const input = JSON.parse(inputStr);
+    const input: Record<string, unknown> = JSON.parse(inputStr);
 
-    // Create MCP server instance and execute the tool
-    const { MCPProtocolServer } = await import(
-      "../core/mcp/mcp-protocol-server.js"
-    );
-    const server = new MCPProtocolServer(process.cwd());
+    // Create MCP server
+    const { createMCPServer } = await import("../core/mcp/server.js");
 
-    // Execute the tool directly
+    // Create MCP workflow and context tools
+    const mcpWorkflow = new MCPWorkflow(process.cwd());
+    createMCPContextTools(mcpWorkflow, process.cwd());
+    const server = createMCPServer();
+
+    // Simple CLI testing - direct method call
     let result;
-    switch (toolName) {
-      case "context-enhancer":
-        result = await server["executeContextEnhancer"](input);
-        break;
-      case "experience-recorder":
-        result = await server["executeExperienceRecorder"](input);
-        break;
-      case "standards-detector":
-        result = await server["executeStandardsDetector"](input);
-        break;
-      case "standards-applier":
-        result = await server["executeStandardsApplier"](input);
-        break;
-      case "cortex-feedback-collector":
-        result = await server["executeFeedbackCollector"](input);
-        break;
-      default:
-        throw new Error(`Unknown tool: ${toolName}`);
+    if (toolName === "natural-language-query") {
+      // Direct call to test the functionality
+      result = await server.handleNaturalLanguageQuery(input);
+    } else {
+      throw new Error(`Tool ${toolName} not supported in CLI mode`);
     }
 
     console.log(chalk.green("✅ Tool executed successfully!"));
     console.log();
     console.log(chalk.cyan("📊 Result:"));
-    console.log(JSON.stringify(result, null, 2));
+    if (
+      result &&
+      result.content &&
+      Array.isArray(result.content) &&
+      result.content[0]
+    ) {
+      console.log(result.content[0]);
+    } else {
+      console.log(JSON.stringify(result, null, 2));
+    }
   } catch (error) {
     console.error(chalk.red("❌ Tool execution failed:"), error);
     process.exit(1);
@@ -324,7 +405,11 @@ async function analyzeIntent(
       primaryIntent: "general",
       complexity: "medium",
       painPoints: [],
-      successCriteria: ["完成相關任務", "代碼品質符合專案標準", "遵循最佳實踐"],
+      successCriteria: [
+        "Complete the task successfully",
+        "Code quality meets project standards",
+        "Follow best practices",
+      ],
     };
 
     console.log(chalk.green("✅ Intent analysis completed!"));
@@ -364,7 +449,10 @@ async function findBestPractices(
           content: "Getting started guide for the project...",
         },
       ],
-      recommendations: ["找到 1 個相關的最佳實踐", "建議按照相關性順序參考"],
+      recommendations: [
+        "Found 1 relevant best practice",
+        "Consider reviewing in order of relevance",
+      ],
     };
 
     console.log(chalk.green("✅ Best practice search completed!"));
@@ -372,12 +460,16 @@ async function findBestPractices(
 
     if (result.results.length > 0) {
       console.log(chalk.cyan("📚 Found Best Practices:"));
-      result.results.forEach((practice: any, index: number) => {
+      result.results.forEach((practice: BestPracticeResult, index: number) => {
         console.log(
           `${index + 1}. ${practice.file} (relevance: ${practice.relevance})`
         );
-        console.log(`   Tags: ${practice.tags.join(", ")}`);
-        console.log(`   Content: ${practice.content.substring(0, 100)}...`);
+        console.log(
+          `   Tags: ${practice.tags ? practice.tags.join(", ") : "None"}`
+        );
+        console.log(
+          `   Content: ${practice.content ? practice.content.substring(0, 100) : "No content"}...`
+        );
         console.log();
       });
     } else {
@@ -413,7 +505,7 @@ async function validateToolUsage(
     const result = {
       isValid: true,
       issues: [],
-      suggestions: ["建議遵循最佳實踐", "確保工具使用安全"],
+      suggestions: ["Follow best practices", "Ensure tool usage is safe"],
     };
 
     console.log(chalk.green("✅ Tool usage validation completed!"));
@@ -451,10 +543,12 @@ async function startMCPServer(projectRoot: string): Promise<void> {
 
   try {
     // Import and start the MCP server
-    const { MCPProtocolServer } = await import(
-      "../core/mcp/mcp-protocol-server.js"
-    );
-    const server = new MCPProtocolServer(projectRoot);
+    const { createMCPServer } = await import("../core/mcp/server.js");
+
+    // Create MCP workflow and context tools
+    const mcpWorkflow = new MCPWorkflow(projectRoot);
+    createMCPContextTools(mcpWorkflow, projectRoot);
+    const server = createMCPServer();
 
     console.log(chalk.green("✅ MCP server started successfully!"));
     console.log(chalk.gray("Server is running and ready for connections"));

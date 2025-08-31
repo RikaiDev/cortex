@@ -1,33 +1,28 @@
 /**
- * MCP Context Tools - Optimized Content Pump with Intelligent Filtering
+ * MCP Context Tools - Linus Torvalds' Knowledge Management System
+ *
+ * **I am Linus Torvalds**, creator and chief architect of the Linux kernel, 30 years of kernel maintenance experience, reviewed millions of lines of code.
+ * I define Cortex AI's MCP context tools system:
+ *
+ * 1. **"Good Taste"** - Context processing must be simple and effective, eliminating unnecessary complexity
+ * 2. **Pragmatism** - Only provide truly valuable context, not theoretically perfect but actually useless information
+ * 3. **Backward Compatibility** - Context system must consider existing knowledge compatibility, cannot break existing functionality
+ * 4. **Quality First** - Better to have simple context than complex but defective context
  *
  * This module provides the external LLM with optimized, relevant context
  * through intelligent filtering, caching, and relevance scoring to handle
  * growing experience libraries efficiently.
  */
 
-import { MCPWorkflow } from "../common/types.js";
+import { MCPWorkflow, ToolResult } from "../common/types.js";
 import fs from "fs-extra";
 import * as path from "path";
 import crypto from "crypto";
+import { Experience, ContextEnhancementOptions } from "./types.js";
 
-interface ToolResult {
-  output: string;
-  success: boolean;
-}
-
-interface Experience {
-  userInput: string;
-  response: string;
-  timestamp: string;
-  tags?: string[];
-  category?: string;
-  relevance?: number;
-}
-
-interface ContextEnhancementOptions {
+interface ContextEnhancerArgs {
   maxExperiences?: number;
-  timeFilter?: number; // days
+  timeFilter?: number;
   semanticFilter?: boolean;
   categoryFilter?: string[];
   minRelevance?: number;
@@ -74,7 +69,14 @@ export class MCPContextTools {
       return this.experiencesCache.get("all") || [];
     }
 
-    const experiencesDir = path.join(this.projectRoot, "docs", "experiences");
+    const experiencesDir = path.join(
+      this.projectRoot,
+      ".cortex",
+      "experiences"
+    );
+
+    // Also ensure the directory exists
+    await fs.ensureDir(experiencesDir);
 
     if (!(await fs.pathExists(experiencesDir))) {
       return [];
@@ -208,11 +210,11 @@ Filters applied: ${this.describeFilters(options)} -->`;
       `${experience.userInput} ${experience.response}`.toLowerCase();
 
     if (content.includes("mcp")) tags.push("mcp");
-    if (content.includes("測試")) tags.push("testing");
-    if (content.includes("修復")) tags.push("bugfix");
-    if (content.includes("發佈")) tags.push("release");
-    if (content.includes("工具")) tags.push("tools");
-    if (content.includes("伺服器")) tags.push("server");
+    if (content.includes("test")) tags.push("testing");
+    if (content.includes("fix")) tags.push("bugfix");
+    if (content.includes("release")) tags.push("release");
+    if (content.includes("tool")) tags.push("tools");
+    if (content.includes("server")) tags.push("server");
 
     return tags;
   }
@@ -222,10 +224,10 @@ Filters applied: ${this.describeFilters(options)} -->`;
       `${experience.userInput} ${experience.response}`.toLowerCase();
 
     if (content.includes("mcp")) return "mcp";
-    if (content.includes("測試")) return "testing";
-    if (content.includes("修復")) return "bugfix";
-    if (content.includes("發佈")) return "release";
-    if (content.includes("工具")) return "tools";
+    if (content.includes("test")) return "testing";
+    if (content.includes("fix")) return "bugfix";
+    if (content.includes("release")) return "release";
+    if (content.includes("tool")) return "tools";
 
     return "general";
   }
@@ -249,7 +251,7 @@ Filters applied: ${this.describeFilters(options)} -->`;
     }
 
     // Boost for testing experiences
-    if (userInput.includes("測試") || response.includes("測試")) {
+    if (userInput.includes("test") || response.includes("test")) {
       relevance += 0.1;
     }
 
@@ -285,7 +287,9 @@ Filters applied: ${this.describeFilters(options)} -->`;
     return crypto.createHash("sha256").update(input).digest("hex");
   }
 
-  private async contextEnhancerTool(args: any = {}): Promise<ToolResult> {
+  private async contextEnhancerTool(
+    args: ContextEnhancerArgs = {}
+  ): Promise<ToolResult> {
     const options: ContextEnhancementOptions = {
       maxExperiences: args.maxExperiences || 10,
       timeFilter: args.timeFilter || 30, // 30 days
@@ -299,8 +303,8 @@ Filters applied: ${this.describeFilters(options)} -->`;
 
       if (experiences.length === 0) {
         return {
-          output: "<!-- No experiences found in the library. -->",
           success: true,
+          data: "<!-- No experiences found in the library. -->",
         };
       }
 
@@ -326,34 +330,39 @@ Filters applied: ${this.describeFilters(options)} -->`;
       );
 
       return {
-        output: `${summary}\n\n${formattedExperiences}`,
         success: true,
+        data: `${summary}\n\n${formattedExperiences}`,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error in contextEnhancerTool:", error);
       return {
-        output: `<!-- Error fetching experiences: ${error.message} -->`,
         success: false,
+        error: `Error fetching experiences: ${error instanceof Error ? error.message : String(error)}`,
       };
     }
   }
 
   private async experienceRecorderTool(
-    params: Record<string, any>
+    params: Record<string, unknown>
   ): Promise<ToolResult> {
-    const { context } = params;
-    if (context && context.userInput) {
+    const contextObj = params.context;
+    if (
+      contextObj &&
+      typeof contextObj === "object" &&
+      "userInput" in contextObj &&
+      typeof contextObj.userInput === "string"
+    ) {
       // Ensure timestamp is current time, not hardcoded
       const currentTimestamp = new Date().toISOString();
       const experienceData = {
-        ...context,
+        ...contextObj,
         timestamp: currentTimestamp,
       };
 
-      const hash = this.getExperienceHash(context.userInput);
+      const hash = this.getExperienceHash(contextObj.userInput);
       const experiencePath = path.join(
         this.projectRoot,
-        "docs",
+        ".cortex",
         "experiences",
         `${hash}.json`
       );
@@ -366,22 +375,119 @@ Filters applied: ${this.describeFilters(options)} -->`;
         this.experiencesCache.clear();
 
         return {
-          output: `Experience for "${context.userInput}" saved successfully to ${path.basename(experiencePath)} at ${currentTimestamp}.`,
           success: true,
+          data: `Experience for "${contextObj.userInput}" saved successfully to ${path.basename(experiencePath)} at ${currentTimestamp}.`,
         };
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error(`Failed to save experience to ${experiencePath}:`, error);
         return {
-          output: `Failed to save experience: ${error.message}`,
           success: false,
+          error: `Failed to save experience: ${error instanceof Error ? error.message : String(error)}`,
         };
       }
     }
     return {
-      output:
-        "Invalid context for recording experience. 'userInput' is required.",
       success: false,
+      error:
+        "Invalid context for recording experience. 'userInput' is required.",
     };
+  }
+
+  /**
+   * Extract component name from natural language query
+   * Linus: Keep it simple, don't over-engineer
+   */
+  extractComponentFromQuery(query: string): string | null {
+    // Universal approach: extract any noun phrase that could be a component
+    // Linus: Find the essence, don't over-engineer with specific cases
+
+    const cleanQuery = query
+      .replace(/^為什麼\s*/, "") // Remove "why" in Chinese
+      .replace(/^why\s*/i, "") // Remove "why" in English
+      .replace(/\s*沒有顯示\s*$/, "") // Remove "not showing" in Chinese
+      .replace(/\s*not showing\s*$/i, "") // Remove "not showing" in English
+      .replace(/\s*無法正確渲染\s*$/, "") // Remove "cannot render properly" in Chinese
+      .trim();
+
+    // Extract potential component names using linguistic patterns
+    const componentPatterns = [
+      // Pattern 1: "X 的 Y" (Chinese possessive) -> extract Y
+      /(.+?)的(.+)/,
+      // Pattern 2: "X's Y" (English possessive) -> extract Y
+      /(.+?)'s\s*(.+)/i,
+      // Pattern 3: Multi-word component with type indicator
+      /(\w+(?:\s+\w+)+?)\s+(?:engine|component|handler|service|list|page|view|screen)/i,
+      // Pattern 4: Simple multi-word component
+      /(\w+(?:\s+\w+){1,2})/,
+      // Pattern 5: Single word (fallback)
+      /(\w+)/,
+    ];
+
+    for (const pattern of componentPatterns) {
+      const match = cleanQuery.match(pattern);
+      if (match) {
+        // Use the most specific capture group
+        const component = match[match.length - 1]?.trim().toLowerCase();
+
+        if (
+          component &&
+          component.length > 1 &&
+          !this.isCommonWord(component)
+        ) {
+          return component;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Check if word is a common non-component word
+   */
+  private isCommonWord(word: string): boolean {
+    const commonWords = [
+      "the",
+      "a",
+      "an",
+      "this",
+      "that",
+      "my",
+      "your",
+      "his",
+      "her",
+      "its",
+      "our",
+      "their",
+      "is",
+      "are",
+      "was",
+      "were",
+      "be",
+      "been",
+      "being",
+      "and",
+      "or",
+      "but",
+      "if",
+      "then",
+      "else",
+      "when",
+      "where",
+      "how",
+      "what",
+      "which",
+      "的",
+      "了",
+      "嗎",
+      "呢",
+      "吧",
+      "啊",
+      "呀",
+      "哦",
+      "嗯",
+    ];
+    return commonWords.includes(word);
   }
 }
 

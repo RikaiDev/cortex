@@ -1,5 +1,13 @@
 /**
- * Experience Editor
+ * Experience Editor - Linus Torvalds' Knowledge Refinement System
+ *
+ * **I am Linus Torvalds**, creator and chief architect of the Linux kernel, 30 years of kernel maintenance experience, reviewed millions of lines of code.
+ * I define Cortex AI's experience editing system:
+ *
+ * 1. **"Good Taste"** - Knowledge extraction must be simple and effective, eliminating unnecessary complexity
+ * 2. **Pragmatism** - Only extract truly valuable knowledge, not theoretically perfect but actually useless information
+ * 3. **Backward Compatibility** - Knowledge system must consider existing experience compatibility, cannot break existing functionality
+ * 4. **Quality First** - Better to have simple knowledge than complex but defective knowledge
  *
  * This module provides functionality for editing and managing experience records
  * collected during system operation, extracting patterns and knowledge.
@@ -8,6 +16,15 @@
 import fs from "fs-extra";
 import path from "path";
 import { glob } from "glob";
+
+/**
+ * Pattern data structure used in pattern analysis
+ */
+interface PatternData {
+  contexts: string[];
+  actions: string[];
+  success: number;
+}
 
 /**
  * Experience file structure
@@ -60,8 +77,8 @@ export class ExperienceEditor {
    */
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
-    this.experiencesPath = path.join(projectRoot, "docs", "experiences", "mcp");
-    this.docsPath = path.join(projectRoot, "docs");
+    this.experiencesPath = path.join(projectRoot, ".cortex", "experiences");
+    this.docsPath = path.join(projectRoot, ".cortex", "docs");
   }
 
   /**
@@ -143,7 +160,7 @@ export class ExperienceEditor {
     experiences: ExperienceFile[]
   ): Promise<KnowledgePattern[]> {
     // Group experiences by patterns
-    const patternMap = new Map<string, any>();
+    const patternMap = new Map<string, PatternData>();
 
     // Process each experience
     for (const experience of experiences) {
@@ -215,7 +232,7 @@ export class ExperienceEditor {
    * @param experience - Experience file containing the pattern
    */
   private addPattern(
-    patternMap: Map<string, any>,
+    patternMap: Map<string, PatternData>,
     pattern: string,
     experience: ExperienceFile
   ): void {
@@ -234,11 +251,13 @@ export class ExperienceEditor {
 
     // Update pattern data
     const patternData = patternMap.get(normalizedPattern);
-    patternData.contexts.push(experience.context);
-    patternData.actions.push(experience.action);
+    if (patternData) {
+      patternData.contexts.push(experience.context);
+      patternData.actions.push(experience.action);
 
-    if (experience.success) {
-      patternData.success = (patternData.success || 0) + 1;
+      if (experience.success) {
+        patternData.success = (patternData.success || 0) + 1;
+      }
     }
   }
 
@@ -253,7 +272,7 @@ export class ExperienceEditor {
       const contextObj = JSON.parse(context);
       // Extract potential patterns from JSON properties
       return Object.entries(contextObj)
-        .filter(([_, value]) => typeof value === "string")
+        .filter(([_key, value]) => typeof value === "string") // eslint-disable-line @typescript-eslint/no-unused-vars
         .map(([key, value]) => `${key}: ${String(value).substring(0, 50)}`)
         .filter((pattern) => pattern.length > 10);
     } catch (error) {

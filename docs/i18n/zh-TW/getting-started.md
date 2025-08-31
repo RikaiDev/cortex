@@ -80,14 +80,14 @@ cortex start
 
 ```
 your-project/
-├── docs/
-│   └── ai-collaboration/
-│       ├── README.md        # 系統架構
-│       └── roles/           # 基本角色定義
+├── .cortex/
+│   ├── docs/                # 生成的文檔
+│   ├── experiences/         # 學習經驗
+│   └── cortex.json         # 專案配置
 ├── .cursor/
 │   └── rules/
 │       └── cortex.mdc       # Cursor AI 規則
-└── CLAUDE                   # Claude 系統訊息
+├── CLAUDE                   # Claude 系統訊息
 └── GEMINI                   # Gemini prompt 模板
 ```
 

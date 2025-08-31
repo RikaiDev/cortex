@@ -1,6 +1,6 @@
 # Cortex AI
 
-[![Version](https://img.shields.io/badge/version-v0.4.0-blue.svg)](https://github.com/RikaiDev/cortex/releases)
+[![Version](https://img.shields.io/badge/version-v0.8.0-blue.svg)](https://github.com/RikaiDev/cortex/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/runtime-Node.js-green.svg)](https://nodejs.org/)
 
@@ -8,37 +8,45 @@
 
 ## 🧠 AI Collaboration Brain
 
-**Cortex AI** is an AI collaboration system that transforms AI models into intelligent, learning partners. It solves the core problem of AI inconsistency and lack of memory through **prompt injection** and **real-time preference learning**.
+**Cortex AI** is an intelligent AI collaboration system that transforms AI models into reliable, learning partners. It solves the fundamental problems of AI inconsistency and lack of memory through **prompt injection** and **real-time preference learning**.
+
+### 🎯 **Core Mission**
+
+To create consistent, personalized, and continuously improving AI collaboration experiences that adapt to individual developers and project needs, eliminating the frustration of repetitive explanations and inconsistent AI behavior.
 
 ### 🎯 **Why Cortex?**
 
 **The Problem:**
 
-- AI models lack stable thinking processes (Chain-of-Thought)
-- AI forgets user preferences and repeats the same mistakes
-- Different AI platforms behave inconsistently
-- No personalization or learning from conversation
+- AI models behave inconsistently across different platforms
+- AI forgets user preferences and coding patterns
+- Repetitive explanations of the same project conventions
+- Lack of personalization in AI collaboration
+- No memory of successful interaction patterns
 
 **The Solution:**
 
-- **🧠 Brain** - Structured thinking through prompt injection
-- **📚 Experience** - Real-time learning from user feedback
-- **🔄 Evolution** - Continuous improvement without repeating mistakes
+- **🧠 Consistent AI Behavior** - Standardized thinking processes across all AI platforms
+- **📚 Learning Memory** - Remembers user preferences and project patterns
+- **🔄 Continuous Adaptation** - Evolves based on successful interactions
+- **🎯 Context Awareness** - Understands project-specific conventions and workflows
 
 ### 🏗️ **Architecture**
 
 ```
-🧠 Brain (MDC/GEMINI/CLAUDE)
-├── Real-time thinking and decision making
-├── Structured 5-step thinking process
-├── User preference learning from conversation
+🧠 Brain Layer (AI Platform Integration)
+├── MDC (Cursor) - Integrated editor rules
+├── CLAUDE - Anthropic Claude system prompts
+├── GEMINI - Google Gemini system prompts
+├── Structured thinking processes
 └── Cross-platform consistency
 
-📚 Experience (docs)
-├── Long-term memory and knowledge base
-├── Project-specific patterns and conventions
-├── Learning from successful interactions
-└── Continuous knowledge evolution
+📚 Experience Layer (.cortex directory)
+├── Invisible project configuration
+├── User preference learning
+├── Project pattern recognition
+├── Convention adaptation
+└── Continuous improvement
 
 🛠️ Essential Tools
 ├── Prompt injection for AI enhancement
@@ -47,9 +55,9 @@
 └── Simplified CLI for core operations
 ```
 
-### Cortex Philosophy
+### 🧠 **Core Principles**
 
-**Cortex AI** represents our core philosophy for transforming AI interactions:
+**Cortex AI** implements proven principles for reliable AI collaboration:
 
 1. **Few-Shot to Fine-Tune Transformation** - We transform simple few-shot examples into comprehensive fine-tune prompts automatically, eliminating the need for manual prompt engineering.
 
@@ -126,7 +134,7 @@ sequenceDiagram
 
 ### **📚 Real-Time Learning**
 
-- **User Preference Detection**: Learns from keywords like "不對", "我們用", "不要"
+- **User Preference Detection**: Learns from keywords like "wrong", "we use", "don't"
 - **Immediate Application**: Applies learned preferences to current response
 - **No Repetition**: Never repeats corrected mistakes
 - **Frustration Detection**: Recognizes and learns from user frustration
@@ -175,11 +183,11 @@ cortex version
 ### **1. Learning from Conversation**
 
 ```
-User: "註解又開始寫中文了？"
+User: "Comments are in Chinese again?"
 AI: [Learns] Write all comments in English
-User: "我們用 uv run pytest"
+User: "we use uv run pytest"
 AI: [Learns] Always use uv run for Python commands
-User: "又來了"
+User: "again"
 AI: [Learns] Don't repeat the same mistake
 ```
 

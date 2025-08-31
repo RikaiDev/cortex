@@ -94,23 +94,53 @@ console.log();
 
 // Step 4: Run ESLint
 console.log(chalk.blue('Step 4: Running ESLint...'));
-const eslintCommand = shouldFix 
+const eslintCommand = shouldFix
   ? `npx eslint --fix "${config.srcDir}/**/*.ts"`
   : `npx eslint "${config.srcDir}/**/*.ts"`;
-const eslintResult = runCommand(eslintCommand);
+const eslintResult = runCommand(eslintCommand, true); // Always capture output
 
-if (eslintResult.success) {
+// Parse ESLint output to check for issues
+const hasErrors = eslintResult.output.includes('✖') || eslintResult.output.includes('error');
+const hasWarnings = eslintResult.output.includes('warning') || eslintResult.output.includes('⚠️');
+
+if (eslintResult.success && !hasErrors && !hasWarnings) {
   console.log(chalk.green('✅ ESLint check passed'));
 } else {
-  console.log(chalk.red('❌ ESLint check failed'));
-  // Extract unused variables warnings
-  const unusedVars = eslintResult.output.match(/[^\n]*no-unused-vars[^\n]*/g) || [];
-  if (unusedVars.length > 0) {
-    console.log(chalk.yellow('\n⚠️ Unused variables detected:'));
-    unusedVars.forEach(line => {
+  if (hasErrors) {
+    console.log(chalk.red('❌ ESLint check failed - errors found'));
+  } else if (hasWarnings) {
+    console.log(chalk.yellow('⚠️ ESLint check completed with warnings'));
+  } else {
+    console.log(chalk.red('❌ ESLint check failed'));
+  }
+
+  // Extract and display issues
+  const errorLines = eslintResult.output.match(/[^\n]*error[^\n]*/gi) || [];
+  const warningLines = eslintResult.output.match(/[^\n]*warning[^\n]*/gi) || [];
+
+  if (errorLines.length > 0) {
+    console.log(chalk.red('\n❌ Errors:'));
+    errorLines.forEach(line => {
+      console.log(chalk.red(`  - ${line.trim()}`));
+    });
+  }
+
+  if (warningLines.length > 0) {
+    console.log(chalk.yellow('\n⚠️ Warnings:'));
+    warningLines.forEach(line => {
       console.log(chalk.yellow(`  - ${line.trim()}`));
     });
-    console.log(chalk.yellow('\nTip: Prefix unused variables with underscore (_) to indicate they are intentionally unused.'));
+  }
+
+  if (shouldFix) {
+    console.log(chalk.yellow('\n🛠️ Some issues may have been automatically fixed'));
+  } else {
+    console.log(chalk.yellow('\n💡 Tip: Run with --fix to automatically fix some issues'));
+  }
+
+  // If there are errors, mark as failed
+  if (hasErrors) {
+    eslintResult.success = false;
   }
 }
 console.log();

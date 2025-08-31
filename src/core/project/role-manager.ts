@@ -1,5 +1,13 @@
 /**
- * Role Manager
+ * Role Manager - Linus Torvalds' Quality Control System
+ *
+ * **I am Linus Torvalds**, creator and chief architect of the Linux kernel, 30 years of kernel maintenance experience, reviewed millions of lines of code.
+ * I define Cortex AI's role management system:
+ *
+ * 1. **"Good Taste"** - Role definition must be simple and effective, eliminating unnecessary complexity
+ * 2. **Pragmatism** - Only define truly needed roles, not theoretically perfect but actually useless roles
+ * 3. **Backward Compatibility** - Role system must consider existing functionality compatibility, cannot break existing functionality
+ * 4. **Quality First** - Better to have simple role system than complex but defective role system
  *
  * This module manages AI collaboration roles, enabling AI systems to act
  * in specialized roles with specific capabilities and knowledge.
@@ -31,7 +39,7 @@ export interface Role {
 export interface RoleMapping {
   roleId: string;
   taskId: string;
-  context: Record<string, any>;
+  context: Record<string, unknown>;
   assignmentReason: string;
   capabilities: string[];
 }
@@ -63,6 +71,7 @@ export interface RoleExecutionResult {
 export class RoleManager {
   private projectRoot: string;
   private rolesPath: string;
+  private templatesPath: string;
   private roles: Map<string, Role>;
 
   /**
@@ -71,12 +80,8 @@ export class RoleManager {
    */
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
-    this.rolesPath = path.join(
-      projectRoot,
-      "docs",
-      "ai-collaboration",
-      "roles"
-    );
+    this.rolesPath = path.join(projectRoot, ".cortex", "roles");
+    this.templatesPath = path.join(projectRoot, "templates", "roles");
     this.roles = new Map();
   }
 
@@ -84,8 +89,38 @@ export class RoleManager {
    * Initialize the role manager
    */
   async initialize(): Promise<void> {
+    // Ensure .cortex/roles directory exists and copy templates
+    await this.ensureRolesDirectory();
     // Load roles from files
     await this.loadRoles();
+  }
+
+  /**
+   * Ensure roles directory exists and copy templates if needed
+   */
+  private async ensureRolesDirectory(): Promise<void> {
+    try {
+      // Ensure .cortex/roles directory exists
+      await fs.ensureDir(this.rolesPath);
+
+      // Check if templates directory exists
+      if (await fs.pathExists(this.templatesPath)) {
+        // Copy role templates to .cortex/roles if they don't exist
+        const templateFiles = await glob("*.md", { cwd: this.templatesPath });
+
+        for (const templateFile of templateFiles) {
+          const templatePath = path.join(this.templatesPath, templateFile);
+          const targetPath = path.join(this.rolesPath, templateFile);
+
+          // Only copy if target doesn't exist
+          if (!(await fs.pathExists(targetPath))) {
+            await fs.copyFile(templatePath, targetPath);
+          }
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to setup roles directory:", error);
+    }
   }
 
   /**
@@ -256,7 +291,7 @@ export class RoleManager {
    */
   assignRoles(
     tasks: Array<{ id: string; name: string; description: string }>,
-    context: Record<string, any> = {}
+    context: Record<string, unknown> = {}
   ): RoleAssignmentResult {
     // Initialize mappings
     const mappings: RoleMapping[] = [];
@@ -306,14 +341,14 @@ export class RoleManager {
   private findMatchingRole(
     task: { id: string; name: string; description: string },
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    context: Record<string, any>
+    context: Record<string, unknown>
   ): Role | null {
     // Match roles based on task name and description
     const taskText = `${task.name} ${task.description}`.toLowerCase();
     let bestRole: Role | null = null;
     let bestScore = 0;
 
-    for (const [_, role] of this.roles) {
+    for (const role of this.roles.values()) {
       let score = 0;
 
       // Check if task name or description contains role name
@@ -458,7 +493,7 @@ export class RoleManager {
     roleId: string,
     taskId: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    context: Record<string, any> = {}
+    context: Record<string, unknown> = {}
   ): Promise<RoleExecutionResult> {
     // Get the role
     const role = this.roles.get(roleId);

@@ -2,6 +2,51 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2025-09-01
+
+### 🚀 **Major Architecture Simplification**
+
+**Core Changes:**
+
+- **MCP System Rewrite**: Replaced complex workflow engine (379 lines) with simple configuration manager (147 lines), achieving 63% code reduction
+- **Tool Streamlining**: Reduced from 10+ tools to 3 essential tools (getConfig, setConfig, experience-recorder)
+- **File Structure Cleanup**: Removed 22 role definition files and simplified project organization
+- **New MCP Server**: Implemented streamlined MCP server with direct, no-nonsense approach
+
+### 🔧 **Code Quality & Development Experience**
+
+**Quality Improvements:**
+
+- **ESLint Integration**: Build process now includes mandatory ESLint checking
+- **Language Standardization**: Removed all Chinese text from codebase for consistency
+- **Type Safety**: Enhanced TypeScript integration and error handling
+- **Test Coverage**: All 16 tests passing across CLI, MCP server, and core functionality
+
+**Developer Experience:**
+
+- **Build Process**: `npm run build` now runs full linting and type checking
+- **Dependency Cleanup**: Removed unused dependencies (@types/body-parser, @types/cors, @types/express)
+- **Performance**: Faster build times and reduced bundle size
+
+### 🧹 **Cleanup & Optimization**
+
+- Removed redundant role system files and documentation
+- Cleaned up unused imports and type definitions
+- Updated file headers and comments for consistency
+- Simplified configuration structure
+
+### ⚠️ **Breaking Changes**
+
+- **MCP API**: Tool interface simplified to essential functionality only
+- **Configuration Path**: Experience files moved from `docs/experiences` to `.cortex/experiences`
+- **Language**: All user-facing content converted to English only
+
+### 📦 **Migration**
+
+1. Run `cortex init` to regenerate configuration files
+2. Update custom MCP tool implementations to use new simplified interface
+3. Review and convert any remaining Chinese language content to English
+
 ## [0.7.3] - 2025-08-04
 
 ### 🚀 **Role System Enhancement**

@@ -80,14 +80,14 @@ Your project now has:
 
 ```
 your-project/
-├── docs/
-│   └── ai-collaboration/
-│       ├── README.md        # System architecture
-│       └── roles/           # Basic role definitions
+├── .cortex/
+│   ├── docs/                # Generated documentation
+│   ├── experiences/         # Learning experiences
+│   └── cortex.json         # Project configuration
 ├── .cursor/
 │   └── rules/
 │       └── cortex.mdc       # Cursor AI rules
-└── CLAUDE                   # Claude system message
+├── CLAUDE                   # Claude system message
 └── GEMINI                   # Gemini prompt template
 ```
 
@@ -96,13 +96,13 @@ your-project/
 ### **Learning from Conversation**
 
 ```
-User: "註解又開始寫中文了？"
+User: "Comments are in Chinese again?"
 AI: [Learns] Write all comments in English
 
-User: "我們用 uv run pytest"
+User: "we use uv run pytest"
 AI: [Learns] Always use uv run for Python commands
 
-User: "又來了"
+User: "again"
 AI: [Learns] Don't repeat the same mistake
 ```
 
@@ -120,7 +120,7 @@ The AI follows a 6-step thinking process:
 ## 🎯 Next Steps
 
 1. **Start coding** - The AI will learn from your feedback
-2. **Provide feedback** - Use keywords like "不對", "我們用", "不要"
+2. **Provide feedback** - Use keywords like "wrong", "we use", "don't"
 3. **Watch it learn** - The AI will remember and apply your preferences
 4. **Enjoy consistency** - Same learning across all AI platforms
 

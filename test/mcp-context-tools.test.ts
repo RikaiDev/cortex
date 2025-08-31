@@ -3,26 +3,27 @@ import Mocha from "mocha";
 import { expect } from "chai";
 import * as path from "path";
 import fs from "fs-extra";
-// crypto is used in MCPContextTools but not directly in tests
 import { MCPWorkflow } from "../src/core/mcp/mcp-workflow.js";
-import { createMCPContextTools } from "../src/core/mcp/mcp-context-tools.js";
 
 // --- Programmatic Test Runner ---
 const mocha = new Mocha();
 
 // --- Test Suite ---
-const suite = new Mocha.Suite("MCP Context Tools - The Content Pump");
+const suite = new Mocha.Suite(
+  "MCP Workflow - Simplified Configuration Manager"
+);
 
-const testProjectRoot = path.join(process.cwd(), "test-project-context-pump");
-const experiencesDir = path.join(testProjectRoot, "docs", "experiences");
+const testProjectRoot = path.join(
+  process.cwd(),
+  "test-project-simple-workflow"
+);
+const cortexDir = path.join(testProjectRoot, ".cortex");
 let mcpWorkflow: MCPWorkflow;
 
 suite.beforeEach(async () => {
   // Clean and set up a fresh environment for each test
-  await fs.ensureDir(experiencesDir);
+  await fs.ensureDir(cortexDir);
   mcpWorkflow = new MCPWorkflow(testProjectRoot);
-  // Note: The file is still named mcp-thinking-tools, but the class is MCPContextTools
-  createMCPContextTools(mcpWorkflow, testProjectRoot);
 });
 
 suite.afterEach(async () => {
@@ -30,70 +31,86 @@ suite.afterEach(async () => {
 });
 
 suite.addTest(
-  new Mocha.Test(
-    "experience-recorder should create a new experience file",
-    async () => {
-      const userFeedback = {
-        userInput: "How to add a new user?",
-        correction: "Use the `addUser` function in `userService`.",
-      };
+  new Mocha.Test("setConfig should save configuration values", async () => {
+    const testKey = "test-setting";
+    const testValue = { enabled: true, level: "high" };
 
+    const result = await mcpWorkflow.executeTool("setConfig", {
+      key: testKey,
+      value: testValue,
+    });
+
+    expect(result).to.equal(undefined); // setConfig doesn't return anything
+
+    // Verify the configuration was saved
+    const savedValue = await mcpWorkflow.executeTool("getConfig", {
+      key: testKey,
+    });
+    expect(savedValue).to.deep.equal(testValue);
+  })
+);
+
+suite.addTest(
+  new Mocha.Test(
+    "getConfig should return saved configuration values",
+    async () => {
+      const testKey = "project-name";
+      const testValue = "Cortex AI";
+
+      // First set a value
+      await mcpWorkflow.executeTool("setConfig", {
+        key: testKey,
+        value: testValue,
+      });
+
+      // Then get it back
+      const result = await mcpWorkflow.executeTool("getConfig", {
+        key: testKey,
+      });
+
+      expect(result).to.equal(testValue);
+    }
+  )
+);
+
+suite.addTest(
+  new Mocha.Test(
+    "getConfig should return null for non-existent keys",
+    async () => {
+      const result = await mcpWorkflow.executeTool("getConfig", {
+        key: "non-existent-key",
+      });
+
+      expect(result).to.be.null;
+    }
+  )
+);
+
+suite.addTest(
+  new Mocha.Test(
+    "experience-recorder should acknowledge recording",
+    async () => {
       const result = await mcpWorkflow.executeTool("experience-recorder", {
-        context: userFeedback,
+        action: "user-feedback",
+        context: "This is a test feedback",
       });
+
       expect(result.success).to.be.true;
-
-      // Verify that the file was actually created
-      const files = await fs.readdir(experiencesDir);
-      expect(files).to.have.lengthOf(1);
-
-      const savedContent = await fs.readJson(
-        path.join(experiencesDir, files[0])
-      );
-      expect(savedContent.userInput).to.equal(userFeedback.userInput);
-      expect(savedContent.correction).to.equal(userFeedback.correction);
+      expect(result.recorded).to.be.true;
     }
   )
 );
 
 suite.addTest(
   new Mocha.Test(
-    "context-enhancer should return 'no experiences' message when the directory is empty",
+    "executeTool should throw error for unknown tools",
     async () => {
-      const result = await mcpWorkflow.executeTool("context-enhancer", {});
-      expect(result.success).to.be.true;
-      expect(result.output).to.include(
-        "<!-- No experiences found in the library. -->"
-      );
-    }
-  )
-);
-
-suite.addTest(
-  new Mocha.Test(
-    "context-enhancer should combine multiple experiences into a single string",
-    async () => {
-      // 1. Create two mock experience files using the recorder
-      await mcpWorkflow.executeTool("experience-recorder", {
-        context: { userInput: "Experience One" },
-      });
-      await mcpWorkflow.executeTool("experience-recorder", {
-        context: { userInput: "Experience Two" },
-      });
-
-      // 2. Run the enhancer
-      const result = await mcpWorkflow.executeTool("context-enhancer", {});
-      expect(result.success).to.be.true;
-
-      // 3. Verify the output
-      expect(result.output).to.include("--- Experience 1");
-      expect(result.output).to.include("Experience One");
-      expect(result.output).to.include("Experience Two");
-      expect(result.output).to.include("--- Experience 2");
-
-      const occurrences = (result.output.match(/--- Experience \d+/g) || [])
-        .length;
-      expect(occurrences).to.equal(2);
+      try {
+        await mcpWorkflow.executeTool("unknown-tool", {});
+        expect.fail("Should have thrown an error for unknown tool");
+      } catch (error: any) {
+        expect(error.message).to.include("Unknown tool: unknown-tool");
+      }
     }
   )
 );
