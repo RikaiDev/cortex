@@ -184,25 +184,21 @@ perform_release() {
     print_status $BLUE "🔨 Building project..."
     npm run build
     
-    # 4. Build project
-    print_status $BLUE "🔨 Building project..."
-    npm run build
-    
-    # 5. Commit changes
+    # 4. Commit changes
     print_status $BLUE "📝 Committing changes..."
     git add .
     git commit -m "feat: release v$target_version"
     
-    # 6. Create git tag
+    # 5. Create git tag
     print_status $BLUE "🏷️  Creating git tag..."
     git tag "v$target_version"
-    
-    # 7. Push to remote
+
+    # 6. Push to remote
     print_status $BLUE "📤 Pushing to remote..."
     git push origin main
     git push origin "v$target_version"
-    
-    # 8. Publish to npm
+
+    # 7. Publish to npm
     print_status $BLUE "📦 Publishing to npm..."
     npm publish
     
