@@ -40,13 +40,14 @@ suite.addTest(
       value: testValue,
     });
 
-    expect(result).to.equal(undefined); // setConfig doesn't return anything
+    expect(result.success).to.equal(true); // setConfig returns success status
 
     // Verify the configuration was saved
     const savedValue = await mcpWorkflow.executeTool("getConfig", {
       key: testKey,
     });
-    expect(savedValue).to.deep.equal(testValue);
+    expect(savedValue.success).to.equal(true);
+    expect(savedValue.data).to.deep.equal(testValue);
   })
 );
 
@@ -68,7 +69,8 @@ suite.addTest(
         key: testKey,
       });
 
-      expect(result).to.equal(testValue);
+      expect(result.success).to.equal(true);
+      expect(result.data).to.equal(testValue);
     }
   )
 );
@@ -81,7 +83,8 @@ suite.addTest(
         key: "non-existent-key",
       });
 
-      expect(result).to.be.null;
+      expect(result.success).to.equal(true);
+      expect(result.data).to.be.null;
     }
   )
 );
@@ -96,21 +99,18 @@ suite.addTest(
       });
 
       expect(result.success).to.be.true;
-      expect(result.recorded).to.be.true;
+      expect(result.data.recorded).to.be.true;
     }
   )
 );
 
 suite.addTest(
   new Mocha.Test(
-    "executeTool should throw error for unknown tools",
+    "executeTool should return error for unknown tools",
     async () => {
-      try {
-        await mcpWorkflow.executeTool("unknown-tool", {});
-        expect.fail("Should have thrown an error for unknown tool");
-      } catch (error: any) {
-        expect(error.message).to.include("Unknown tool: unknown-tool");
-      }
+      const result = await mcpWorkflow.executeTool("unknown-tool", {});
+      expect(result.success).to.be.false;
+      expect(result.error).to.include("Unknown tool: unknown-tool");
     }
   )
 );
