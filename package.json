@@ -10,7 +10,7 @@
   },
   "scripts": {
     "build": "npm run release:deps && npm run lint && tsc",
-    "prepublishOnly": "node scripts/prepublish-check.js",
+    "prepublishOnly": "node scripts/prepublish-check.cjs",
     "dev": "tsc --watch",
     "clean": "rm -rf cortex",
     "prebuild": "npm run clean",
