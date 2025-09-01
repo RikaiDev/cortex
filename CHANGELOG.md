@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.1] - 2025-09-01
+
+### 🐛 **Critical Bug Fix**
+
+**Runtime Dependency Issue Fixed:**
+
+- **Problem**: `typescript` package was incorrectly placed in `devDependencies` but used at runtime
+- **Impact**: Global installation failed with `ERR_MODULE_NOT_FOUND` error
+- **Solution**: Moved `typescript` from `devDependencies` to `dependencies`
+- **Result**: Global installation now works correctly
+
+### 🔧 **Technical Improvements**
+
+- Enhanced dependency validation to prevent future runtime dependency issues
+- Improved type safety with generic `ToolResult<T>` interface
+- Added comprehensive pre-publish checks including global installation simulation
+- Strengthened release process with 17 quality gates
+
 ## [0.8.0] - 2025-09-01
 
 ### 🚀 **Major Architecture Simplification**
