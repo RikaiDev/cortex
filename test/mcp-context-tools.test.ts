@@ -99,7 +99,7 @@ suite.addTest(
       });
 
       expect(result.success).to.be.true;
-      expect(result.data.recorded).to.be.true;
+      expect((result.data as { recorded: boolean }).recorded).to.be.true;
     }
   )
 );

@@ -14,7 +14,7 @@
  * growing experience libraries efficiently.
  */
 
-import { MCPWorkflow, ToolResult } from "../common/types.js";
+import { MCPWorkflow, AnyToolResult } from "../common/types.js";
 import fs from "fs-extra";
 import * as path from "path";
 import crypto from "crypto";
@@ -289,7 +289,7 @@ Filters applied: ${this.describeFilters(options)} -->`;
 
   private async contextEnhancerTool(
     args: ContextEnhancerArgs = {}
-  ): Promise<ToolResult> {
+  ): Promise<AnyToolResult> {
     const options: ContextEnhancementOptions = {
       maxExperiences: args.maxExperiences || 10,
       timeFilter: args.timeFilter || 30, // 30 days
@@ -344,7 +344,7 @@ Filters applied: ${this.describeFilters(options)} -->`;
 
   private async experienceRecorderTool(
     params: Record<string, unknown>
-  ): Promise<ToolResult> {
+  ): Promise<AnyToolResult> {
     const contextObj = params.context;
     if (
       contextObj &&

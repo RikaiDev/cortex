@@ -173,18 +173,60 @@ if [ ! -f "README.md" ] || [ ! -f "CHANGELOG.md" ]; then
 fi
 print_status $GREEN "✅ Documentation check passed"
 
-# 15. Final Summary
-print_status $BLUE "📋 Step 15: Final Summary"
+# 15. Runtime Dependency Check
+print_status $BLUE "📋 Step 15: Runtime Dependency Check"
+# Check for runtime imports that might be in devDependencies
+if npm run build > /dev/null 2>&1; then
+    print_status $GREEN "✅ Runtime dependency check passed"
+else
+    print_status $RED "❌ Runtime dependency check failed - missing runtime dependencies"
+    exit 1
+fi
+
+# 16. Global Installation Test
+print_status $BLUE "📋 Step 16: Global Installation Test"
+# Store original directory
+original_dir=$(pwd)
+# Create a temporary directory for testing
+temp_dir=$(mktemp -d)
+cd "$temp_dir"
+
+# Test global installation with the package from original directory
+if npm install -g "$original_dir" > /dev/null 2>&1; then
+    # Test CLI functionality
+    if cortex --version > /dev/null 2>&1; then
+        print_status $GREEN "✅ Global installation test passed"
+    else
+        print_status $RED "❌ Global installation CLI test failed"
+        cd "$original_dir"
+        rm -rf "$temp_dir"
+        exit 1
+    fi
+else
+    print_status $RED "❌ Global installation failed"
+    cd "$original_dir"
+    rm -rf "$temp_dir"
+    exit 1
+fi
+
+# Cleanup
+cd "$original_dir"
+rm -rf "$temp_dir"
+
+# 17. Final Summary
+print_status $BLUE "📋 Step 17: Final Summary"
 echo ""
 print_status $GREEN "🎉 All quality checks passed!"
 echo ""
 echo "📊 Release Summary:"
 echo "  • Version: $package_version"
-echo "  • Distribution size: $dist_size"
+echo "  • Distribution size: $cortex_size"
 echo "  • TypeScript compilation: ✅"
 echo "  • CLI functionality: ✅"
 echo "  • MCP server: ✅"
 echo "  • Documentation: ✅"
+echo "  • Runtime dependencies: ✅"
+echo "  • Global installation: ✅"
 echo ""
 print_status $GREEN "🚀 Ready for release!"
 

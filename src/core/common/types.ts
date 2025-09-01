@@ -106,22 +106,49 @@ export interface ToolParameters {
 }
 
 /**
- * Tool execution result
+ * Tool execution result with type-safe data handling
  */
-export interface ToolResult {
+export interface ToolResult<T = unknown> {
   success: boolean;
-  data?: unknown;
+  data?: T;
   error?: string;
 }
+
+/**
+ * Specific result types for different tools
+ */
+export interface ExperienceRecorderResult {
+  recorded: boolean;
+}
+
+export interface ConfigResult {
+  [key: string]: unknown;
+}
+
+/**
+ * Union type for all possible tool results
+ */
+export type ToolResultData =
+  | ExperienceRecorderResult
+  | ConfigResult
+  | string
+  | number
+  | boolean
+  | null;
+
+/**
+ * Generic tool result for backward compatibility
+ */
+export type AnyToolResult = ToolResult<ToolResultData>;
 
 /**
  * MCP Workflow interface
  */
 export interface MCPWorkflow {
-  executeTool(toolName: string, params: ToolParameters): Promise<ToolResult>;
+  executeTool(toolName: string, params: ToolParameters): Promise<AnyToolResult>;
   registerTool?(
     toolName: string,
-    handler: (params: ToolParameters) => Promise<ToolResult>
+    handler: (params: ToolParameters) => Promise<AnyToolResult>
   ): void;
   getAvailableTools?(): string[];
 }

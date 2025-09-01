@@ -11,8 +11,9 @@
 
 import {
   MCPWorkflow as IMCPWorkflow,
-  ToolResult,
+  AnyToolResult,
   ToolParameters,
+  ToolResultData,
 } from "../common/types.js";
 import fs from "fs-extra";
 import path from "path";
@@ -34,7 +35,7 @@ export class MCPWorkflow implements IMCPWorkflow {
   private configPath: string;
   private registeredTools: Map<
     string,
-    (params: ToolParameters) => Promise<ToolResult>
+    (params: ToolParameters) => Promise<AnyToolResult>
   > = new Map();
 
   constructor(projectRoot: string) {
@@ -53,10 +54,10 @@ export class MCPWorkflow implements IMCPWorkflow {
   /**
    * Get configuration value
    */
-  async getConfig(key: string): Promise<unknown> {
+  async getConfig(key: string): Promise<ToolResultData> {
     try {
       const config = await fs.readJson(this.configPath);
-      return config[key];
+      return config[key] as ToolResultData;
     } catch {
       return null;
     }
@@ -87,7 +88,7 @@ export class MCPWorkflow implements IMCPWorkflow {
    */
   registerTool(
     toolName: string,
-    handler: (params: ToolParameters) => Promise<ToolResult>
+    handler: (params: ToolParameters) => Promise<AnyToolResult>
   ): void {
     this.registeredTools.set(toolName, handler);
   }
@@ -105,7 +106,7 @@ export class MCPWorkflow implements IMCPWorkflow {
   async executeTool(
     toolName: string,
     params: ToolParameters
-  ): Promise<ToolResult> {
+  ): Promise<AnyToolResult> {
     try {
       // Check if tool is registered
       const registeredHandler = this.registeredTools.get(toolName);
