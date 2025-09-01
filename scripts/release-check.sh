@@ -143,15 +143,13 @@ print_status $GREEN "✅ Version consistency check passed"
 
 # 12. Security Check
 print_status $BLUE "📋 Step 12: Security Check"
-if command_exists npm-audit; then
-    if npm audit --audit-level=moderate > /dev/null 2>&1; then
-        print_status $GREEN "✅ Security check passed"
-    else
-        print_status $YELLOW "⚠️  Security vulnerabilities found"
-        npm audit --audit-level=moderate || true
-    fi
+if npm audit --audit-level=moderate > /dev/null 2>&1; then
+    print_status $GREEN "✅ Security check passed"
+elif npm audit --audit-level=moderate 2>&1 | grep -q "No vulnerabilities found"; then
+    print_status $GREEN "✅ Security check passed (no vulnerabilities)"
 else
-    print_status $YELLOW "⚠️  npm audit not available"
+    print_status $YELLOW "⚠️  Security check completed with warnings"
+    npm audit --audit-level=moderate || true
 fi
 
 # 13. Bundle Size Check
