@@ -352,15 +352,21 @@ async function executeMCPTool(
     const { createMCPServer } = await import("../core/mcp/server.js");
 
     // Create MCP workflow and context tools
-    const mcpWorkflow = new MCPWorkflow(process.cwd());
-    createMCPContextTools(mcpWorkflow, process.cwd());
-    const server = createMCPServer();
+    const projectPath = process.cwd();
+    const mcpWorkflow = new MCPWorkflow(projectPath);
+    createMCPContextTools(mcpWorkflow, projectPath);
+    const server = createMCPServer(projectPath);
 
     // Simple CLI testing - direct method call
     let result;
     if (toolName === "natural-language-query") {
-      // Direct call to test the functionality
       result = await server.handleNaturalLanguageQuery(input);
+    } else if (toolName === "project-context") {
+      result = await server.handleProjectContext(input);
+    } else if (toolName === "experience-search") {
+      result = await server.handleExperienceSearch(input);
+    } else if (toolName === "code-diagnostic") {
+      result = await server.handleCodeDiagnostic(input);
     } else {
       throw new Error(`Tool ${toolName} not supported in CLI mode`);
     }
@@ -534,11 +540,61 @@ async function validateToolUsage(
 }
 
 /**
+ * Resolve workspace root variable
+ */
+function resolveWorkspaceRoot(projectRoot: string): string {
+  // Handle Cursor's ${workspaceRoot} variable
+  if (projectRoot === "${workspaceRoot}") {
+    // Try to get workspace root from various environment variables that Cursor might set
+    return (
+      process.env.WORKSPACE_ROOT ||
+      process.env.WORKSPACE_FOLDER ||
+      process.env.CURSOR_WORKSPACE_ROOT ||
+      process.cwd()
+    );
+  }
+
+  // Handle other potential variable formats
+  if (projectRoot.includes("${workspaceRoot}")) {
+    const workspaceRoot =
+      process.env.WORKSPACE_ROOT ||
+      process.env.WORKSPACE_FOLDER ||
+      process.env.CURSOR_WORKSPACE_ROOT ||
+      process.cwd();
+    return projectRoot.replace(/\$\{workspaceRoot\}/g, workspaceRoot);
+  }
+
+  // Handle other common workspace variables that Cursor might use
+  if (projectRoot === "${workspaceFolder}") {
+    return (
+      process.env.WORKSPACE_FOLDER ||
+      process.env.WORKSPACE_ROOT ||
+      process.env.CURSOR_WORKSPACE_ROOT ||
+      process.cwd()
+    );
+  }
+
+  if (projectRoot.includes("${workspaceFolder}")) {
+    const workspaceRoot =
+      process.env.WORKSPACE_FOLDER ||
+      process.env.WORKSPACE_ROOT ||
+      process.env.CURSOR_WORKSPACE_ROOT ||
+      process.cwd();
+    return projectRoot.replace(/\$\{workspaceFolder\}/g, workspaceRoot);
+  }
+
+  return projectRoot;
+}
+
+/**
  * Start MCP server
  */
 async function startMCPServer(projectRoot: string): Promise<void> {
+  // Resolve workspace root variable
+  const resolvedProjectRoot = resolveWorkspaceRoot(projectRoot);
+
   console.log(chalk.blue("🚀 Starting Cortex MCP Server..."));
-  console.log(chalk.gray(`Project root: ${projectRoot}`));
+  console.log(chalk.gray(`Project root: ${resolvedProjectRoot}`));
   console.log();
 
   try {
@@ -546,9 +602,9 @@ async function startMCPServer(projectRoot: string): Promise<void> {
     const { createMCPServer } = await import("../core/mcp/server.js");
 
     // Create MCP workflow and context tools
-    const mcpWorkflow = new MCPWorkflow(projectRoot);
-    createMCPContextTools(mcpWorkflow, projectRoot);
-    const server = createMCPServer();
+    const mcpWorkflow = new MCPWorkflow(resolvedProjectRoot);
+    createMCPContextTools(mcpWorkflow, resolvedProjectRoot);
+    const server = createMCPServer(resolvedProjectRoot);
 
     console.log(chalk.green("✅ MCP server started successfully!"));
     console.log(chalk.gray("Server is running and ready for connections"));

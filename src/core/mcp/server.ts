@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * MCP Server - Direct, no-nonsense implementation
- * Linus: Simple names, simple code
+ * MCP Server - Clean, simple implementation
  */
 
 import { readFileSync } from "fs";
@@ -15,10 +14,6 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import {
-  ProjectAnalyzer,
-  ProjectAnalysis,
-} from "../project/project-analyzer.js";
 import { LLMConnector } from "./llm-connector.js";
 
 /**
@@ -38,25 +33,14 @@ function getPackageVersion(): string {
 }
 
 /**
- * Contextual response data interface
- */
-interface ContextualResponseData {
-  projectStructure: string;
-  relevantFiles: string[];
-  dependencies: string[];
-  recentCode: string[];
-}
-
-/**
- * MCP server - straight to the point
+ * MCP server - clean and simple
  */
 export class MCPServer {
   private server: Server;
   private llmConnector: LLMConnector;
+  private projectRoot: string;
 
-  constructor() {
-    // We don't need complex parsing anymore - keep it simple
-
+  constructor(projectPath?: string) {
     this.server = new Server(
       {
         name: "cortex",
@@ -69,17 +53,14 @@ export class MCPServer {
       }
     );
 
-    // Initialize LLM connector with current working directory
-    this.llmConnector = new LLMConnector(process.cwd());
+    const workingDirectory = projectPath || process.cwd();
+    this.projectRoot = workingDirectory;
+    this.llmConnector = new LLMConnector(workingDirectory);
 
     this.setupHandlers();
   }
 
-  /**
-   * Setup request handlers
-   */
   private setupHandlers(): void {
-    // List available tools
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
         tools: [
@@ -98,398 +79,501 @@ export class MCPServer {
               required: ["query"],
             },
           },
+          {
+            name: "project-context",
+            description: "Get essential project context for task understanding",
+            inputSchema: {
+              type: "object",
+              properties: {
+                includeFiles: {
+                  type: "boolean",
+                  description: "Include file structure information",
+                  default: true,
+                },
+                includeDependencies: {
+                  type: "boolean",
+                  description: "Include dependency information",
+                  default: true,
+                },
+              },
+            },
+          },
+          {
+            name: "experience-search",
+            description: "Search for relevant past experiences and solutions",
+            inputSchema: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "Search query for experiences",
+                },
+                category: { type: "string", description: "Filter by category" },
+                limit: {
+                  type: "number",
+                  description: "Maximum number of results",
+                  default: 5,
+                },
+              },
+              required: ["query"],
+            },
+          },
+          {
+            name: "code-diagnostic",
+            description:
+              "Analyze code issues and provide diagnostic information",
+            inputSchema: {
+              type: "object",
+              properties: {
+                filePath: {
+                  type: "string",
+                  description: "Path to the file to analyze",
+                },
+                issueType: {
+                  type: "string",
+                  description: "Type of issue to look for",
+                  enum: ["syntax", "logic", "performance", "security", "style"],
+                },
+              },
+            },
+          },
         ],
       };
     });
 
-    // Handle tool calls
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
 
-      if (name === "natural-language-query") {
-        return await this.handleNaturalLanguageQuery(args || { query: "" });
+      switch (name) {
+        case "natural-language-query":
+          return await this.handleNaturalLanguageQuery(args || { query: "" });
+        case "project-context":
+          return await this.handleProjectContext(args || {});
+        case "experience-search":
+          return await this.handleExperienceSearch(args || { query: "" });
+        case "code-diagnostic":
+          return await this.handleCodeDiagnostic(args || {});
+        default:
+          throw new Error(`Unknown tool: ${name}`);
       }
-
-      throw new Error(`Unknown tool: ${name}`);
     });
   }
 
-  /**
-   * Handle natural language queries - SIMPLE AND EFFECTIVE
-   */
   public async handleNaturalLanguageQuery(args: {
     query?: string;
   }): Promise<{ content: string[]; success: boolean }> {
     const query = args?.query || "";
 
     if (!query.trim()) {
-      return this.createErrorResult("Empty query received.");
+      return { content: ["Empty query received."], success: false };
     }
 
     try {
-      // Use LLM connector to process the request
       const llmResponse = await this.llmConnector.processRequest({ query });
-
-      return {
-        content: [llmResponse.content],
-        success: true,
-      };
+      return { content: [llmResponse.content], success: true };
     } catch (error) {
       console.error("Query processing failed:", error);
-      return {
-        content: ["Query processing failed. Please check your input."],
-        success: false,
-      };
+      return { content: ["Query processing failed."], success: false };
     }
   }
 
-  /**
-   * Get REAL project context that AI actually needs
-   */
-  private async getRealProjectContext(
-    query: string,
-    projectPath?: string
-  ): Promise<{
-    projectInfo: Record<string, unknown>;
-    relevantFiles: string[];
-    recentCode: string[];
-    dependencies: string[];
-    projectStructure: string;
-  }> {
-    const targetPath = projectPath || process.cwd();
-    const projectAnalyzer = new ProjectAnalyzer(targetPath);
-    const projectAnalysis = await projectAnalyzer.analyzeProject();
-
-    return {
-      projectInfo: projectAnalysis as unknown as Record<string, unknown>,
-      relevantFiles: this.findRelevantFiles(query, projectAnalysis),
-      recentCode: await this.getRecentCodeSnippets(targetPath),
-      dependencies: projectAnalysis.architecture?.dependencies || [],
-      projectStructure: this.getSimpleProjectStructure(projectAnalysis, query),
-    };
-  }
-
-  /**
-   * Find files relevant to the query
-   */
-  private findRelevantFiles(
-    query: string,
-    projectAnalysis: ProjectAnalysis
-  ): string[] {
-    const files = projectAnalysis.structure?.children || [];
-    const queryLower = query.toLowerCase();
-
-    // Extract keywords from query
-    const keywords = queryLower
-      .split(/[^\w]+/)
-      .filter((word) => word.length > 2)
-      .filter(
-        (word) =>
-          ![
-            "please",
-            "implement",
-            "create",
-            "build",
-            "make",
-            "the",
-            "and",
-            "for",
-            "with",
-            "from",
-          ].includes(word)
-      );
-
-    // First priority: files that match query keywords
-    const matchingFiles = files
-      .filter(
-        (file: import("../project/project-analyzer.js").ProjectStructure) =>
-          file.type === "file"
-      )
-      .filter(
-        (file: import("../project/project-analyzer.js").ProjectStructure) => {
-          const fileName = file.name.toLowerCase();
-          return keywords.some((keyword) => fileName.includes(keyword));
-        }
-      )
-      .map(
-        (file: import("../project/project-analyzer.js").ProjectStructure) =>
-          file.name
-      );
-
-    if (matchingFiles.length > 0) {
-      return matchingFiles;
-    }
-
-    // Second priority: important files based on project type
-    const importantFiles = files
-      .filter(
-        (file: import("../project/project-analyzer.js").ProjectStructure) =>
-          file.type === "file"
-      )
-      .filter(
-        (file: import("../project/project-analyzer.js").ProjectStructure) => {
-          const fileName = file.name.toLowerCase();
-          return (
-            fileName.includes("readme") ||
-            fileName.includes("package.json") ||
-            fileName.includes("requirements.txt") ||
-            fileName.includes("setup.py") ||
-            fileName.includes("main") ||
-            fileName.includes("index") ||
-            fileName.includes("app")
-          );
-        }
-      )
-      .map(
-        (file: import("../project/project-analyzer.js").ProjectStructure) =>
-          file.name
-      );
-
-    if (importantFiles.length > 0) {
-      return importantFiles.slice(0, 5);
-    }
-
-    // Fallback: return a few files
-    return files
-      .filter(
-        (file: import("../project/project-analyzer.js").ProjectStructure) =>
-          file.type === "file"
-      )
-      .map(
-        (file: import("../project/project-analyzer.js").ProjectStructure) =>
-          file.name
-      )
-      .slice(0, 3);
-  }
-
-  /**
-   * Get recent code snippets - simple and effective
-   */
-  private async getRecentCodeSnippets(projectPath: string): Promise<string[]> {
+  public async handleProjectContext(args: {
+    includeFiles?: boolean;
+    includeDependencies?: boolean;
+  }): Promise<{ content: string[]; success: boolean }> {
     try {
-      const fs = await import("fs");
-      const path = await import("path");
+      const includeFiles = args.includeFiles !== false;
+      const includeDependencies = args.includeDependencies !== false;
+      const projectInfo: string[] = [];
 
-      // Look for source files in the project
-      const sourceFiles = [
-        "src/index.js",
-        "src/index.ts",
-        "src/main.js",
-        "src/main.ts",
-        "src/App.js",
-        "src/App.tsx",
-        "index.js",
-        "index.ts",
-        "main.py",
-        "app.py",
-        "main.go",
-        "src/main.go",
-      ];
-
-      const snippets: string[] = [];
-
-      // Try to read a few source files
-      for (const fileName of sourceFiles.slice(0, 3)) {
-        try {
-          const filePath = path.join(projectPath, fileName);
-          const content = await fs.promises.readFile(filePath, "utf-8");
-          const lines = content.split("\n").slice(0, 8);
-          const relativePath = path.relative(projectPath, filePath);
-          snippets.push(`// ${relativePath}\n${lines.join("\n")}`);
-        } catch (error) {
-          // Skip files that don't exist
-        }
+      if (includeFiles) {
+        const structure = await this.getProjectStructure();
+        projectInfo.push(`## 📁 Project Structure\n${structure}\n`);
       }
 
-      return snippets.length > 0 ? snippets : ["// No source files found"];
+      if (includeDependencies) {
+        const dependencies = await this.getProjectDependencies();
+        projectInfo.push(`## 📦 Dependencies\n${dependencies}\n`);
+      }
+
+      const technologyStack = await this.getTechnologyStack();
+      projectInfo.push(`## 🛠️ Technology Stack\n${technologyStack}\n`);
+
+      return { content: [projectInfo.join("")], success: true };
     } catch (error) {
-      return ["// Error reading files"];
-    }
-  }
-
-  /**
-   * Get simple project structure
-   */
-  private getSimpleProjectStructure(
-    projectAnalysis: ProjectAnalysis,
-    query: string
-  ): string {
-    const structure = projectAnalysis.structure;
-    if (!structure) return "Project structure unavailable";
-
-    let result = `Project: ${structure.name}\n`;
-    result += `Type: ${projectAnalysis.projectType || "unknown"}\n`;
-
-    if (structure.children) {
-      const dirs = structure.children.filter(
-        (c: import("../project/project-analyzer.js").ProjectStructure) =>
-          c.type === "directory"
-      );
-      const files = structure.children.filter(
-        (c: import("../project/project-analyzer.js").ProjectStructure) =>
-          c.type === "file"
-      );
-
-      result += `\nDirectories (${dirs.length}):\n`;
-      dirs.forEach(
-        (dir: import("../project/project-analyzer.js").ProjectStructure) => {
-          result += `  ${dir.name}/\n`;
-        }
-      );
-
-      result += `\nFiles (${files.length}):\n`;
-
-      // Filter files based on query if it contains file type keywords
-      const queryLower = query.toLowerCase();
-      let filteredFiles = files;
-
-      if (
-        queryLower.includes(".ts") ||
-        queryLower.includes("typescript") ||
-        queryLower.includes("type")
-      ) {
-        filteredFiles = files.filter(
-          (file: import("../project/project-analyzer.js").ProjectStructure) =>
-            file.name.endsWith(".ts") || file.name.endsWith(".tsx")
-        );
-      } else if (
-        queryLower.includes(".js") ||
-        queryLower.includes("javascript")
-      ) {
-        filteredFiles = files.filter(
-          (file: import("../project/project-analyzer.js").ProjectStructure) =>
-            file.name.endsWith(".js") || file.name.endsWith(".jsx")
-        );
-      } else if (
-        queryLower.includes(".json") ||
-        queryLower.includes("config")
-      ) {
-        filteredFiles = files.filter(
-          (file: import("../project/project-analyzer.js").ProjectStructure) =>
-            file.name.endsWith(".json")
-        );
-      } else if (
-        queryLower.includes(".md") ||
-        queryLower.includes("readme") ||
-        queryLower.includes("doc")
-      ) {
-        filteredFiles = files.filter(
-          (file: import("../project/project-analyzer.js").ProjectStructure) =>
-            file.name.endsWith(".md")
-        );
-      }
-
-      // Show filtered files or all files if no filter applied
-      const displayFiles = filteredFiles.length > 0 ? filteredFiles : files;
-      displayFiles
-        .slice(0, 20)
-        .forEach(
-          (file: import("../project/project-analyzer.js").ProjectStructure) => {
-            result += `  ${file.name}\n`;
-          }
-        );
-
-      if (filteredFiles.length > 0 && filteredFiles.length !== files.length) {
-        result += `  ... (${files.length - displayFiles.length} more files filtered)\n`;
-      }
-    }
-
-    return result;
-  }
-
-  /**
-   * Build contextual response for AI - THIS IS WHAT MATTERS
-   */
-  private buildContextualResponse(
-    query: string,
-    context: ContextualResponseData
-  ): string {
-    // Always use English for this English project environment
-    let response = `🤖 **Cortex AI - Providing AI with the context it really needs**\n\n`;
-    response += `**Your query:** "${query}"\n\n`;
-
-    // Project information
-    response += `## 📁 Project Information\n`;
-    response += `${context.projectStructure}\n\n`;
-
-    // Related files
-    if (context.relevantFiles.length > 0) {
-      response += `## 🎯 Related Files\n`;
-      context.relevantFiles.forEach((file: string) => {
-        response += `• ${file}\n`;
-      });
-      response += `\n`;
-    }
-
-    // Dependencies
-    if (context.dependencies.length > 0) {
-      response += `## 📦 Main Dependencies\n`;
-      context.dependencies.slice(0, 10).forEach((dep: string) => {
-        response += `• ${dep}\n`;
-      });
-      response += `\n`;
-    }
-
-    // Code snippets and examples
-    if (context.recentCode.length > 0) {
-      response += `## 💻 相关代码示例\n`;
-      context.recentCode.forEach((snippet: string) => {
-        response += `${snippet}\n\n`;
-      });
-    }
-
-    // AI guidance
-    response += `## 🎯 AI Analysis Guidance\n\n`;
-    response += `Based on the context above, please provide:\n`;
-    response += `1. **Code Quality Assessment** - Based on actual code patterns\n`;
-    response += `2. **Architecture Recommendations** - Considering project structure and dependencies\n`;
-    response += `3. **Specific Solutions** - Targeted suggestions for relevant files\n`;
-    response += `4. **Best Practices** - Based on existing project patterns\n\n`;
-    response += `💡 **Key Point:** Analysis should be based on the actual project context above, not generic suggestions.\n`;
-
-    return response;
-  }
-
-  /**
-   * Create error result
-   */
-  private createErrorResult(message: string): {
-    content: string[];
-    success: boolean;
-  } {
-    return {
-      content: [message],
-      success: false,
-    };
-  }
-
-  /**
-   * Analyze a specific project with a query
-   */
-  async analyzeProject(
-    projectPath: string,
-    query: string
-  ): Promise<{ content: string[]; success: boolean }> {
-    try {
-      // Use LLM connector to process the request with specific project path
-      const llmResponse = await this.llmConnector.processRequest({
-        query,
-        context: { projectPath },
-      });
-
-      return {
-        content: [llmResponse.content],
-        success: true,
-      };
-    } catch (error) {
-      console.error("Project analysis failed:", error);
       return {
         content: [
-          `Failed to analyze project at ${projectPath}: ${error instanceof Error ? error.message : String(error)}`,
+          `Failed to get project context: ${error instanceof Error ? error.message : String(error)}`,
         ],
         success: false,
       };
     }
+  }
+
+  public async handleExperienceSearch(args: {
+    query?: string;
+    category?: string;
+    limit?: number;
+  }): Promise<{ content: string[]; success: boolean }> {
+    try {
+      const query = args.query || "";
+      const category = args.category;
+      const limit = args.limit || 5;
+
+      if (!query.trim()) {
+        return {
+          content: ["Please provide a search query for experiences."],
+          success: false,
+        };
+      }
+
+      const experiences = await this.searchExperiences(query, category, limit);
+      const formattedResults = this.formatExperienceResults(experiences);
+
+      return { content: [formattedResults], success: true };
+    } catch (error) {
+      return {
+        content: [
+          `Failed to search experiences: ${error instanceof Error ? error.message : String(error)}`,
+        ],
+        success: false,
+      };
+    }
+  }
+
+  public async handleCodeDiagnostic(args: {
+    filePath?: string;
+    issueType?: string;
+  }): Promise<{ content: string[]; success: boolean }> {
+    try {
+      const filePath = args.filePath;
+      const issueType = args.issueType;
+
+      if (!filePath) {
+        return {
+          content: ["Please provide a file path to analyze."],
+          success: false,
+        };
+      }
+
+      const diagnostics = await this.analyzeCodeFile(filePath, issueType);
+      const formattedReport = this.formatDiagnosticReport(
+        diagnostics,
+        filePath
+      );
+
+      return { content: [formattedReport], success: true };
+    } catch (error) {
+      return {
+        content: [
+          `Failed to analyze code: ${error instanceof Error ? error.message : String(error)}`,
+        ],
+        success: false,
+      };
+    }
+  }
+
+  private async getProjectStructure(): Promise<string> {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+
+      const getStructure = (dir: string, prefix = ""): string => {
+        let result = "";
+        const items = fs.readdirSync(dir).sort();
+
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          const fullPath = path.join(dir, item);
+          const isLast = i === items.length - 1;
+          const connector = isLast ? "└── " : "├── ";
+
+          if (item.startsWith(".") || item === "node_modules") continue;
+
+          const stats = fs.statSync(fullPath);
+          const displayName = stats.isDirectory() ? `${item}/` : item;
+          result += `${prefix}${connector}${displayName}\n`;
+
+          if (stats.isDirectory()) {
+            const newPrefix = prefix + (isLast ? "    " : "│   ");
+            result += getStructure(fullPath, newPrefix);
+          }
+        }
+
+        return result;
+      };
+
+      return getStructure(this.projectRoot);
+    } catch (error) {
+      return `Error reading project structure: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  }
+
+  private async getProjectDependencies(): Promise<string> {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+
+      const packageJsonPath = path.join(this.projectRoot, "package.json");
+      if (!fs.existsSync(packageJsonPath)) {
+        return "No package.json found";
+      }
+
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+      const deps = {
+        ...packageJson.dependencies,
+        ...packageJson.devDependencies,
+      };
+
+      let result = "";
+      Object.entries(deps).forEach(([name, version]) => {
+        result += `• ${name}: ${version}\n`;
+      });
+
+      return result || "No dependencies found";
+    } catch (error) {
+      return `Error reading dependencies: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  }
+
+  private async getTechnologyStack(): Promise<string> {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+
+      const packageJsonPath = path.join(this.projectRoot, "package.json");
+      if (!fs.existsSync(packageJsonPath)) {
+        return "Unable to determine technology stack";
+      }
+
+      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+      let stack = "TypeScript/JavaScript";
+
+      if (packageJson.dependencies?.["@modelcontextprotocol/sdk"]) {
+        stack += " with MCP (Model Context Protocol)";
+      }
+
+      if (packageJson.dependencies?.["chalk"]) {
+        stack += ", CLI tools";
+      }
+
+      if (packageJson.dependencies?.["commander"]) {
+        stack += ", Command-line interface";
+      }
+
+      return stack;
+    } catch (error) {
+      return `Error determining technology stack: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  }
+
+  private async searchExperiences(
+    query: string,
+    category?: string,
+    limit = 5
+  ): Promise<Record<string, unknown>[]> {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+
+      const experiencesDir = path.join(
+        this.projectRoot,
+        ".cortex",
+        "experiences"
+      );
+      if (!fs.existsSync(experiencesDir)) {
+        return [];
+      }
+
+      const files = fs.readdirSync(experiencesDir);
+      const experiences = [];
+
+      for (const file of files) {
+        if (file.endsWith(".json")) {
+          const filePath = path.join(experiencesDir, file);
+          const content = fs.readFileSync(filePath, "utf-8");
+          const experience = JSON.parse(content);
+
+          const matches = query
+            .toLowerCase()
+            .split(" ")
+            .some(
+              (term) =>
+                experience.description?.toLowerCase().includes(term) ||
+                experience.title?.toLowerCase().includes(term) ||
+                experience.tags?.some((tag: string) =>
+                  tag.toLowerCase().includes(term)
+                )
+            );
+
+          if (matches && (!category || experience.category === category)) {
+            experiences.push(experience);
+          }
+        }
+      }
+
+      return experiences.slice(0, limit);
+    } catch (error) {
+      console.error("Experience search error:", error);
+      return [];
+    }
+  }
+
+  private formatExperienceResults(
+    experiences: Record<string, unknown>[]
+  ): string {
+    if (experiences.length === 0) {
+      return "No relevant experiences found.";
+    }
+
+    let result = `## 🔍 Search Results (${experiences.length} found)\n\n`;
+
+    experiences.forEach((exp, index) => {
+      result += `### ${index + 1}. ${exp.title || "Untitled Experience"}\n`;
+      result += `**Category:** ${exp.category || "Uncategorized"}\n`;
+      result += `**Tags:** ${Array.isArray(exp.tags) ? (exp.tags as string[]).join(", ") : "None"}\n`;
+      result += `**Description:** ${exp.description || "No description"}\n\n`;
+    });
+
+    return result;
+  }
+
+  private async analyzeCodeFile(
+    filePath: string,
+    issueType?: string
+  ): Promise<Record<string, unknown>[]> {
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+
+      const fullPath = path.isAbsolute(filePath)
+        ? filePath
+        : path.join(this.projectRoot, filePath);
+
+      if (!fs.existsSync(fullPath)) {
+        throw new Error(`File not found: ${filePath}`);
+      }
+
+      const content = fs.readFileSync(fullPath, "utf-8");
+      const diagnostics = [];
+
+      if (!issueType || issueType === "syntax") {
+        const syntaxIssues = this.checkSyntax(content, filePath);
+        diagnostics.push(...syntaxIssues);
+      }
+
+      if (!issueType || issueType === "style") {
+        const styleIssues = this.checkStyle(content, filePath);
+        diagnostics.push(...styleIssues);
+      }
+
+      if (!issueType || issueType === "logic") {
+        const logicIssues = this.checkLogic(content, filePath);
+        diagnostics.push(...logicIssues);
+      }
+
+      return diagnostics;
+    } catch (error) {
+      throw new Error(
+        `Failed to analyze file: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+
+  private checkSyntax(
+    content: string,
+    filePath: string
+  ): Record<string, unknown>[] {
+    const issues: Record<string, unknown>[] = [];
+
+    if (content.includes("console.log(") && !content.includes("import")) {
+      issues.push({
+        type: "warning",
+        message: "Using console.log without proper imports",
+        line: this.findLineNumber(content, "console.log"),
+        file: filePath,
+      });
+    }
+
+    return issues;
+  }
+
+  private checkStyle(
+    content: string,
+    filePath: string
+  ): Record<string, unknown>[] {
+    const issues: Record<string, unknown>[] = [];
+
+    const lines = content.split("\n");
+    lines.forEach((line, index) => {
+      if (line.length > 100) {
+        issues.push({
+          type: "style",
+          message: `Line too long (${line.length} characters)`,
+          line: index + 1,
+          file: filePath,
+        });
+      }
+    });
+
+    return issues;
+  }
+
+  private checkLogic(
+    content: string,
+    filePath: string
+  ): Record<string, unknown>[] {
+    const issues: Record<string, unknown>[] = [];
+
+    if (
+      content.includes("==") &&
+      !content.includes("===") &&
+      content.includes("!=")
+    ) {
+      issues.push({
+        type: "warning",
+        message: "Mixed use of == and != operators, consider using === and !==",
+        line: this.findLineNumber(content, "=="),
+        file: filePath,
+      });
+    }
+
+    return issues;
+  }
+
+  private findLineNumber(content: string, pattern: string): number {
+    const lines = content.split("\n");
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].includes(pattern)) {
+        return i + 1;
+      }
+    }
+    return 0;
+  }
+
+  private formatDiagnosticReport(
+    diagnostics: Record<string, unknown>[],
+    filePath: string
+  ): string {
+    if (diagnostics.length === 0) {
+      return `## ✅ Code Analysis: ${filePath}\n\nNo issues found!`;
+    }
+
+    let result = `## 🔍 Code Analysis: ${filePath}\n\n`;
+    result += `Found ${diagnostics.length} issue(s):\n\n`;
+
+    diagnostics.forEach((diag, index) => {
+      const icon =
+        diag.type === "error" ? "❌" : diag.type === "warning" ? "⚠️" : "ℹ️";
+      result += `### ${index + 1}. ${icon} ${String(diag.type).toUpperCase()}\n`;
+      result += `**Message:** ${diag.message}\n`;
+      if (diag.line) {
+        result += `**Line:** ${diag.line}\n`;
+      }
+      result += "\n";
+    });
+
+    return result;
   }
 
   /**
@@ -498,7 +582,6 @@ export class MCPServer {
   async start(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-
     console.error("MCP Server started");
   }
 }
@@ -506,6 +589,6 @@ export class MCPServer {
 /**
  * Create MCP server - no factory nonsense
  */
-export function createMCPServer(): MCPServer {
-  return new MCPServer();
+export function createMCPServer(projectPath?: string): MCPServer {
+  return new MCPServer(projectPath);
 }

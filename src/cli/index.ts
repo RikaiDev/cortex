@@ -75,9 +75,13 @@ program
         mcpConfig = JSON.parse(existingConfig);
       }
 
+      // Get the absolute path to the current cortex installation
+      // When compiled, this file is at cortex/cli/index.js, so use its own path
+      const cortexPath = fileURLToPath(import.meta.url);
+
       // Add cortex-mcp-server configuration
       mcpConfig.mcpServers["cortex-mcp-server"] = {
-        command: "cortex",
+        command: cortexPath,
         args: ["mcp", "start", "--project-root", "${workspaceRoot}"],
         timeout: 600000,
         env: {
@@ -87,18 +91,10 @@ program
           DOCS_CACHE_TTL: "300000",
         },
         autoApprove: [
-          "context-enhancer",
-          "experience-recorder",
-          "standards-detector",
-          "standards-applier",
-          "standards-summary",
-          "standards-export",
-          "register-standards-patterns",
-          "cortex-feedback-collector",
-          "cortex-feedback-analyzer",
-          "cortex-feedback-responder",
-          "cortex-user-simulator",
-          "cortex-learning-integrator",
+          "natural-language-query",
+          "project-context",
+          "experience-search",
+          "code-diagnostic",
         ],
       };
 
