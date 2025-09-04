@@ -123,8 +123,9 @@ suite.addTest(
     expect(server).to.not.be.null;
 
     const result = await server!.handleEnhanceContext({
-      query: "Analyze this JavaScript code for issues: " +
-             "function hello() { console.log('Hello World'); return 'test'; }",
+      query:
+        "Analyze this JavaScript code for issues: " +
+        "function hello() { console.log('Hello World'); return 'test'; }",
       maxItems: 3,
     });
 
