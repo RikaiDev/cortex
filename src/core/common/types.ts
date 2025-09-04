@@ -142,18 +142,6 @@ export type ToolResultData =
 export type AnyToolResult = ToolResult<ToolResultData>;
 
 /**
- * MCP Workflow interface
- */
-export interface MCPWorkflow {
-  executeTool(toolName: string, params: ToolParameters): Promise<AnyToolResult>;
-  registerTool?(
-    toolName: string,
-    handler: (params: ToolParameters) => Promise<AnyToolResult>
-  ): void;
-  getAvailableTools?(): string[];
-}
-
-/**
  * Thinking Step interface
  */
 export interface ThinkingStep {
@@ -171,8 +159,3 @@ export type MessageProcessor = (
   message: string,
   context?: Record<string, unknown>
 ) => Promise<string>;
-
-/**
- * CortexMCPWorkflow alias for backward compatibility
- */
-export type CortexMCPWorkflow = MCPWorkflow;

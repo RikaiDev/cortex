@@ -236,6 +236,12 @@ npm install
 # Build project
 npm run build
 
+# Run code quality and security checks
+npm run quality
+
+# Run security checks only
+npm run security
+
 # Run tests
 npm run test
 

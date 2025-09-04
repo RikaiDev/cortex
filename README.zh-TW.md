@@ -161,6 +161,12 @@ npm install
 # 建置專案
 npm run build
 
+# 執行程式碼品質和安全檢查
+npm run quality
+
+# 僅執行安全檢查
+npm run security
+
 # 執行測試
 npm run test
 

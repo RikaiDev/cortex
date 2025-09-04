@@ -1,20 +1,38 @@
 #!/usr/bin/env node
 
 /**
- * MCP Server - Clean, simple implementation
+ * Cortex MCP Server - Minimal and focused implementation
+ *
+ * Based on Context7 design principles: Keep it simple, focused, and effective
  */
 
 import { readFileSync } from "fs";
-import { dirname, join } from "path";
+import * as path from "path";
 import { fileURLToPath } from "url";
+import fs from "fs-extra";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
+  InitializeRequestSchema,
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import { LLMConnector } from "./llm-connector.js";
+import { CortexCore } from "../index.js";
+
+/**
+ * Cortex Master role definition
+ */
+interface CortexMaster {
+  id: string;
+  name: string;
+  specialty: string;
+  description: string;
+  keywords: string[];
+  systemPrompt: string;
+}
+
+// Cortex Master roles are now loaded dynamically from .cortex/roles directory
 
 /**
  * Get version from package.json
@@ -22,8 +40,8 @@ import { LLMConnector } from "./llm-connector.js";
 function getPackageVersion(): string {
   try {
     const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const packagePath = join(__dirname, "../../../package.json");
+    const __dirname = path.dirname(__filename);
+    const packagePath = path.join(__dirname, "../../../package.json");
     const packageJson = JSON.parse(readFileSync(packagePath, "utf-8"));
     return packageJson.version;
   } catch (error) {
@@ -33,17 +51,268 @@ function getPackageVersion(): string {
 }
 
 /**
- * MCP server - clean and simple
+ * Minimal Cortex MCP Server
  */
-export class MCPServer {
+export class CortexMCPServer {
   private server: Server;
-  private llmConnector: LLMConnector;
+  private cortex: CortexCore;
   private projectRoot: string;
+
+  /**
+   * Select appropriate Cortex Master role based on query content
+   */
+  private async selectCortexMaster(query: string): Promise<CortexMaster> {
+    const lowerQuery = query.toLowerCase();
+
+    // Load roles from .cortex/roles directory
+    const masters = await this.loadCortexMasters();
+
+    // Calculate matching scores for each role
+    const scores = masters.map((master) => {
+      let score = 0;
+
+      // Keyword matching with weighted scoring
+      for (const keyword of master.keywords) {
+        const keywordLower = keyword.toLowerCase();
+        if (lowerQuery.includes(keywordLower)) {
+          // Give higher weight to more specific keywords
+          if (
+            keywordLower === "scalability" ||
+            keywordLower === "architecture" ||
+            keywordLower === "typescript" ||
+            keywordLower === "react" ||
+            keywordLower === "security" ||
+            keywordLower === "debug"
+          ) {
+            score += 3; // Specific domain keywords get 3 points
+          } else {
+            score += 1; // General keywords get 1 point
+          }
+        }
+      }
+
+      // Specialty field relevance - higher weight
+      if (lowerQuery.includes(master.specialty.toLowerCase())) {
+        score += 5; // Specialty match adds 5 points
+      }
+
+      // Bonus for exact phrase matches
+      if (lowerQuery.includes(master.name.toLowerCase())) {
+        score += 10; // Exact name match gets highest priority
+      }
+
+      return { master, score };
+    });
+
+    // Sort by score (descending) and return highest scoring role
+    scores.sort((a, b) => b.score - a.score);
+
+    console.log(
+      `🎯 Master selection scores:`,
+      scores.map((s) => `${s.master.name}: ${s.score}`).join(", ")
+    );
+
+    // If highest score is 0, return default System Architect for architecture questions
+    if (scores[0].score === 0) {
+      if (
+        lowerQuery.includes("architecture") ||
+        lowerQuery.includes("design") ||
+        lowerQuery.includes("system")
+      ) {
+        return masters.find((m) => m.id === "architect")!;
+      }
+      return masters.find((m) => m.id === "code-assistant")!;
+    }
+
+    return scores[0].master;
+  }
+
+  /**
+   * Load Cortex Masters from .cortex/roles directory
+   */
+  private async loadCortexMasters(): Promise<CortexMaster[]> {
+    const rolesDir = path.join(this.projectRoot, ".cortex", "roles");
+    const masters: CortexMaster[] = [];
+
+    try {
+      // Check if roles directory exists
+      if (!(await fs.pathExists(rolesDir))) {
+        console.warn(
+          "⚠️ .cortex/roles directory not found, using fallback roles"
+        );
+        return this.getFallbackMasters();
+      }
+
+      // Read all .md files from roles directory
+      const files = await fs.readdir(rolesDir);
+      const mdFiles = files.filter((file) => file.endsWith(".md"));
+
+      for (const file of mdFiles) {
+        try {
+          const filePath = path.join(rolesDir, file);
+          const content = await fs.readFile(filePath, "utf-8");
+          const master = this.parseRoleFile(file, content);
+          if (master) {
+            masters.push(master);
+          }
+        } catch (error) {
+          console.warn(`⚠️ Failed to parse role file ${file}:`, error);
+        }
+      }
+
+      if (masters.length === 0) {
+        console.warn("⚠️ No valid role files found, using fallback roles");
+        return this.getFallbackMasters();
+      }
+
+      return masters;
+    } catch (error) {
+      console.error("❌ Failed to load Cortex Masters:", error);
+      return this.getFallbackMasters();
+    }
+  }
+
+  /**
+   * Parse role file content into CortexMaster object
+   */
+  private parseRoleFile(
+    filename: string,
+    content: string
+  ): CortexMaster | null {
+    try {
+      const id = filename.replace(".md", "");
+
+      // Extract title (first # heading)
+      const titleMatch = content.match(/^#\s+(.+)$/m);
+      const name = titleMatch ? titleMatch[1] : id;
+
+      // Extract description from ## Description section
+      const descMatch = content.match(
+        /## Description\n\n(.+?)(?=\n\n##|\n\n\*\*|$)/s
+      );
+      const description = descMatch
+        ? descMatch[1].trim()
+        : `${name} specialist`;
+
+      // Generate specialty based on role ID
+      const specialty = this.generateSpecialty(id);
+
+      // Generate keywords based on filename and content
+      const keywords = this.generateKeywords(id);
+
+      // Use the full content as system prompt
+      const systemPrompt = content;
+
+      return {
+        id,
+        name,
+        specialty,
+        description,
+        keywords,
+        systemPrompt,
+      };
+    } catch (error) {
+      console.warn(`⚠️ Failed to parse role file ${filename}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Generate specialty from role ID
+   */
+  private generateSpecialty(id: string): string {
+    if (id.includes("react")) {
+      return "React & Frontend Development";
+    } else if (id.includes("typescript")) {
+      return "TypeScript Development";
+    } else if (id.includes("architect")) {
+      return "Software Architecture Design";
+    } else if (id.includes("security")) {
+      return "Network Security & Cybersecurity";
+    } else if (id.includes("debug")) {
+      return "Debugging & Problem Solving";
+    } else if (id.includes("code-assistant")) {
+      return "General Programming";
+    } else if (id.includes("documentation")) {
+      return "Technical Documentation";
+    } else if (id.includes("testing")) {
+      return "Software Testing & Quality Assurance";
+    } else if (id.includes("ui-ux")) {
+      return "UI/UX Design";
+    }
+    return "General Development";
+  }
+
+  /**
+   * Generate keywords from role ID and content
+   */
+  private generateKeywords(id: string): string[] {
+    const keywords = [id];
+
+    // Add common keywords based on role ID
+    if (id.includes("react")) {
+      keywords.push("react", "frontend", "component", "hook", "jsx", "ui");
+    } else if (id.includes("typescript")) {
+      keywords.push(
+        "typescript",
+        "type",
+        "interface",
+        "generic",
+        "type-safety"
+      );
+    } else if (id.includes("architect")) {
+      keywords.push(
+        "architecture",
+        "design",
+        "system",
+        "structure",
+        "pattern",
+        "scalability"
+      );
+    } else if (id.includes("security")) {
+      keywords.push(
+        "security",
+        "auth",
+        "authentication",
+        "authorization",
+        "encryption"
+      );
+    } else if (id.includes("debug")) {
+      keywords.push("debug", "error", "bug", "fix", "troubleshoot", "issue");
+    } else if (id.includes("code-assistant")) {
+      keywords.push("code", "programming", "development", "quality", "clean");
+    } else if (id.includes("documentation")) {
+      keywords.push("docs", "documentation", "writing", "technical", "guide");
+    } else if (id.includes("testing")) {
+      keywords.push("test", "testing", "quality", "qa", "automation");
+    } else if (id.includes("ui-ux")) {
+      keywords.push("ui", "ux", "design", "user", "interface", "experience");
+    }
+
+    return keywords;
+  }
+
+  /**
+   * Get fallback masters when file loading fails
+   */
+  private getFallbackMasters(): CortexMaster[] {
+    return [
+      {
+        id: "code-assistant",
+        name: "Code Assistant",
+        specialty: "General Programming",
+        description: "General programming and code quality specialist",
+        keywords: ["code", "programming", "development", "quality", "clean"],
+        systemPrompt:
+          "You are a general code assistant focused on clean, maintainable code.",
+      },
+    ];
+  }
 
   constructor(projectPath?: string) {
     this.server = new Server(
       {
-        name: "cortex",
+        name: "cortex-mcp",
         version: getPackageVersion(),
       },
       {
@@ -53,88 +322,98 @@ export class MCPServer {
       }
     );
 
-    const workingDirectory = projectPath || process.cwd();
-    this.projectRoot = workingDirectory;
-    this.llmConnector = new LLMConnector(workingDirectory);
+    // Resolve project root
+    this.projectRoot =
+      projectPath ||
+      process.env.WORKSPACE_ROOT ||
+      process.env.WORKSPACE_FOLDER ||
+      process.env.CURSOR_WORKSPACE_ROOT ||
+      process.cwd();
+
+    // Initialize Cortex core
+    this.cortex = new CortexCore(this.projectRoot);
 
     this.setupHandlers();
   }
 
   private setupHandlers(): void {
+    // Handle initialization
+    this.server.setRequestHandler(InitializeRequestSchema, async () => {
+      return {
+        protocolVersion: "2024-11-05",
+        capabilities: {
+          tools: {},
+        },
+        serverInfo: {
+          name: "cortex-mcp",
+          version: getPackageVersion(),
+        },
+      };
+    });
+
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       return {
         tools: [
           {
-            name: "natural-language-query",
+            name: "enhance-context",
             description:
-              "Process natural language queries and provide intelligent assistance",
+              "Enhance current context with relevant past experiences and knowledge",
             inputSchema: {
               type: "object",
               properties: {
                 query: {
                   type: "string",
-                  description: "Natural language query from user",
+                  description:
+                    "Current task or question to enhance context for",
                 },
-              },
-              required: ["query"],
-            },
-          },
-          {
-            name: "project-context",
-            description: "Get essential project context for task understanding",
-            inputSchema: {
-              type: "object",
-              properties: {
-                includeFiles: {
-                  type: "boolean",
-                  description: "Include file structure information",
-                  default: true,
-                },
-                includeDependencies: {
-                  type: "boolean",
-                  description: "Include dependency information",
-                  default: true,
-                },
-              },
-            },
-          },
-          {
-            name: "experience-search",
-            description: "Search for relevant past experiences and solutions",
-            inputSchema: {
-              type: "object",
-              properties: {
-                query: {
-                  type: "string",
-                  description: "Search query for experiences",
-                },
-                category: { type: "string", description: "Filter by category" },
-                limit: {
+                maxItems: {
                   type: "number",
-                  description: "Maximum number of results",
+                  description: "Maximum number of relevant items to return",
                   default: 5,
                 },
+                timeRange: {
+                  type: "number",
+                  description: "Days to look back for relevant experiences",
+                  default: 30,
+                },
               },
               required: ["query"],
             },
           },
           {
-            name: "code-diagnostic",
+            name: "record-experience",
             description:
-              "Analyze code issues and provide diagnostic information",
+              "Record a new experience or solution for future reference",
             inputSchema: {
               type: "object",
               properties: {
-                filePath: {
+                input: {
                   type: "string",
-                  description: "Path to the file to analyze",
+                  description: "The original question or task",
                 },
-                issueType: {
+                output: {
                   type: "string",
-                  description: "Type of issue to look for",
-                  enum: ["syntax", "logic", "performance", "security", "style"],
+                  description: "The solution or response provided",
+                },
+                category: {
+                  type: "string",
+                  description: "Category for this experience",
+                  enum: [
+                    "bugfix",
+                    "feature",
+                    "refactor",
+                    "debug",
+                    "optimization",
+                    "general",
+                  ],
+                },
+                tags: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Tags for better organization",
                 },
               },
+              required: ["input", "output"],
             },
           },
         ],
@@ -144,436 +423,191 @@ export class MCPServer {
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       const { name, arguments: args } = request.params;
 
-      switch (name) {
-        case "natural-language-query":
-          return await this.handleNaturalLanguageQuery(args || { query: "" });
-        case "project-context":
-          return await this.handleProjectContext(args || {});
-        case "experience-search":
-          return await this.handleExperienceSearch(args || { query: "" });
-        case "code-diagnostic":
-          return await this.handleCodeDiagnostic(args || {});
-        default:
-          throw new Error(`Unknown tool: ${name}`);
-      }
-    });
-  }
-
-  public async handleNaturalLanguageQuery(args: {
-    query?: string;
-  }): Promise<{ content: string[]; success: boolean }> {
-    const query = args?.query || "";
-
-    if (!query.trim()) {
-      return { content: ["Empty query received."], success: false };
-    }
-
-    try {
-      const llmResponse = await this.llmConnector.processRequest({ query });
-      return { content: [llmResponse.content], success: true };
-    } catch (error) {
-      console.error("Query processing failed:", error);
-      return { content: ["Query processing failed."], success: false };
-    }
-  }
-
-  public async handleProjectContext(args: {
-    includeFiles?: boolean;
-    includeDependencies?: boolean;
-  }): Promise<{ content: string[]; success: boolean }> {
-    try {
-      const includeFiles = args.includeFiles !== false;
-      const includeDependencies = args.includeDependencies !== false;
-      const projectInfo: string[] = [];
-
-      if (includeFiles) {
-        const structure = await this.getProjectStructure();
-        projectInfo.push(`## 📁 Project Structure\n${structure}\n`);
-      }
-
-      if (includeDependencies) {
-        const dependencies = await this.getProjectDependencies();
-        projectInfo.push(`## 📦 Dependencies\n${dependencies}\n`);
-      }
-
-      const technologyStack = await this.getTechnologyStack();
-      projectInfo.push(`## 🛠️ Technology Stack\n${technologyStack}\n`);
-
-      return { content: [projectInfo.join("")], success: true };
-    } catch (error) {
-      return {
-        content: [
-          `Failed to get project context: ${error instanceof Error ? error.message : String(error)}`,
-        ],
-        success: false,
-      };
-    }
-  }
-
-  public async handleExperienceSearch(args: {
-    query?: string;
-    category?: string;
-    limit?: number;
-  }): Promise<{ content: string[]; success: boolean }> {
-    try {
-      const query = args.query || "";
-      const category = args.category;
-      const limit = args.limit || 5;
-
-      if (!query.trim()) {
-        return {
-          content: ["Please provide a search query for experiences."],
-          success: false,
-        };
-      }
-
-      const experiences = await this.searchExperiences(query, category, limit);
-      const formattedResults = this.formatExperienceResults(experiences);
-
-      return { content: [formattedResults], success: true };
-    } catch (error) {
-      return {
-        content: [
-          `Failed to search experiences: ${error instanceof Error ? error.message : String(error)}`,
-        ],
-        success: false,
-      };
-    }
-  }
-
-  public async handleCodeDiagnostic(args: {
-    filePath?: string;
-    issueType?: string;
-  }): Promise<{ content: string[]; success: boolean }> {
-    try {
-      const filePath = args.filePath;
-      const issueType = args.issueType;
-
-      if (!filePath) {
-        return {
-          content: ["Please provide a file path to analyze."],
-          success: false,
-        };
-      }
-
-      const diagnostics = await this.analyzeCodeFile(filePath, issueType);
-      const formattedReport = this.formatDiagnosticReport(
-        diagnostics,
-        filePath
-      );
-
-      return { content: [formattedReport], success: true };
-    } catch (error) {
-      return {
-        content: [
-          `Failed to analyze code: ${error instanceof Error ? error.message : String(error)}`,
-        ],
-        success: false,
-      };
-    }
-  }
-
-  private async getProjectStructure(): Promise<string> {
-    try {
-      const fs = await import("fs");
-      const path = await import("path");
-
-      const getStructure = (dir: string, prefix = ""): string => {
-        let result = "";
-        const items = fs.readdirSync(dir).sort();
-
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i];
-          const fullPath = path.join(dir, item);
-          const isLast = i === items.length - 1;
-          const connector = isLast ? "└── " : "├── ";
-
-          if (item.startsWith(".") || item === "node_modules") continue;
-
-          const stats = fs.statSync(fullPath);
-          const displayName = stats.isDirectory() ? `${item}/` : item;
-          result += `${prefix}${connector}${displayName}\n`;
-
-          if (stats.isDirectory()) {
-            const newPrefix = prefix + (isLast ? "    " : "│   ");
-            result += getStructure(fullPath, newPrefix);
-          }
+      try {
+        let result;
+        switch (name) {
+          case "enhance-context":
+            result = await this.handleEnhanceContext(
+              args as {
+                query: string;
+                maxItems?: number;
+                timeRange?: number;
+              }
+            );
+            break;
+          case "record-experience":
+            result = await this.handleRecordExperience(
+              args as {
+                input: string;
+                output: string;
+                category?: string;
+                tags?: string[];
+              }
+            );
+            break;
+          default:
+            return {
+              content: [{ type: "text", text: `Unknown tool: ${name}` }],
+              isError: true,
+            };
         }
 
         return result;
-      };
-
-      return getStructure(this.projectRoot);
-    } catch (error) {
-      return `Error reading project structure: ${error instanceof Error ? error.message : String(error)}`;
-    }
+      } catch (error) {
+        console.error("Tool execution error:", error);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Tool execution failed: ${error instanceof Error ? error.message : String(error)}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    });
   }
 
-  private async getProjectDependencies(): Promise<string> {
+  public async handleEnhanceContext(args: {
+    query: string;
+    maxItems?: number;
+    timeRange?: number;
+  }): Promise<{
+    content: Array<{ type: string; text: string }>;
+    isError?: boolean;
+  }> {
     try {
-      const fs = await import("fs");
-      const path = await import("path");
+      const { query, maxItems = 5, timeRange = 30 } = args;
 
-      const packageJsonPath = path.join(this.projectRoot, "package.json");
-      if (!fs.existsSync(packageJsonPath)) {
-        return "No package.json found";
+      if (!query.trim()) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Please provide a query to enhance context for.",
+            },
+          ],
+          isError: true,
+        };
       }
 
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
-      const deps = {
-        ...packageJson.dependencies,
-        ...packageJson.devDependencies,
-      };
-
-      let result = "";
-      Object.entries(deps).forEach(([name, version]) => {
-        result += `• ${name}: ${version}\n`;
-      });
-
-      return result || "No dependencies found";
-    } catch (error) {
-      return `Error reading dependencies: ${error instanceof Error ? error.message : String(error)}`;
-    }
-  }
-
-  private async getTechnologyStack(): Promise<string> {
-    try {
-      const fs = await import("fs");
-      const path = await import("path");
-
-      const packageJsonPath = path.join(this.projectRoot, "package.json");
-      if (!fs.existsSync(packageJsonPath)) {
-        return "Unable to determine technology stack";
-      }
-
-      const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
-      let stack = "TypeScript/JavaScript";
-
-      if (packageJson.dependencies?.["@modelcontextprotocol/sdk"]) {
-        stack += " with MCP (Model Context Protocol)";
-      }
-
-      if (packageJson.dependencies?.["chalk"]) {
-        stack += ", CLI tools";
-      }
-
-      if (packageJson.dependencies?.["commander"]) {
-        stack += ", Command-line interface";
-      }
-
-      return stack;
-    } catch (error) {
-      return `Error determining technology stack: ${error instanceof Error ? error.message : String(error)}`;
-    }
-  }
-
-  private async searchExperiences(
-    query: string,
-    category?: string,
-    limit = 5
-  ): Promise<Record<string, unknown>[]> {
-    try {
-      const fs = await import("fs");
-      const path = await import("path");
-
-      const experiencesDir = path.join(
-        this.projectRoot,
-        ".cortex",
-        "experiences"
+      // Select appropriate Cortex Master role
+      const selectedMaster = await this.selectCortexMaster(query);
+      console.log(
+        `🎭 Selected Cortex Master: ${selectedMaster.name} (${selectedMaster.specialty})`
       );
-      if (!fs.existsSync(experiencesDir)) {
-        return [];
-      }
 
-      const files = fs.readdirSync(experiencesDir);
-      const experiences = [];
-
-      for (const file of files) {
-        if (file.endsWith(".json")) {
-          const filePath = path.join(experiencesDir, file);
-          const content = fs.readFileSync(filePath, "utf-8");
-          const experience = JSON.parse(content);
-
-          const matches = query
-            .toLowerCase()
-            .split(" ")
-            .some(
-              (term) =>
-                experience.description?.toLowerCase().includes(term) ||
-                experience.title?.toLowerCase().includes(term) ||
-                experience.tags?.some((tag: string) =>
-                  tag.toLowerCase().includes(term)
-                )
-            );
-
-          if (matches && (!category || experience.category === category)) {
-            experiences.push(experience);
-          }
-        }
-      }
-
-      return experiences.slice(0, limit);
-    } catch (error) {
-      console.error("Experience search error:", error);
-      return [];
-    }
-  }
-
-  private formatExperienceResults(
-    experiences: Record<string, unknown>[]
-  ): string {
-    if (experiences.length === 0) {
-      return "No relevant experiences found.";
-    }
-
-    let result = `## 🔍 Search Results (${experiences.length} found)\n\n`;
-
-    experiences.forEach((exp, index) => {
-      result += `### ${index + 1}. ${exp.title || "Untitled Experience"}\n`;
-      result += `**Category:** ${exp.category || "Uncategorized"}\n`;
-      result += `**Tags:** ${Array.isArray(exp.tags) ? (exp.tags as string[]).join(", ") : "None"}\n`;
-      result += `**Description:** ${exp.description || "No description"}\n\n`;
-    });
-
-    return result;
-  }
-
-  private async analyzeCodeFile(
-    filePath: string,
-    issueType?: string
-  ): Promise<Record<string, unknown>[]> {
-    try {
-      const fs = await import("fs");
-      const path = await import("path");
-
-      const fullPath = path.isAbsolute(filePath)
-        ? filePath
-        : path.join(this.projectRoot, filePath);
-
-      if (!fs.existsSync(fullPath)) {
-        throw new Error(`File not found: ${filePath}`);
-      }
-
-      const content = fs.readFileSync(fullPath, "utf-8");
-      const diagnostics = [];
-
-      if (!issueType || issueType === "syntax") {
-        const syntaxIssues = this.checkSyntax(content, filePath);
-        diagnostics.push(...syntaxIssues);
-      }
-
-      if (!issueType || issueType === "style") {
-        const styleIssues = this.checkStyle(content, filePath);
-        diagnostics.push(...styleIssues);
-      }
-
-      if (!issueType || issueType === "logic") {
-        const logicIssues = this.checkLogic(content, filePath);
-        diagnostics.push(...logicIssues);
-      }
-
-      return diagnostics;
-    } catch (error) {
-      throw new Error(
-        `Failed to analyze file: ${error instanceof Error ? error.message : String(error)}`
+      // Use Cortex core to find relevant experiences
+      const relevantExperiences = await this.cortex.findRelevantExperiences(
+        query,
+        maxItems,
+        timeRange
       );
+
+      // Build enhanced response
+      let response = `## 🎭 Cortex Master: ${selectedMaster.name}\n`;
+      response += `**Specialty:** ${selectedMaster.specialty}\n`;
+      response += `**Role Description:** ${selectedMaster.description}\n\n`;
+
+      response += `## 📋 Problem Analysis\n`;
+      response += `**Original Query:** ${query}\n\n`;
+
+      if (relevantExperiences.length === 0) {
+        response += `## 🤔 Master Recommendations\n`;
+        response += `While no relevant historical experiences were found, I can help you based on my professional expertise:\n\n`;
+        response += `**Role Definition:**\n${selectedMaster.systemPrompt}\n\n`;
+        response += `**Please provide more specific problem details, and I'll give you professional solutions!**`;
+      } else {
+        response += `## 📚 Related Historical Experiences\n`;
+        response += `Based on experiences learned by the system, I found the following relevant cases:\n\n`;
+
+        const formattedExperiences = relevantExperiences
+          .map((exp, index) => {
+            const tags = exp.tags?.length ? ` [${exp.tags.join(", ")}]` : "";
+            return `### 💡 Experience ${index + 1}${tags}
+**Problem:** ${exp.input}
+**Solution:** ${exp.output}
+**Category:** ${exp.category}
+**Time:** ${exp.timestamp}`;
+          })
+          .join("\n\n");
+
+        response += formattedExperiences;
+        response += `\n\n## 🎯 Master Insights\n`;
+        response += `Based on these experiences and my professional knowledge as a ${selectedMaster.name}, I recommend:\n\n`;
+        response += `**My Expertise:**\n${selectedMaster.systemPrompt}\n\n`;
+        response += `**Specific Recommendations:**\n`;
+        response += `1. **Reference Historical Solutions** - The above experiences may provide direct solution ideas\n`;
+        response += `2. **Apply Professional Expertise** - Consider ${selectedMaster.specialty} best practices\n`;
+        response += `3. **Systematic Analysis** - Re-evaluate the problem from my domain expertise perspective\n\n`;
+        response += `**Need more in-depth guidance? I can provide detailed solutions based on your specific situation!**`;
+      }
+
+      return {
+        content: [{ type: "text", text: response }],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to enhance context: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
     }
   }
 
-  private checkSyntax(
-    content: string,
-    filePath: string
-  ): Record<string, unknown>[] {
-    const issues: Record<string, unknown>[] = [];
+  public async handleRecordExperience(args: {
+    input: string;
+    output: string;
+    category?: string;
+    tags?: string[];
+  }): Promise<{
+    content: Array<{ type: string; text: string }>;
+    isError?: boolean;
+  }> {
+    try {
+      const { input, output, category = "general", tags = [] } = args;
 
-    if (content.includes("console.log(") && !content.includes("import")) {
-      issues.push({
-        type: "warning",
-        message: "Using console.log without proper imports",
-        line: this.findLineNumber(content, "console.log"),
-        file: filePath,
+      if (!input.trim() || !output.trim()) {
+        return {
+          content: [
+            { type: "text", text: "Both input and output are required." },
+          ],
+          isError: true,
+        };
+      }
+
+      // Use Cortex core to record the experience
+      await this.cortex.recordExperience({
+        input,
+        output,
+        category,
+        tags,
+        timestamp: new Date().toISOString(),
       });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Experience recorded successfully in category: ${category}`,
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to record experience: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
     }
-
-    return issues;
-  }
-
-  private checkStyle(
-    content: string,
-    filePath: string
-  ): Record<string, unknown>[] {
-    const issues: Record<string, unknown>[] = [];
-
-    const lines = content.split("\n");
-    lines.forEach((line, index) => {
-      if (line.length > 100) {
-        issues.push({
-          type: "style",
-          message: `Line too long (${line.length} characters)`,
-          line: index + 1,
-          file: filePath,
-        });
-      }
-    });
-
-    return issues;
-  }
-
-  private checkLogic(
-    content: string,
-    filePath: string
-  ): Record<string, unknown>[] {
-    const issues: Record<string, unknown>[] = [];
-
-    if (
-      content.includes("==") &&
-      !content.includes("===") &&
-      content.includes("!=")
-    ) {
-      issues.push({
-        type: "warning",
-        message: "Mixed use of == and != operators, consider using === and !==",
-        line: this.findLineNumber(content, "=="),
-        file: filePath,
-      });
-    }
-
-    return issues;
-  }
-
-  private findLineNumber(content: string, pattern: string): number {
-    const lines = content.split("\n");
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes(pattern)) {
-        return i + 1;
-      }
-    }
-    return 0;
-  }
-
-  private formatDiagnosticReport(
-    diagnostics: Record<string, unknown>[],
-    filePath: string
-  ): string {
-    if (diagnostics.length === 0) {
-      return `## ✅ Code Analysis: ${filePath}\n\nNo issues found!`;
-    }
-
-    let result = `## 🔍 Code Analysis: ${filePath}\n\n`;
-    result += `Found ${diagnostics.length} issue(s):\n\n`;
-
-    diagnostics.forEach((diag, index) => {
-      const icon =
-        diag.type === "error" ? "❌" : diag.type === "warning" ? "⚠️" : "ℹ️";
-      result += `### ${index + 1}. ${icon} ${String(diag.type).toUpperCase()}\n`;
-      result += `**Message:** ${diag.message}\n`;
-      if (diag.line) {
-        result += `**Line:** ${diag.line}\n`;
-      }
-      result += "\n";
-    });
-
-    return result;
   }
 
   /**
@@ -587,8 +621,19 @@ export class MCPServer {
 }
 
 /**
- * Create MCP server - no factory nonsense
+ * Create Cortex MCP server - minimal and focused
  */
-export function createMCPServer(projectPath?: string): MCPServer {
-  return new MCPServer(projectPath);
+export function createCortexMCPServer(projectPath?: string): CortexMCPServer {
+  return new CortexMCPServer(projectPath);
+}
+
+/**
+ * Direct execution entry point
+ */
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const server = createCortexMCPServer();
+  server.start().catch((error) => {
+    console.error("Failed to start Cortex MCP server:", error);
+    process.exit(1);
+  });
 }

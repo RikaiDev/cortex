@@ -2,11 +2,11 @@
 
 import { Command } from "commander";
 import chalk from "chalk";
-import { CortexCLI } from "./cortex-cli.js";
-import { addMCPCommands } from "./mcp-commands.js";
 import fs from "fs-extra";
 import path from "path";
 import { fileURLToPath } from "url";
+import { CortexCLI } from "./cortex-cli.js";
+import { addMCPCommands } from "./mcp-commands.js";
 
 const program = new Command();
 
@@ -57,12 +57,37 @@ program
         throw new Error("Could not determine home directory");
       }
 
-      // Create .cursor directory if it doesn't exist
-      const cursorDir = path.join(homeDir, ".cursor");
-      await fs.ensureDir(cursorDir);
+      // Determine correct MCP config path based on platform
+      let mcpConfigPath: string;
 
-      // Path to mcp.json
-      const mcpConfigPath = path.join(cursorDir, "mcp.json");
+      if (process.platform === "darwin") {
+        // macOS: ~/Library/Application Support/Cursor/User/mcp.json
+        const cursorUserDir = path.join(
+          homeDir,
+          "Library",
+          "Application Support",
+          "Cursor",
+          "User"
+        );
+        await fs.ensureDir(cursorUserDir);
+        mcpConfigPath = path.join(cursorUserDir, "mcp.json");
+      } else if (process.platform === "win32") {
+        // Windows: %APPDATA%\Cursor\User\mcp.json
+        const cursorUserDir = path.join(
+          homeDir,
+          "AppData",
+          "Roaming",
+          "Cursor",
+          "User"
+        );
+        await fs.ensureDir(cursorUserDir);
+        mcpConfigPath = path.join(cursorUserDir, "mcp.json");
+      } else {
+        // Linux and others: ~/.config/cursor/user/mcp.json
+        const cursorUserDir = path.join(homeDir, ".config", "cursor", "user");
+        await fs.ensureDir(cursorUserDir);
+        mcpConfigPath = path.join(cursorUserDir, "mcp.json");
+      }
 
       // Read existing mcp.json or create new one
       interface MCPConfig {
@@ -75,27 +100,10 @@ program
         mcpConfig = JSON.parse(existingConfig);
       }
 
-      // Get the absolute path to the current cortex installation
-      // When compiled, this file is at cortex/cli/index.js, so use its own path
-      const cortexPath = fileURLToPath(import.meta.url);
-
-      // Add cortex-mcp-server configuration
-      mcpConfig.mcpServers["cortex-mcp-server"] = {
-        command: cortexPath,
-        args: ["mcp", "start", "--project-root", "${workspaceRoot}"],
-        timeout: 600000,
-        env: {
-          NODE_ENV: "production",
-          MCP_DEBUG: "false",
-          PROJECT_ROOT: "${workspaceRoot}",
-          DOCS_CACHE_TTL: "300000",
-        },
-        autoApprove: [
-          "natural-language-query",
-          "project-context",
-          "experience-search",
-          "code-diagnostic",
-        ],
+      // Add cortex configuration (following Context7 format)
+      mcpConfig.mcpServers["cortex"] = {
+        command: "node",
+        args: ["cortex/cli/index.js", "mcp", "start"],
       };
 
       // Write updated configuration
@@ -124,20 +132,15 @@ program
   .description("Initialize Cortex in your project and detect project type")
   .action(async (options) => {
     try {
-      // First, detect project type
+      // Simple project type detection
       console.log(chalk.blue("🔍 Detecting project type..."));
-      const { ProjectAnalyzer } = await import(
-        "../core/project/project-analyzer.js"
-      );
-      const analyzer = new ProjectAnalyzer(
-        options.projectPath || process.cwd()
-      );
-      const analysis = await analyzer.analyzeProject();
+      const projectPath = options.projectPath || process.cwd();
+      const analysis = await detectProjectType(projectPath);
 
       console.log(chalk.blue("📋 Project Detection Results:"));
       console.log(
         chalk.cyan("Project Type:") +
-          ` ${analysis.projectType} (${(analysis.confidence * 100).toFixed(1)}% confidence)`
+          ` ${analysis.type} (${analysis.confidence}% confidence)`
       );
       if (analysis.framework) {
         console.log(chalk.cyan("Framework:") + ` ${analysis.framework}`);
@@ -145,13 +148,13 @@ program
       console.log();
       console.log(chalk.yellow("🚀 Suggested Commands:"));
       console.log(
-        chalk.cyan("Build:") + ` ${analysis.buildCommand || "Not detected"}`
+        chalk.cyan("Build:") + ` ${analysis.buildCommand || "npm run build"}`
       );
       console.log(
-        chalk.cyan("Development:") + ` ${analysis.devCommand || "Not detected"}`
+        chalk.cyan("Development:") + ` ${analysis.devCommand || "npm run dev"}`
       );
       console.log(
-        chalk.cyan("Test:") + ` ${analysis.testCommand || "Not detected"}`
+        chalk.cyan("Test:") + ` ${analysis.testCommand || "npm run test"}`
       );
       console.log();
 
@@ -174,3 +177,93 @@ program
   });
 
 program.parse();
+
+/**
+ * Simple project type detection
+ */
+async function detectProjectType(projectPath: string): Promise<{
+  type: string;
+  framework?: string;
+  confidence: number;
+  buildCommand?: string;
+  devCommand?: string;
+  testCommand?: string;
+}> {
+  // Check for package.json (Node.js)
+  const packageJsonPath = path.join(projectPath, "package.json");
+  if (await fs.pathExists(packageJsonPath)) {
+    try {
+      const packageJson = await fs.readJson(packageJsonPath);
+      const deps = {
+        ...packageJson.dependencies,
+        ...packageJson.devDependencies,
+      };
+
+      // Check for common frameworks
+      if (deps["next"]) {
+        return {
+          type: "node",
+          framework: "Next.js",
+          confidence: 95,
+          buildCommand: "npm run build",
+          devCommand: "npm run dev",
+          testCommand: "npm run test",
+        };
+      }
+
+      if (deps["react"]) {
+        return {
+          type: "node",
+          framework: "React",
+          confidence: 90,
+          buildCommand: "npm run build",
+          devCommand: "npm run dev",
+          testCommand: "npm run test",
+        };
+      }
+
+      if (deps["vue"]) {
+        return {
+          type: "node",
+          framework: "Vue.js",
+          confidence: 90,
+          buildCommand: "npm run build",
+          devCommand: "npm run dev",
+          testCommand: "npm run test",
+        };
+      }
+
+      return {
+        type: "node",
+        framework: "Node.js",
+        confidence: 85,
+        buildCommand: "npm run build",
+        devCommand: "npm run dev",
+        testCommand: "npm run test",
+      };
+    } catch (error) {
+      // Invalid package.json
+    }
+  }
+
+  // Check for Python files
+  const pythonFiles = await fs.readdir(projectPath).catch(() => []);
+  if (pythonFiles.some((file) => file.endsWith(".py"))) {
+    return {
+      type: "python",
+      confidence: 80,
+      buildCommand: "python setup.py build",
+      devCommand: "python -m your_app",
+      testCommand: "python -m pytest",
+    };
+  }
+
+  // Default fallback
+  return {
+    type: "unknown",
+    confidence: 0,
+    buildCommand: "echo 'Build command not detected'",
+    devCommand: "echo 'Dev command not detected'",
+    testCommand: "echo 'Test command not detected'",
+  };
+}
