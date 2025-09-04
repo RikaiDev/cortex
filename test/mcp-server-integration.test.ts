@@ -3,7 +3,7 @@ import Mocha from "mocha";
 import { expect } from "chai";
 import * as path from "path";
 import fs from "fs-extra";
-import { createMCPServer } from "../src/core/mcp/server.js";
+import { createCortexMCPServer } from "../src/core/mcp/server.js";
 
 const mocha = new Mocha();
 
@@ -11,7 +11,7 @@ const mocha = new Mocha();
 const suite = new Mocha.Suite("MCP Server Integration Tests");
 
 const testProjectRoot = path.join(process.cwd(), "test-mcp-server");
-let server: ReturnType<typeof createMCPServer> | null = null;
+let server: ReturnType<typeof createCortexMCPServer> | null = null;
 
 suite.beforeAll(async () => {
   // Setup test project structure
@@ -37,7 +37,7 @@ function hello() {
   );
 
   // Create MCP server instance
-  server = createMCPServer(testProjectRoot);
+  server = createCortexMCPServer(testProjectRoot);
 });
 
 suite.afterAll(async () => {
@@ -60,11 +60,11 @@ suite.addTest(
 
 suite.addTest(
   new Mocha.Test(
-    "natural-language-query tool should return correct MCP format",
+    "handleEnhanceContext should process natural language queries",
     async function () {
       expect(server).to.not.be.null;
 
-      const result = await server!.handleNaturalLanguageQuery({
+      const result = await server!.handleEnhanceContext({
         query: "How does this project work?",
       });
 
@@ -80,34 +80,33 @@ suite.addTest(
 
 suite.addTest(
   new Mocha.Test(
-    "project-context tool should return project information",
+    "handleEnhanceContext should handle project analysis queries",
     async function () {
       expect(server).to.not.be.null;
 
-      const result = await server!.handleProjectContext({
-        includeFiles: true,
-        includeDependencies: true,
+      const result = await server!.handleEnhanceContext({
+        query: "What is the project structure and dependencies?",
+        maxItems: 5,
       });
 
       expect(result).to.have.property("content");
       expect(result.content).to.be.an("array");
       expect(result.content[0]).to.have.property("type", "text");
       expect(result.content[0]).to.have.property("text");
-      expect(result.content[0].text).to.include("Project Structure");
-      expect(result.content[0].text).to.include("Dependencies");
+      expect(result.content[0].text.length).to.be.greaterThan(0);
     }
   )
 );
 
 suite.addTest(
   new Mocha.Test(
-    "experience-search tool should handle queries",
+    "handleEnhanceContext should handle experience-based queries",
     async function () {
       expect(server).to.not.be.null;
 
-      const result = await server!.handleExperienceSearch({
-        query: "test",
-        limit: 3,
+      const result = await server!.handleEnhanceContext({
+        query: "Search for experiences related to testing",
+        maxItems: 3,
       });
 
       expect(result).to.have.property("content");
@@ -120,19 +119,41 @@ suite.addTest(
 );
 
 suite.addTest(
-  new Mocha.Test("code-diagnostic tool should analyze code", async function () {
+  new Mocha.Test("handleEnhanceContext should analyze code", async function () {
     expect(server).to.not.be.null;
 
-    const result = await server!.handleCodeDiagnostic({
-      filePath: "test.js",
-      issueType: "syntax",
+    const result = await server!.handleEnhanceContext({
+      query: "Analyze this JavaScript code for issues: " +
+             "function hello() { console.log('Hello World'); return 'test'; }",
+      maxItems: 3,
     });
 
     expect(result).to.have.property("content");
     expect(result.content).to.be.an("array");
     expect(result.content[0]).to.have.property("type", "text");
-    expect(result.content[0].text).to.include("Code Analysis");
+    expect(result.content[0].text.length).to.be.greaterThan(0);
   })
+);
+
+suite.addTest(
+  new Mocha.Test(
+    "handleRecordExperience should record experiences successfully",
+    async function () {
+      expect(server).to.not.be.null;
+
+      const result = await server!.handleRecordExperience({
+        input: "How to implement error handling in Node.js?",
+        output: "Use try-catch blocks and proper error propagation",
+        category: "nodejs",
+        tags: ["error-handling", "best-practices"],
+      });
+
+      expect(result).to.have.property("content");
+      expect(result.content).to.be.an("array");
+      expect(result.content[0]).to.have.property("type", "text");
+      expect(result.content[0].text).to.include("recorded successfully");
+    }
+  )
 );
 
 suite.addTest(
@@ -142,19 +163,18 @@ suite.addTest(
       expect(server).to.not.be.null;
 
       // Test empty query
-      const emptyQueryResult = await server!.handleNaturalLanguageQuery({
+      const emptyQueryResult = await server!.handleEnhanceContext({
         query: "",
       });
       expect(emptyQueryResult).to.have.property("content");
       expect(emptyQueryResult.content[0]).to.have.property("type", "text");
 
-      // Test invalid file path
-      const invalidFileResult = await server!.handleCodeDiagnostic({
-        filePath: "nonexistent.js",
-        issueType: "syntax",
+      // Test whitespace-only query
+      const whitespaceResult = await server!.handleEnhanceContext({
+        query: "   ",
       });
-      expect(invalidFileResult).to.have.property("content");
-      expect(invalidFileResult.content[0]).to.have.property("type", "text");
+      expect(whitespaceResult).to.have.property("content");
+      expect(whitespaceResult.content[0]).to.have.property("type", "text");
     }
   )
 );

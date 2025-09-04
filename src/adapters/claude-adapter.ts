@@ -1,4 +1,4 @@
-import { writeFile, pathExists } from "fs-extra";
+import fs from "fs-extra";
 import path from "path";
 import chalk from "chalk";
 
@@ -208,7 +208,7 @@ export class ClaudeAdapter {
 
     // Write CLAUDE.md to project root (AI tool configuration)
     const claudePath = path.join(this.projectRoot, "CLAUDE.md");
-    await writeFile(claudePath, systemMessage);
+    await fs.writeFile(claudePath, systemMessage);
 
     console.log(
       chalk.green("✅ Claude Code configuration generated successfully!")
@@ -347,6 +347,6 @@ export class ClaudeAdapter {
    */
   async validateClaudeSetup(): Promise<boolean> {
     const claudePath = path.join(this.projectRoot, "CLAUDE.md");
-    return await pathExists(claudePath);
+    return await fs.pathExists(claudePath);
   }
 }

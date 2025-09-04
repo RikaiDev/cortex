@@ -4,7 +4,7 @@
  * Generates Cursor IDE rules focused on Cortex Master role system
  */
 
-import { writeFile, mkdir } from "fs-extra";
+import fs from "fs-extra";
 import { join } from "path";
 
 /**
@@ -214,13 +214,13 @@ export class TaskEnhancementCursorRulesGenerator {
 
     try {
       // Ensure directory exists
-      await mkdir(rulesDir, { recursive: true });
+      await fs.mkdir(rulesDir, { recursive: true });
 
       // Generate rules with static template
       const rules = this.generateRulesTemplate();
 
       // Write rules file
-      await writeFile(cortexRulesPath, rules, "utf-8");
+      await fs.writeFile(cortexRulesPath, rules, "utf-8");
 
       console.log(`✅ Generated Cursor rules at ${cortexRulesPath}`);
     } catch (error) {
