@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.3] - 2025-09-04
+
+### 🛡️ **Security Enhancement**
+
+**Secretlint Integration - Professional Security Scanning:**
+
+- **Advanced Security Linting**: Integrated Secretlint for comprehensive security vulnerability detection
+- **Multi-Platform Token Detection**: Scans for AWS credentials, GitHub tokens, Slack tokens, and other sensitive information
+- **Intelligent Filtering**: Supports comment directives (`// secretlint-disable`) for intentional exclusions
+- **Configurable Allow Lists**: Custom patterns for test/development tokens
+- **Automated Security Checks**: Integrated into build and quality assurance pipelines
+
+**Security Features:**
+
+- Real-time secret detection in source code
+- Prevents accidental credential commits
+- Comprehensive coverage of common secret patterns
+- Integration with development workflow
+- Documentation and best practices included
+
+### 📦 **Development Workflow**
+
+**Enhanced Quality Assurance:**
+
+- Added `npm run security` for dedicated security scanning
+- Added `npm run quality` for comprehensive code and security checks
+- Updated README and documentation for security features
+- Improved CI/CD integration capabilities
+
 ## [0.8.2] - 2025-01-20
 
 ### 🧪 **Testing Infrastructure Enhancement**
