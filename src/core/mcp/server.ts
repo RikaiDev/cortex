@@ -18,7 +18,11 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-import { CortexCore } from "../index.js";
+import {
+  CortexCore,
+  UnifiedKnowledgeManager,
+  DynamicRuleSystem,
+} from "../index.js";
 
 /**
  * Cortex Master role definition
@@ -56,6 +60,8 @@ function getPackageVersion(): string {
 export class CortexMCPServer {
   private server: Server;
   private cortex: CortexCore;
+  private knowledgeManager: UnifiedKnowledgeManager;
+  private ruleSystem: DynamicRuleSystem;
   private projectRoot: string;
 
   /**
@@ -332,6 +338,11 @@ export class CortexMCPServer {
 
     // Initialize Cortex core
     this.cortex = new CortexCore(this.projectRoot);
+    this.knowledgeManager = new UnifiedKnowledgeManager(this.projectRoot);
+    this.ruleSystem = new DynamicRuleSystem(
+      this.projectRoot,
+      this.knowledgeManager
+    );
 
     this.setupHandlers();
   }
@@ -416,6 +427,52 @@ export class CortexMCPServer {
               required: ["input", "output"],
             },
           },
+          {
+            name: "external-knowledge-integration",
+            description:
+              "Integrate external knowledge sources and best practices for enhanced decision making",
+            inputSchema: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description:
+                    "Search query for external knowledge and best practices",
+                },
+                context: {
+                  type: "string",
+                  description: "Current task context for better integration",
+                },
+                includePatterns: {
+                  type: "boolean",
+                  description:
+                    "Include design patterns and architectural approaches",
+                  default: true,
+                },
+              },
+              required: ["query"],
+            },
+          },
+          {
+            name: "unified-knowledge-search",
+            description:
+              "Search across all internal knowledge sources (docs, experiences, templates)",
+            inputSchema: {
+              type: "object",
+              properties: {
+                query: {
+                  type: "string",
+                  description: "Search query for internal knowledge",
+                },
+                maxResults: {
+                  type: "number",
+                  description: "Maximum number of results to return",
+                  default: 5,
+                },
+              },
+              required: ["query"],
+            },
+          },
         ],
       };
     });
@@ -442,6 +499,23 @@ export class CortexMCPServer {
                 output: string;
                 category?: string;
                 tags?: string[];
+              }
+            );
+            break;
+          case "external-knowledge-integration":
+            result = await this.handleExternalKnowledgeIntegration(
+              args as {
+                query: string;
+                context?: string;
+                includePatterns?: boolean;
+              }
+            );
+            break;
+          case "unified-knowledge-search":
+            result = await this.handleUnifiedKnowledgeSearch(
+              args as {
+                query: string;
+                maxResults?: number;
               }
             );
             break;
@@ -603,6 +677,221 @@ export class CortexMCPServer {
           {
             type: "text",
             text: `Failed to record experience: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
+  public async handleExternalKnowledgeIntegration(args: {
+    query: string;
+    context?: string;
+    includePatterns?: boolean;
+  }): Promise<{
+    content: Array<{ type: string; text: string }>;
+    isError?: boolean;
+  }> {
+    try {
+      const { query, context, includePatterns = true } = args;
+
+      if (!query.trim()) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Please provide a search query.",
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Build enhanced response based on query analysis
+      let response = `## 🌐 External Knowledge Integration\n`;
+      response += `**Search Query:** ${query}\n`;
+
+      if (context) {
+        response += `**Context:** ${context}\n`;
+      }
+      response += `\n`;
+
+      // Provide integration guidance based on query type
+      const queryLower = query.toLowerCase();
+
+      if (
+        queryLower.includes("library") ||
+        queryLower.includes("package") ||
+        queryLower.includes("dependency")
+      ) {
+        response += `## 📚 Library Integration Guidance\n\n`;
+        response += `**Recommended Approach:**\n`;
+        response += `1. **Use Context7 MCP Tool** - Search for specific libraries and their documentation\n`;
+        response += `2. **Check Compatibility** - Verify version compatibility and license terms\n`;
+        response += `3. **Integration Patterns** - Follow established integration patterns for the library type\n`;
+        response += `4. **Testing Strategy** - Include comprehensive tests for external dependencies\n\n`;
+
+        if (includePatterns) {
+          response += `**Common Patterns:**\n`;
+          response += `- **npm/pnpm packages**: Use specific versions, check peer dependencies\n`;
+          response += `- **GitHub libraries**: Verify maintenance status and community support\n`;
+          response += `- **Enterprise libraries**: Ensure compliance with organizational standards\n`;
+        }
+      } else if (
+        queryLower.includes("framework") ||
+        queryLower.includes("architecture")
+      ) {
+        response += `## 🏗️ Framework Integration Guidance\n\n`;
+        response += `**Recommended Approach:**\n`;
+        response += `1. **Use Context7 MCP Tool** - Find framework documentation and examples\n`;
+        response += `2. **Evaluate Fit** - Assess framework alignment with project requirements\n`;
+        response += `3. **Migration Strategy** - Plan gradual adoption with rollback options\n`;
+        response += `4. **Team Training** - Ensure team familiarity with new framework\n\n`;
+
+        if (includePatterns) {
+          response += `**Architecture Patterns:**\n`;
+          response += `- **MVC Frameworks**: Understand routing and data flow patterns\n`;
+          response += `- **Component Frameworks**: Master component lifecycle and state management\n`;
+          response += `- **Micro-frameworks**: Identify integration points with existing architecture\n`;
+        }
+      } else if (
+        queryLower.includes("pattern") ||
+        queryLower.includes("design")
+      ) {
+        response += `## 🎨 Design Pattern Integration\n\n`;
+        response += `**Recommended Approach:**\n`;
+        response += `1. **Use Context7 MCP Tool** - Search for design pattern implementations\n`;
+        response += `2. **Pattern Analysis** - Understand pattern applicability and trade-offs\n`;
+        response += `3. **Implementation Strategy** - Adapt patterns to project context\n`;
+        response += `4. **Documentation** - Document pattern usage and rationale\n\n`;
+
+        if (includePatterns) {
+          response += `**Common Design Patterns:**\n`;
+          response += `- **Creational**: Factory, Singleton, Builder patterns\n`;
+          response += `- **Structural**: Adapter, Decorator, Facade patterns\n`;
+          response += `- **Behavioral**: Observer, Strategy, Command patterns\n`;
+        }
+      } else {
+        response += `## 🔍 General Integration Guidance\n\n`;
+        response += `**Recommended Approach:**\n`;
+        response += `1. **Use Context7 MCP Tool** - Search for relevant external resources\n`;
+        response += `2. **Cross-reference Sources** - Validate information across multiple sources\n`;
+        response += `3. **Context Adaptation** - Adapt external knowledge to project needs\n`;
+        response += `4. **Knowledge Preservation** - Document insights for future reference\n\n`;
+
+        response += `**Integration Best Practices:**\n`;
+        response += `- **Source Evaluation**: Assess credibility and recency of information\n`;
+        response += `- **Context Mapping**: Relate external knowledge to current project context\n`;
+        response += `- **Incremental Adoption**: Start with small, low-risk integrations\n`;
+        response += `- **Feedback Loop**: Monitor impact and adjust approach as needed\n`;
+      }
+
+      // Add Cortex Master integration
+      const selectedMaster = await this.selectCortexMaster(query);
+      response += `## 🎭 Cortex Master Integration\n`;
+      response += `**Selected Master:** ${selectedMaster.name}\n`;
+      response += `**Specialty:** ${selectedMaster.specialty}\n`;
+      response += `**Integration Role:** Guide the application of external knowledge to project context\n\n`;
+
+      response += `**Next Steps:**\n`;
+      response += `1. Use Context7 MCP tool to search for specific resources\n`;
+      response += `2. Apply the selected Cortex Master's expertise\n`;
+      response += `3. Integrate findings with project requirements\n`;
+      response += `4. Document integration decisions and rationale\n`;
+
+      return {
+        content: [{ type: "text", text: response }],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to integrate external knowledge: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
+  public async handleUnifiedKnowledgeSearch(args: {
+    query: string;
+    maxResults?: number;
+  }): Promise<{
+    content: Array<{ type: string; text: string }>;
+    isError?: boolean;
+  }> {
+    try {
+      const { query, maxResults = 5 } = args;
+
+      if (!query.trim()) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Please provide a search query.",
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Search across all internal knowledge sources
+      const knowledgeResults = await this.knowledgeManager.searchKnowledge(
+        query,
+        maxResults
+      );
+
+      // Build enhanced response
+      let response = `## 🧠 Unified Knowledge Search\n`;
+      response += `**Search Query:** ${query}\n\n`;
+
+      if (knowledgeResults.length === 0) {
+        response += `## 📚 No Internal Knowledge Found\n`;
+        response += `No relevant internal knowledge found for "${query}". `;
+        response += `I can still help you based on my general expertise.\n\n`;
+
+        // Select appropriate Cortex Master for fallback
+        const selectedMaster = await this.selectCortexMaster(query);
+        response += `## 🎭 Selected Cortex Master: ${selectedMaster.name}\n`;
+        response += `**Specialty:** ${selectedMaster.specialty}\n`;
+        response += `**Expertise:** ${selectedMaster.description}\n\n`;
+        response += `**Recommendation:** Let me provide guidance based on professional best practices!`;
+      } else {
+        response += `## 📖 Internal Knowledge Results\n`;
+        response += `Found ${knowledgeResults.length} relevant internal resources:\n\n`;
+
+        knowledgeResults.forEach((result, index) => {
+          response += `### ${index + 1}. ${result.title}\n`;
+          response += `**Source:** ${result.source}\n`;
+          response += `**Relevance:** ${result.relevance.toFixed(1)}\n`;
+          response += `**Content:** ${result.content}\n\n`;
+        });
+
+        response += `## 🎯 Integration Recommendations\n`;
+        response += `Based on these internal knowledge sources and my analysis:\n\n`;
+        response += `1. **Reference Internal Best Practices** - Use patterns from existing documentation\n`;
+        response += `2. **Learn from Past Experiences** - Apply lessons from similar projects\n`;
+        response += `3. **Follow Established Patterns** - Use role templates for consistent approaches\n\n`;
+
+        // Select appropriate Cortex Master based on search results
+        const selectedMaster = await this.selectCortexMaster(query);
+        response += `## 🎭 Cortex Master Integration\n`;
+        response += `**Selected Master:** ${selectedMaster.name} (${selectedMaster.specialty})\n`;
+        response += `**Integration Approach:** Combine internal knowledge with domain expertise\n\n`;
+        response += `**Ready to proceed with implementation!**`;
+      }
+
+      return {
+        content: [{ type: "text", text: response }],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to search internal knowledge: ${error instanceof Error ? error.message : String(error)}`,
           },
         ],
         isError: true,

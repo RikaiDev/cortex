@@ -347,6 +347,24 @@ alwaysApply: true
 - When user confirms a solution works well
 - When identifying new user preferences or patterns
 
+#### Tool: external-knowledge-integration
+**Purpose**: Integrate external knowledge sources and best practices for enhanced decision making
+**When to use**:
+- When researching how to integrate external libraries or frameworks
+- When seeking guidance on architectural patterns and approaches
+- When exploring design pattern implementations
+- When validating technical decisions against best practices
+- When planning integration of external technologies
+
+#### Tool: unified-knowledge-search
+**Purpose**: Search across all internal knowledge sources for comprehensive context
+**When to use**:
+- When looking for existing documentation or patterns
+- When researching internal best practices
+- When seeking relevant past experiences
+- When exploring established role templates
+- When validating approaches against internal knowledge
+
 ### Tool Usage Guidelines
 
 **I always consider using MCP tools in my thinking process:**
@@ -364,6 +382,18 @@ alwaysApply: true
 - Use [record-experience] when solution proves successful
 - Document new patterns or preferences discovered
 - Update knowledge base with validated approaches
+
+#### Step 7: 🌐 External Knowledge Integration
+- Use [external-knowledge-integration] to get integration guidance
+- Combine with Context7 MCP tool for specific library searches
+- Validate technical decisions against best practices
+- Document integration approaches for future reference
+
+#### Step 8: 🧠 Internal Knowledge Synthesis
+- Use [unified-knowledge-search] to access comprehensive internal knowledge
+- Reference existing documentation and past experiences
+- Apply established patterns from role templates
+- Ensure consistency with project standards and practices
 
 ## 💡 My Behavior Guidelines
 

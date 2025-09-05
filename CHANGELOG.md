@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.4] - 2025-09-05
+
+### 🧠 **Memory Bank Integration**
+
+**Cursor Memory Bank Concept Integration:**
+
+- **External Knowledge Integration Coordinator**: New `external-knowledge-integration` MCP tool for coordinating with existing MCP tools (like Context7) rather than reproducing functionality
+- **Unified Knowledge Management System**: New `unified-knowledge-search` MCP tool for cross-source internal knowledge search
+- **Enhanced Master Role System**: Improved Cortex Master role selection with context awareness and dynamic loading
+- **Dynamic Rule System**: Context-adaptive rule generation based on project knowledge and patterns
+- **Comprehensive Documentation**: Added `docs/memory-bank-integration.md` with complete integration details
+
+**Key Features:**
+
+- Smart coordination with existing MCP ecosystem
+- Unified search across docs/, experiences/, and templates/
+- Dynamic rule generation based on project context
+- Enhanced role selection with knowledge integration
+- Maintains compatibility with existing Cortex AI workflows
+
+### 🔧 **Technical Improvements**
+
+**MCP Server Enhancements:**
+
+- Added Context7-compatible external knowledge integration (coordination mode)
+- Implemented unified knowledge search across multiple sources
+- Enhanced role selection algorithm with context awareness
+- Added dynamic rule system for adaptive behavior
+- Improved error handling and fallback mechanisms
+
+### 📚 **Documentation Updates**
+
+- Added comprehensive Memory Bank integration documentation
+- Updated tool descriptions and usage guidelines
+- Enhanced system architecture documentation
+- Added performance and accuracy improvement metrics
+
 ## [0.8.3] - 2025-09-04
 
 ### 🛡️ **Security Enhancement**
