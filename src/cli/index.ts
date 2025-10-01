@@ -42,4 +42,10 @@ program
 
 addMCPCommands(program);
 
+// Handle unknown commands
+program.on('command:*', () => {
+  console.error('error: unknown command');
+  process.exit(1);
+});
+
 program.parse();
