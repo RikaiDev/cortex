@@ -214,18 +214,23 @@ perform_release() {
         print_status $BLUE "📝 No changes to commit, skipping..."
     fi
 
-    # 8. Create git tag
-    print_status $BLUE "🏷️  Creating git tag..."
-    git tag "v$target_version"
-
-    # 9. Push to remote
-    print_status $BLUE "📤 Pushing to remote..."
-    git push origin main
-    git push origin "v$target_version"
-
-    # 10. Publish to npm
+    # 8. Publish to npm (this should succeed before creating tags)
     print_status $BLUE "📦 Publishing to npm..."
-    npm publish
+    if npm publish; then
+        print_status $GREEN "✅ Successfully published to npm"
+
+        # 9. Create git tag (only after successful publish)
+        print_status $BLUE "🏷️  Creating git tag..."
+        git tag "v$target_version"
+
+        # 10. Push to remote
+        print_status $BLUE "📤 Pushing to remote..."
+        git push origin main
+        git push origin "v$target_version"
+    else
+        print_status $RED "❌ npm publish failed, aborting release"
+        exit 1
+    fi
     
     print_status $GREEN "🎉 Release v$target_version completed successfully!"
 }
