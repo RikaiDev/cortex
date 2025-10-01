@@ -1,25 +1,4 @@
 {
-  "$schema": "https://unpkg.com/knip@latest/schema.json",
-  "entry": [
-    "src/cli/index.ts",
-    "src/core/mcp/server.ts",
-    "src/core/mcp/enhanced-server.ts",
-    "scripts/mcp-server.js",
-    "examples/integrated-multi-role-demo.js",
-    "test/enhanced-mcp-server-integration.test.ts"
-  ],
-  "project": [
-    "src/**/*.ts",
-    "scripts/**/*.js",
-    "examples/**/*.js",
-    "test/**/*.ts"
-  ],
-  "ignore": [
-    "cortex/**/*",
-    "dist/**/*",
-    "node_modules/**/*"
-  ],
-  "ignoreDependencies": [],
-  "ignoreExportsUsedInFile": true,
-  "ignoreBinaries": []
+  "entry": ["src/cli/index.ts", "src/core/mcp/server.ts", "scripts/mcp-server.js"],
+  "project": ["src/**/*.ts", "scripts/**/*.js", "test/**/*.ts"]
 }

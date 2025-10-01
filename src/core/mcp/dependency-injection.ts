@@ -144,54 +144,6 @@ export class DIContainer {
 }
 
 /**
- * Service decorator for automatic registration
- */
-export function Service(
-  name: string,
-  options: { singleton?: boolean; dependencies?: string[] } = {}
-) {
-  return function <T extends { new (...args: unknown[]): object }>(
-    constructor: T
-  ): T {
-    const definition: ServiceDefinition = {
-      name,
-      factory: (container) => {
-        const dependencies =
-          options.dependencies?.map((dep) => container.get(dep)) || [];
-        return new constructor(...dependencies);
-      },
-      singleton: options.singleton ?? true,
-      dependencies: options.dependencies,
-    };
-
-    // Store definition for later registration
-    (constructor as unknown as Record<string, unknown>).__serviceDefinition =
-      definition;
-
-    return constructor;
-  };
-}
-
-/**
- * Inject decorator for dependency injection
- */
-export function Inject(serviceName: string) {
-  return function (
-    target: Record<string, unknown>,
-    propertyKey: string | symbol | undefined,
-    parameterIndex: number
-  ): void {
-    // Store injection metadata
-    if (!(target as Record<string, unknown>).__injections) {
-      (target as Record<string, unknown>).__injections = [];
-    }
-    ((target as Record<string, unknown>).__injections as unknown[])[
-      parameterIndex
-    ] = serviceName;
-  };
-}
-
-/**
  * Service factory for common MCP services
  */
 export class MCPServiceFactory {

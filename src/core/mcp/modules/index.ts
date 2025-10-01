@@ -18,8 +18,6 @@ export {
   DIContainer,
   ServiceDefinition,
   ServiceInstance,
-  Service,
-  Inject,
   MCPServiceFactory,
   ServiceLocator,
 } from "../dependency-injection.js";

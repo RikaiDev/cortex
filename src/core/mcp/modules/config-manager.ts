@@ -34,6 +34,7 @@ export interface ConfigSchema {
     enableFileLogging?: boolean;
     logFile?: string;
   };
+  [key: string]: unknown;
 }
 
 export interface ConfigManagerConfig {
@@ -120,11 +121,16 @@ export class ConfigManager {
    */
   getValue<T>(path: string): T | undefined {
     const keys = path.split(".");
-    let current: any = this.config;
+    let current: unknown = this.config;
 
     for (const key of keys) {
-      if (current && typeof current === "object" && key in current) {
-        current = current[key];
+      if (
+        current &&
+        typeof current === "object" &&
+        current !== null &&
+        key in current
+      ) {
+        current = (current as Record<string, unknown>)[key];
       } else {
         return undefined;
       }
@@ -136,17 +142,20 @@ export class ConfigManager {
   /**
    * Set a specific configuration value
    */
-  setValue(path: string, value: any): void {
+  setValue(path: string, value: unknown): void {
     const keys = path.split(".");
     const lastKey = keys.pop()!;
-    let current: any = this.config;
+    let current: Record<string, unknown> = this.config as unknown as Record<
+      string,
+      unknown
+    >;
 
     // Navigate to the parent object
     for (const key of keys) {
       if (!current[key] || typeof current[key] !== "object") {
         current[key] = {};
       }
-      current = current[key];
+      current = current[key] as Record<string, unknown>;
     }
 
     current[lastKey] = value;
@@ -243,7 +252,7 @@ export class ConfigManager {
   /**
    * Merge configuration with defaults
    */
-  private mergeWithDefaults(userConfig: any): ConfigSchema {
+  private mergeWithDefaults(userConfig: unknown): ConfigSchema {
     const defaults = this.getDefaultConfig();
     return this.deepMerge(defaults, userConfig);
   }
@@ -251,18 +260,20 @@ export class ConfigManager {
   /**
    * Deep merge objects
    */
-  private deepMerge(target: any, source: any): any {
-    const result = { ...target };
+  private deepMerge(target: unknown, source: unknown): ConfigSchema {
+    const targetObj = target as ConfigSchema;
+    const sourceObj = source as ConfigSchema;
+    const result = { ...targetObj };
 
-    for (const key in source) {
+    for (const key in sourceObj) {
       if (
-        source[key] &&
-        typeof source[key] === "object" &&
-        !Array.isArray(source[key])
+        sourceObj[key] &&
+        typeof sourceObj[key] === "object" &&
+        !Array.isArray(sourceObj[key])
       ) {
-        result[key] = this.deepMerge(target[key] || {}, source[key]);
+        result[key] = this.deepMerge(targetObj[key] || {}, sourceObj[key]);
       } else {
-        result[key] = source[key];
+        result[key] = sourceObj[key];
       }
     }
 

@@ -76,7 +76,6 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@secretlint/secretlint-rule-preset-recommend": "^11.2.4",
     "@types/chai": "^5.2.2",
     "@types/fs-extra": "^11.0.0",
     "@types/mocha": "^10.0.10",

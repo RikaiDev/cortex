@@ -16,7 +16,7 @@ export interface ConfigLayer {
   name: string;
   priority: number; // Higher number = higher priority
   source: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   loaded: boolean;
   lastModified?: Date;
 }
@@ -34,7 +34,7 @@ export class LayeredConfigManager {
   private layers: Map<string, ConfigLayer> = new Map();
   private logger: Logger;
   private options: LayeredConfigOptions;
-  private mergedConfig: Record<string, any> = {};
+  private mergedConfig: Record<string, unknown> = {};
   private configWatchers: Map<string, fs.FSWatcher> = new Map();
 
   constructor(logger: Logger, options: LayeredConfigOptions = {}) {
@@ -55,7 +55,7 @@ export class LayeredConfigManager {
   /**
    * Load all configuration layers
    */
-  async loadAllLayers(): Promise<Record<string, any>> {
+  async loadAllLayers(): Promise<Record<string, unknown>> {
     try {
       // Load layers in priority order (lowest to highest)
       const sortedLayers = Array.from(this.layers.values()).sort(
@@ -80,7 +80,7 @@ export class LayeredConfigManager {
   /**
    * Get merged configuration
    */
-  getConfig(): Record<string, any> {
+  getConfig(): Record<string, unknown> {
     return { ...this.mergedConfig };
   }
 
@@ -89,11 +89,16 @@ export class LayeredConfigManager {
    */
   getValue<T>(path: string): T | undefined {
     const keys = path.split(".");
-    let current: any = this.mergedConfig;
+    let current: unknown = this.mergedConfig;
 
     for (const key of keys) {
-      if (current && typeof current === "object" && key in current) {
-        current = current[key];
+      if (
+        current &&
+        typeof current === "object" &&
+        current !== null &&
+        key in current
+      ) {
+        current = (current as Record<string, unknown>)[key];
       } else {
         return undefined;
       }
@@ -105,17 +110,20 @@ export class LayeredConfigManager {
   /**
    * Set configuration value with dot notation
    */
-  setValue(path: string, value: any): void {
+  setValue(path: string, value: unknown): void {
     const keys = path.split(".");
     const lastKey = keys.pop()!;
-    let current: any = this.mergedConfig;
+    let current: Record<string, unknown> = this.mergedConfig as Record<
+      string,
+      unknown
+    >;
 
     // Navigate to the parent object
     for (const key of keys) {
       if (!current[key] || typeof current[key] !== "object") {
         current[key] = {};
       }
-      current = current[key];
+      current = current[key] as Record<string, unknown>;
     }
 
     current[lastKey] = value;
@@ -125,7 +133,7 @@ export class LayeredConfigManager {
   /**
    * Override configuration at runtime
    */
-  setRuntimeOverride(path: string, value: any): void {
+  setRuntimeOverride(path: string, value: unknown): void {
     if (!this.options.enableRuntimeOverrides) {
       throw new Error("Runtime overrides are disabled");
     }
@@ -330,8 +338,8 @@ export class LayeredConfigManager {
   /**
    * Load environment variables
    */
-  private loadEnvironmentVariables(): Record<string, any> {
-    const envConfig: Record<string, any> = {};
+  private loadEnvironmentVariables(): Record<string, unknown> {
+    const envConfig: Record<string, unknown> = {};
 
     // Look for CORTEX_ prefixed environment variables
     for (const [key, value] of Object.entries(process.env)) {
@@ -350,7 +358,7 @@ export class LayeredConfigManager {
   /**
    * Parse environment variable value
    */
-  private parseEnvironmentValue(value: string | undefined): any {
+  private parseEnvironmentValue(value: string | undefined): unknown {
     if (!value) return undefined;
 
     // Try to parse as JSON
@@ -365,12 +373,12 @@ export class LayeredConfigManager {
   /**
    * Merge all configuration layers
    */
-  private mergeLayers(): Record<string, any> {
+  private mergeLayers(): Record<string, unknown> {
     const sortedLayers = Array.from(this.layers.values())
       .filter((layer) => layer.loaded)
       .sort((a, b) => a.priority - b.priority);
 
-    let merged: Record<string, any> = {};
+    let merged: Record<string, unknown> = {};
 
     for (const layer of sortedLayers) {
       merged = this.deepMerge(merged, layer.config);
@@ -382,18 +390,20 @@ export class LayeredConfigManager {
   /**
    * Deep merge objects
    */
-  private deepMerge(target: any, source: any): any {
-    const result = { ...target };
+  private deepMerge(target: unknown, source: unknown): Record<string, unknown> {
+    const targetObj = target as Record<string, unknown>;
+    const sourceObj = source as Record<string, unknown>;
+    const result = { ...targetObj };
 
-    for (const key in source) {
+    for (const key in sourceObj) {
       if (
-        source[key] &&
-        typeof source[key] === "object" &&
-        !Array.isArray(source[key])
+        sourceObj[key] &&
+        typeof sourceObj[key] === "object" &&
+        !Array.isArray(sourceObj[key])
       ) {
-        result[key] = this.deepMerge(target[key] || {}, source[key]);
+        result[key] = this.deepMerge(targetObj[key] || {}, sourceObj[key]);
       } else {
-        result[key] = source[key];
+        result[key] = sourceObj[key];
       }
     }
 
@@ -403,16 +413,20 @@ export class LayeredConfigManager {
   /**
    * Set nested value using dot notation
    */
-  private setNestedValue(obj: any, path: string, value: any): void {
+  private setNestedValue(
+    obj: Record<string, unknown>,
+    path: string,
+    value: unknown
+  ): void {
     const keys = path.split(".");
     const lastKey = keys.pop()!;
-    let current = obj;
+    let current: Record<string, unknown> = obj;
 
     for (const key of keys) {
       if (!current[key] || typeof current[key] !== "object") {
         current[key] = {};
       }
-      current = current[key];
+      current = current[key] as Record<string, unknown>;
     }
 
     current[lastKey] = value;
@@ -453,7 +467,7 @@ export class LayeredConfigManager {
   /**
    * Get default configuration
    */
-  private getDefaultConfiguration(): Record<string, any> {
+  private getDefaultConfiguration(): Record<string, unknown> {
     return {
       server: {
         port: 3000,
