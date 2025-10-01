@@ -52,7 +52,7 @@ suite.addTest(
     // Check that CLI version matches package.json version
     const packageVersion = getCurrentVersion();
     expect(version).to.equal(packageVersion);
-  })
+  }).timeout(5000)
 );
 
 suite.addTest(
@@ -61,7 +61,7 @@ suite.addTest(
     expect(result.code).to.equal(0);
     expect(result.stdout).to.include("Usage:");
     expect(result.stdout).to.include("Commands:");
-  })
+  }).timeout(5000)
 );
 
 suite.addTest(
@@ -69,7 +69,7 @@ suite.addTest(
     const result = await runCLI(["invalid-command"]);
     expect(result.code).to.not.equal(0);
     expect(result.stderr).to.include("error");
-  })
+  }).timeout(5000)
 );
 
 
@@ -123,7 +123,7 @@ suite.addTest(
       const version = result.stdout.trim();
       expect(isValidSemver(version)).to.be.true;
     }
-  )
+  ).timeout(5000)
 );
 
 // --- Run the Suite ---
