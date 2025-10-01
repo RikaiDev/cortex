@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "cortex": "src/cli/index.ts",
+    "cortex": "dist/cli/index.js",
     "cortex-mcp": "scripts/mcp-server.js"
   },
   "scripts": {
@@ -14,7 +14,7 @@
     "mcp:dev": "node scripts/mcp-server.js --dev",
     "mcp:init": "node --loader tsx/esm src/cli/index.ts mcp init",
     "demo:multi-role": "node examples/integrated-multi-role-demo.js",
-    "build": "npm run release:deps && npm run lint && tsc",
+    "build": "npm run release:deps && npm run lint && npm run knip && tsc",
     "prepublishOnly": "npm run build && npm run test:all && node scripts/prepublish-check.cjs",
     "dev": "tsc --watch",
     "clean": "rm -rf .cortex",

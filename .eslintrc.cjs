@@ -21,7 +21,7 @@ module.exports = {
       },
     },
     {
-      files: ['examples/**/*.js'],
+      files: ['examples/**/*.js', 'scripts/**/*.js'],
       rules: {
         '@typescript-eslint/explicit-function-return-type': 'off',
       },

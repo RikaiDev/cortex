@@ -7,7 +7,7 @@
  * Usage: npx @rikaidev/cortex mcp
  */
 
-import { createCortexMCPServer } from '../src/core/mcp/server.js';
+import { createCortexMCPServer } from '../dist/core/mcp/server.js';
 
 async function main() {
   // Parse command line arguments
