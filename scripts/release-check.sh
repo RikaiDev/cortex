@@ -92,9 +92,9 @@ fi
 
 # 7. CLI Functionality Check
 print_status $BLUE "📋 Step 7: CLI Functionality Check"
-if ! node src/cli/index.ts --version > /dev/null 2>&1; then
+if ! node dist/cli/index.js --version > /dev/null 2>&1; then
     print_status $RED "❌ CLI version command failed"
-    node src/cli/index.ts --version
+    node dist/cli/index.js --version
     exit 1
 fi
 print_status $GREEN "✅ CLI functionality check passed"
@@ -118,7 +118,7 @@ required_files=(
     "package.json"
     "README.md"
     "CHANGELOG.md"
-    "src/cli/index.ts"
+    "dist/cli/index.js"
     "scripts/mcp-server.js"
 )
 
