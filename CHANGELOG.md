@@ -2,7 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.9.6] - 2025-10-01
+## [0.9.7] - 2025-10-01
+
+### 🔧 **Bug Fixes**
+
+**TypeScript Import Path Resolution:**
+- Fixed TypeScript import path issues for ES modules
+- Updated tsconfig.json to use NodeNext module resolution
+- Corrected CLI script execution to use compiled files
+- Resolved module resolution conflicts between development and production builds
 
 ### 🚀 **Major Architecture Enhancement**
 
