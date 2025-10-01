@@ -39,7 +39,8 @@
     "release:minor": "node scripts/protect-release.cjs && ./scripts/release.sh minor",
     "release:major": "node scripts/protect-release.cjs && ./scripts/release.sh major",
     "release:unpublish": "./scripts/release.sh unpublish",
-    "unpublish:version": "echo \"Usage: npm unpublish @rikaidev/cortex@VERSION\""
+    "unpublish:version": "echo \"Usage: npm unpublish @rikaidev/cortex@VERSION\"",
+    "cleanup:old-versions": "./scripts/cleanup-old-versions.sh"
   },
   "keywords": [
     "ai",
