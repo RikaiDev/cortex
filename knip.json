@@ -3,8 +3,10 @@
   "entry": [
     "src/cli/index.ts",
     "src/core/mcp/server.ts",
+    "src/core/mcp/enhanced-server.ts",
     "scripts/mcp-server.js",
-    "examples/integrated-multi-role-demo.js"
+    "examples/integrated-multi-role-demo.js",
+    "test/enhanced-mcp-server-integration.test.ts"
   ],
   "project": [
     "src/**/*.ts",
@@ -19,8 +21,5 @@
   ],
   "ignoreDependencies": [],
   "ignoreExportsUsedInFile": true,
-  "ignoreBinaries": [
-    "cortex",
-    "cortex-mcp"
-  ]
+  "ignoreBinaries": []
 }

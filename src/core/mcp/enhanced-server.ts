@@ -31,13 +31,9 @@ import {
 
 // Import new modular components
 import { ToolManager } from "./modules/tool-manager.js";
-import {
-  SessionManager,
-} from "./modules/session-manager.js";
+import { SessionManager } from "./modules/session-manager.js";
 import { ConfigManager } from "./modules/config-manager.js";
-import {
-  PerformanceMonitor,
-} from "./modules/performance-monitor.js";
+import { PerformanceMonitor } from "./modules/performance-monitor.js";
 import {
   Logger,
   MCPServerConfig,
@@ -240,7 +236,10 @@ export class EnhancedCortexMCPServer {
           required: ["query"],
         },
         execute: async (args, context): Promise<ToolExecutionResult> => {
-          return await this.handleEnhanceContext(args as { query: string; maxItems?: number; timeRange?: number }, context);
+          return await this.handleEnhanceContext(
+            args as { query: string; maxItems?: number; timeRange?: number },
+            context
+          );
         },
       },
       {
@@ -280,7 +279,15 @@ export class EnhancedCortexMCPServer {
           required: ["input", "output"],
         },
         execute: async (args, context): Promise<ToolExecutionResult> => {
-          return await this.handleRecordExperience(args as { input: string; output: string; category?: string; tags?: string[] }, context);
+          return await this.handleRecordExperience(
+            args as {
+              input: string;
+              output: string;
+              category?: string;
+              tags?: string[];
+            },
+            context
+          );
         },
       },
       {
@@ -306,7 +313,10 @@ export class EnhancedCortexMCPServer {
           required: ["title", "description"],
         },
         execute: async (args, context): Promise<ToolExecutionResult> => {
-          return await this.handleCreateWorkflow(args as { issueId?: string; title: string; description: string }, context);
+          return await this.handleCreateWorkflow(
+            args as { issueId?: string; title: string; description: string },
+            context
+          );
         },
       },
       {
@@ -323,7 +333,10 @@ export class EnhancedCortexMCPServer {
           required: ["workflowId"],
         },
         execute: async (args, context): Promise<ToolExecutionResult> => {
-          return await this.handleExecuteWorkflowRole(args as { workflowId: string }, context);
+          return await this.handleExecuteWorkflowRole(
+            args as { workflowId: string },
+            context
+          );
         },
       },
     ];
@@ -400,7 +413,8 @@ export class EnhancedCortexMCPServer {
         const context: ToolExecutionContext = {
           sessionId: this.generateSessionId(),
           projectRoot: this.cortex
-            ? (this.cortex as unknown as Record<string, unknown>).projectRoot as string
+            ? ((this.cortex as unknown as Record<string, unknown>)
+                .projectRoot as string)
             : undefined,
           metadata: {
             requestId: this.generateRequestId(),
@@ -484,13 +498,16 @@ export class EnhancedCortexMCPServer {
       );
 
       // Log the context enhancement request with session info
-      this.logger.info(`Context enhancement requested for session ${context.sessionId}`, {
-        query,
-        maxItems,
-        timeRange,
-        selectedMaster: selectedMaster.name,
-        requestId: context.metadata?.requestId,
-      });
+      this.logger.info(
+        `Context enhancement requested for session ${context.sessionId}`,
+        {
+          query,
+          maxItems,
+          timeRange,
+          selectedMaster: selectedMaster.name,
+          requestId: context.metadata?.requestId,
+        }
+      );
 
       // Use Cortex core to find relevant experiences
       const relevantExperiences = await this.cortex.findRelevantExperiences(
@@ -719,11 +736,14 @@ The workflow has been initialized and is ready for execution. Use the \`execute-
       const execution = await this.cortex.executeNextRole(workflowId);
 
       // Log the workflow execution with context
-      this.logger.info(`Workflow role executed for session ${context.sessionId}`, {
-        workflowId,
-        roleId: execution.roleId,
-        requestId: context.metadata?.requestId,
-      });
+      this.logger.info(
+        `Workflow role executed for session ${context.sessionId}`,
+        {
+          workflowId,
+          roleId: execution.roleId,
+          requestId: context.metadata?.requestId,
+        }
+      );
 
       // Get updated workflow state
       const workflowState = await this.cortex.getWorkflowState(workflowId);
@@ -864,7 +884,9 @@ Continue with the next role or check the updated handoff.md file for progress de
       const packageJson = JSON.parse(readFileSync(packagePath, "utf-8"));
       return packageJson.version;
     } catch (error) {
-      this.logger.error("Failed to read package.json version:", { error: error instanceof Error ? error.message : String(error) });
+      this.logger.error("Failed to read package.json version:", {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return "0.0.0";
     }
   }
