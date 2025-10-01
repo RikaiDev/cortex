@@ -4,7 +4,7 @@ import { Command } from "commander";
 import fs from "fs-extra";
 import path from "path";
 import { fileURLToPath } from "url";
-import { addMCPCommands } from "./mcp-commands";
+import { addMCPCommands } from "./mcp-commands.js";
 
 const program = new Command();
 
