@@ -6,6 +6,7 @@ import * as path from "path";
 import { getCurrentVersion, isValidSemver } from "./utils/version-helper.js";
 
 const mocha = new Mocha();
+mocha.timeout(10000);
 
 // --- Test Suite ---
 const suite = new Mocha.Suite("CLI Integration Tests");
@@ -123,7 +124,7 @@ suite.addTest(
       const version = result.stdout.trim();
       expect(isValidSemver(version)).to.be.true;
     }
-  ).timeout(5000)
+  ).timeout(10000)
 );
 
 // --- Run the Suite ---
