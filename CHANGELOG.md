@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.3] - 2025-10-01
+
+### 🔧 **Bug Fixes & Test Improvements**
+
+- **Test Stability**: Fixed CLI integration test timeouts by setting global Mocha timeout to 10 seconds
+- **Build Configuration**: Corrected TypeScript build output directory from `./cortex` to `./dist`
+- **Package Configuration**: Updated package.json bin paths to use compiled JavaScript files
+- **ESLint Configuration**: Excluded `scripts/**/*.js` files from TypeScript ESLint rules
+- **MCP Server Paths**: Fixed import paths in MCP server script to use `dist/` instead of `src/`
+
+### 🚀 **Enhanced Package Distribution**
+
+- **Proper Compilation**: Ensures TypeScript files are properly compiled to JavaScript for npm distribution
+- **CLI Functionality**: Fixed CLI commands to work correctly after global installation
+- **Path Resolution**: Corrected all import paths to reference compiled files in `dist/` directory
+
 ## [0.9.0] - 2025-10-01
 
 ### 🚀 **Major Architecture Enhancement**
