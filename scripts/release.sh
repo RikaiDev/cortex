@@ -150,17 +150,38 @@ pre_release_checks() {
 perform_release() {
     local version_type=$1
     local current_version=$(get_current_version)
-    local target_version=$(get_next_version $version_type)
-    
+
     print_status $BLUE "🚀 Starting release process..."
     print_status $BLUE "Current version: $current_version"
-    print_status $BLUE "Target version: $target_version"
-    
-    # 1. Validate version consistency
-    print_status $BLUE "🔍 Validating version consistency..."
-    validate_version_consistency $target_version
-    
-    # 2. Update version (only if not current)
+
+    # 1. Determine target version
+    local target_version
+    if [ "$version_type" = "current" ]; then
+        target_version=$current_version
+        print_status $BLUE "📦 Releasing current version: $target_version"
+    else
+        target_version=$(get_next_version $version_type)
+        print_status $BLUE "Target version: $target_version"
+
+        # Validate version consistency
+        print_status $BLUE "🔍 Validating version consistency..."
+        validate_version_consistency $target_version
+    fi
+
+    # 2. Check remote version
+    print_status $BLUE "🔍 Checking remote version..."
+    local remote_version=$(npm view "@rikaidev/cortex@$target_version" version 2>/dev/null || echo "none")
+
+    if [ "$remote_version" != "none" ]; then
+        print_status $RED "❌ Version $target_version is already published on npm"
+        print_status $YELLOW "💡 Remote version: $remote_version"
+        print_status $YELLOW "💡 Local version: $target_version"
+        exit 1
+    fi
+
+    print_status $GREEN "✅ Remote version check passed"
+
+    # 3. Update version (only if not current)
     if [ "$version_type" != "current" ]; then
         print_status $BLUE "📦 Updating version to $target_version..."
         npm version $version_type --no-git-tag-version
@@ -168,37 +189,37 @@ perform_release() {
         print_status $BLUE "📦 Releasing current version: $target_version"
     fi
     
-    # 3. Check CHANGELOG exists
+    # 4. Check CHANGELOG exists
     print_status $BLUE "📝 Checking CHANGELOG..."
     if ! check_changelog_exists $target_version; then
         exit 1
     fi
-    
-    # 4. Check version differences
+
+    # 5. Check version differences
     print_status $BLUE "🔍 Checking version differences..."
     if ! check_version_differences $target_version; then
         print_status $YELLOW "⚠️  Version check failed, but continuing..."
     fi
-    
-    # 3. Build project
+
+    # 6. Build project
     print_status $BLUE "🔨 Building project..."
     npm run build
-    
-    # 4. Commit changes
+
+    # 7. Commit changes
     print_status $BLUE "📝 Committing changes..."
     git add .
     git commit -m "feat: release v$target_version"
-    
-    # 5. Create git tag
+
+    # 8. Create git tag
     print_status $BLUE "🏷️  Creating git tag..."
     git tag "v$target_version"
 
-    # 6. Push to remote
+    # 9. Push to remote
     print_status $BLUE "📤 Pushing to remote..."
     git push origin main
     git push origin "v$target_version"
 
-    # 7. Publish to npm
+    # 10. Publish to npm
     print_status $BLUE "📦 Publishing to npm..."
     npm publish
     
