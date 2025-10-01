@@ -14,7 +14,7 @@
     "mcp:dev": "node scripts/mcp-server.js --dev",
     "mcp:init": "node dist/cli/index.js mcp init",
     "demo:multi-role": "node examples/integrated-multi-role-demo.js",
-    "build": "npm run release:deps && npm run lint && npm run knip && tsc",
+    "build": "node scripts/dependency-check.js && npm run lint && npm run knip && tsc",
     "prepublishOnly": "npm run build && npm run test:all && node scripts/prepublish-check.cjs",
     "dev": "tsc --watch",
     "clean": "rm -rf .cortex",
