@@ -239,4 +239,8 @@ if [ "$1" != "--auto" ]; then
     fi
 fi
 
-print_status $GREEN "Proceeding with release..." 
+print_status $GREEN "Proceeding with release..."
+
+# Create release check completion marker
+touch "$(dirname "$0")/../.release-check-passed"
+print_status $GREEN "✅ Release check marker created" 

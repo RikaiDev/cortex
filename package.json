@@ -37,9 +37,9 @@
     "release:deps": "node scripts/dependency-check.js",
     "release:dry-run": "./scripts/release.sh --dry-run",
     "release:current": "./scripts/release.sh current",
-    "release:patch": "./scripts/release.sh patch",
-    "release:minor": "./scripts/release.sh minor",
-    "release:major": "./scripts/release.sh major",
+    "release:patch": "node scripts/protect-release.cjs && ./scripts/release.sh patch",
+    "release:minor": "node scripts/protect-release.cjs && ./scripts/release.sh minor",
+    "release:major": "node scripts/protect-release.cjs && ./scripts/release.sh major",
     "release:unpublish": "./scripts/release.sh unpublish",
     "unpublish:version": "echo \"Usage: npm unpublish @rikaidev/cortex@VERSION\""
   },

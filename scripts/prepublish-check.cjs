@@ -109,21 +109,42 @@ try {
     success(`Version ${currentVersion} is not yet published`);
   }
 
-  // 5. Final gate
+  // 5. Check if release check was completed
+  info('\n5. Checking release check status...');
+  const releaseCheckFile = path.join(projectRoot, '.release-check-passed');
+  if (!fs.existsSync(releaseCheckFile)) {
+    error('Release check not completed!');
+    error('You must run: npm run release:check');
+    error('This ensures the release follows the proper workflow.');
+    hasErrors = true;
+  } else {
+    const checkTime = fs.statSync(releaseCheckFile).mtime;
+    const now = new Date();
+    const hoursDiff = (now.getTime() - checkTime.getTime()) / (1000 * 60 * 60);
+
+    if (hoursDiff > 1) {
+      warning('Release check was completed more than 1 hour ago');
+      warning('Consider running: npm run release:check');
+    } else {
+      success('Release check passed recently');
+    }
+  }
+
+  // 6. Final gate
   console.log('\n' + '='.repeat(60));
 
   if (hasErrors) {
     error('🚫 PUBLISH BLOCKED!');
     error('Fix the above issues before publishing.');
-    console.log('\n💡 Quick fixes:');
-    console.log('  • Commit all changes: git add . && git commit -m "..."');
-    console.log('  • Push to remote: git push origin main');
-    console.log('  • Update CHANGELOG: edit CHANGELOG.md');
-    console.log('  • Bump version: npm version patch');
+    console.log('\n💡 Required workflow:');
+    console.log('  • Run release check: npm run release:check');
+    console.log('  • Follow the release process strictly');
+    console.log('  • Never use "npm version" directly');
+    console.log('  • Always use release scripts for version bumps');
     process.exit(1);
   } else {
     success('🎉 ALL CHECKS PASSED!');
-    success('Ready for npm publish with ZERO inconsistency!');
+    success('Release follows proper workflow!');
     console.log('\n🚀 You can now safely run: npm publish');
   }
 

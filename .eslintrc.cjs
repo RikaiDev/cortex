@@ -21,9 +21,10 @@ module.exports = {
       },
     },
     {
-      files: ['examples/**/*.js', 'scripts/**/*.js'],
+      files: ['examples/**/*.js', 'scripts/**/*.js', 'scripts/**/*.cjs'],
       rules: {
         '@typescript-eslint/explicit-function-return-type': 'off',
+        '@typescript-eslint/no-var-requires': 'off',
       },
     },
   ],
