@@ -4,6 +4,8 @@
  * This module provides CLI commands for testing and using the MCP system.
  */
 
+import fs from "fs-extra";
+import path from "path";
 import chalk from "chalk";
 import { Command } from "commander";
 
@@ -42,6 +44,19 @@ export function addMCPCommands(program: Command): void {
     .action(async (options) => {
       const projectPath = options.projectPath || process.cwd();
       await regenerateRules(projectPath);
+    });
+
+  // Initialize workspace command
+  mcpGroup
+    .command("init")
+    .description("Initialize Cortex workspace structure")
+    .option(
+      "-p, --project-path <path>",
+      "Project path (default: current directory)"
+    )
+    .action(async (options) => {
+      const projectPath = options.projectPath || process.cwd();
+      await initializeCortexWorkspace(projectPath);
     });
 
   // Start MCP server command
@@ -128,12 +143,23 @@ async function executeMCPTool(
     const { createCortexMCPServer } = await import("../core/mcp/server.js");
 
     const projectPath = process.cwd();
-    const server = createCortexMCPServer(projectPath);
+    const server = createCortexMCPServer({ projectRoot: projectPath });
 
     // Simple CLI testing - direct method call
     let result;
     if (toolName === "enhance-context") {
-      result = await server.handleEnhanceContext(
+      result = await (
+        server as unknown as {
+          handleEnhanceContext: (args: {
+            query: string;
+            maxItems?: number;
+            timeRange?: number;
+          }) => Promise<{
+            content: Array<{ type: string; text: string }>;
+            isError?: boolean;
+          }>;
+        }
+      ).handleEnhanceContext(
         input as {
           query: string;
           maxItems?: number;
@@ -279,7 +305,7 @@ async function startMCPServer(projectRoot: string): Promise<void> {
     // Import and start the MCP server
     const { createCortexMCPServer } = await import("../core/mcp/server.js");
 
-    const server = createCortexMCPServer(resolvedProjectRoot);
+    const server = createCortexMCPServer({ projectRoot: resolvedProjectRoot });
 
     console.log(chalk.green("✅ MCP server started successfully!"));
     console.log(chalk.gray("Server is running and ready for connections"));
@@ -299,6 +325,78 @@ async function startMCPServer(projectRoot: string): Promise<void> {
     });
   } catch (error) {
     console.error(chalk.red("❌ Failed to start MCP server:"), error);
+    process.exit(1);
+  }
+}
+
+/**
+ * Initialize Cortex workspace structure
+ */
+async function initializeCortexWorkspace(projectPath: string): Promise<void> {
+  console.log(chalk.blue("🏗️  Initializing Cortex workspace..."));
+  console.log(chalk.gray(`Project path: ${projectPath}`));
+  console.log();
+
+  try {
+    // Create .cortex directory structure
+    const cortexDir = path.join(projectPath, ".cortex");
+    const workflowsDir = path.join(cortexDir, "workflows");
+    const workspacesDir = path.join(cortexDir, "workspaces");
+    const rolesDir = path.join(cortexDir, "roles");
+    const templatesRolesDir = path.join(projectPath, "templates", "roles");
+
+    // Create directories
+    await fs.ensureDir(cortexDir);
+    await fs.ensureDir(workflowsDir);
+    await fs.ensureDir(workspacesDir);
+    await fs.ensureDir(rolesDir);
+
+    // Copy role templates to .cortex/roles if they don't exist
+    if (await fs.pathExists(templatesRolesDir)) {
+      const roleFiles = await fs.readdir(templatesRolesDir);
+      for (const file of roleFiles) {
+        if (file.endsWith(".md")) {
+          const sourcePath = path.join(templatesRolesDir, file);
+          const destPath = path.join(rolesDir, file);
+          if (!(await fs.pathExists(destPath))) {
+            await fs.copy(sourcePath, destPath);
+            console.log(chalk.green(`  ✅ Copied role: ${file}`));
+          }
+        }
+      }
+    }
+
+    // Create .cortexrc configuration file
+    const cortexConfig = {
+      version: "1.0.0",
+      initialized: new Date().toISOString(),
+      projectRoot: projectPath,
+      structure: {
+        workflows: ".cortex/workflows",
+        workspaces: ".cortex/workspaces",
+        roles: ".cortex/roles",
+      },
+    };
+
+    const configPath = path.join(cortexDir, ".cortexrc");
+    await fs.writeJson(configPath, cortexConfig, { spaces: 2 });
+
+    console.log();
+    console.log(chalk.green("✅ Cortex workspace initialized successfully!"));
+    console.log();
+    console.log(chalk.cyan("📁 Created structure:"));
+    console.log(`  ${cortexDir}/`);
+    console.log(`  ├── .cortexrc          # Configuration file`);
+    console.log(`  ├── workflows/         # Workflow state files`);
+    console.log(`  ├── workspaces/        # Individual workspace folders`);
+    console.log(`  └── roles/             # Role definitions`);
+    console.log();
+    console.log(chalk.yellow("💡 Next steps:"));
+    console.log("  1. Run 'cortex mcp start' to start the MCP server");
+    console.log("  2. Use MCP tools to create and manage workflows");
+    console.log("  3. Each workflow will have its own workspace folder");
+  } catch (error) {
+    console.error(chalk.red("❌ Failed to initialize workspace:"), error);
     process.exit(1);
   }
 }

@@ -38,8 +38,8 @@ curl -fsSL https://github.com/RikaiDev/cortex/releases/latest/download/cortex-cl
 # 導航到你的專案
 cd your-project
 
-# 初始化 Cortex
-cortex init
+# 初始化 Cortex 工作區（使用新的 MCP 方法）
+cortex mcp init
 
 # 生成 IDE 配置
 cortex generate-ide
@@ -126,9 +126,11 @@ AI 遵循 6 步思考流程：
 
 ## 🔧 可用命令
 
+### 基本命令
+
 ```bash
-# 在專案中初始化 Cortex
-cortex init
+# 初始化 Cortex 工作區（推薦）
+cortex mcp init
 
 # 生成 IDE 配置
 cortex generate-ide
@@ -138,6 +140,22 @@ cortex start
 
 # 顯示版本
 cortex version
+```
+
+### MCP 命令（多角色模式）
+
+```bash
+# 初始化 MCP 工作區結構
+cortex mcp init
+
+# 啟動 MCP 伺服器進行工作流程管理
+cortex mcp start
+
+# 列出可用的 MCP 工具
+cortex mcp tools
+
+# 運行工作流程演示
+node examples/integrated-multi-role-demo.js
 ```
 
 ## 🎯 **為什麼這樣有效**

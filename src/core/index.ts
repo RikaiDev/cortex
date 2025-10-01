@@ -22,6 +22,319 @@ import fs from "fs-extra";
 import path from "path";
 import crypto from "crypto";
 
+// Multi-Role Pattern workflow integration types and interfaces
+export enum WorkflowStatus {
+  PENDING = "pending",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  BLOCKED = "blocked",
+}
+
+// Import workflow types from workflow-integration
+import type {
+  WorkflowState,
+  WorkflowExecution,
+} from "./workflow-integration.js";
+
+// Multi-Role Pattern workflow integration
+// Uses existing role definitions from .cortex/roles/ directory
+// Adds workflow state management and handoff mechanisms directly in CortexCore
+
+/**
+ * Role Database - Manages available AI collaboration roles
+ */
+export class RoleDatabase {
+  private roles: Map<string, RoleDefinition> = new Map();
+  private projectRoot: string;
+
+  constructor(projectRoot: string) {
+    this.projectRoot = projectRoot;
+  }
+
+  /**
+   * Load all available roles from templates directory
+   */
+  async loadRoles(): Promise<void> {
+    const rolesDir = path.join(this.projectRoot, "templates", "roles");
+
+    try {
+      if (!(await fs.pathExists(rolesDir))) {
+        console.warn("Roles directory not found:", rolesDir);
+        return;
+      }
+
+      const files = await fs.readdir(rolesDir);
+      const mdFiles = files.filter((file) => file.endsWith(".md"));
+
+      for (const file of mdFiles) {
+        const roleId = file.replace(".md", "");
+        const roleDefinition = await this.parseRoleDefinition(
+          path.join(rolesDir, file),
+          roleId
+        );
+
+        if (roleDefinition) {
+          this.roles.set(roleId, roleDefinition);
+        }
+      }
+
+      console.log(`Loaded ${this.roles.size} roles from ${rolesDir}`);
+    } catch (error) {
+      console.error("Error loading roles:", error);
+    }
+  }
+
+  /**
+   * Parse role definition from markdown file
+   */
+  private async parseRoleDefinition(
+    filePath: string,
+    roleId: string
+  ): Promise<RoleDefinition | null> {
+    try {
+      const content = await fs.readFile(filePath, "utf-8");
+
+      // Extract role information from markdown content
+      const name =
+        this.extractSection(content, "## Description") ||
+        this.extractSection(content, "# ") ||
+        roleId;
+
+      const specialty = this.extractSpecialty(content);
+      const description = this.extractDescription(content);
+      const keywords = this.extractKeywords(content);
+      const systemPrompt = this.extractSystemPrompt(content);
+
+      return {
+        id: roleId,
+        name,
+        specialty,
+        description,
+        keywords,
+        systemPrompt,
+        source: "templates/roles",
+      };
+    } catch (error) {
+      console.error(`Error parsing role definition for ${roleId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Extract section content from markdown
+   */
+  private extractSection(content: string, sectionHeader: string): string {
+    const lines = content.split("\n");
+    let inSection = false;
+    let sectionContent = "";
+
+    for (const line of lines) {
+      if (line.startsWith(sectionHeader)) {
+        inSection = true;
+        continue;
+      }
+
+      if (inSection) {
+        if (line.startsWith("#") && !line.startsWith("##")) {
+          break; // Next major section
+        }
+
+        if (line.trim()) {
+          sectionContent += line.trim() + " ";
+        }
+      }
+    }
+
+    return sectionContent.trim();
+  }
+
+  /**
+   * Extract specialty from role content
+   */
+  private extractSpecialty(content: string): string {
+    const specialtyPatterns = [
+      /specialty.*?:?\s*([^.\n]*)/i,
+      /expertise.*?:?\s*([^.\n]*)/i,
+      /focus.*?:?\s*([^.\n]*)/i,
+    ];
+
+    for (const pattern of specialtyPatterns) {
+      const match = content.match(pattern);
+      if (match && match[1]) {
+        return match[1].trim();
+      }
+    }
+
+    return "General Purpose";
+  }
+
+  /**
+   * Extract description from role content
+   */
+  private extractDescription(content: string): string {
+    // Try to get the first meaningful paragraph after the title
+    const lines = content.split("\n");
+    let description = "";
+
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (
+        line &&
+        !line.startsWith("#") &&
+        !line.startsWith("=") &&
+        line.length > 20
+      ) {
+        description = line;
+        break;
+      }
+    }
+
+    return description || "Specialized AI collaboration role";
+  }
+
+  /**
+   * Extract keywords from role content
+   */
+  private extractKeywords(content: string): string[] {
+    const keywords: string[] = [];
+
+    // Look for explicit keywords sections
+    const keywordsSection =
+      this.extractSection(content, "## Skills") ||
+      this.extractSection(content, "## Capabilities") ||
+      this.extractSection(content, "## Keywords");
+
+    if (keywordsSection) {
+      const skillLines = keywordsSection.split(/[,\n]/);
+      for (const skill of skillLines) {
+        const trimmed = skill.trim();
+        if (trimmed && trimmed.length > 2) {
+          keywords.push(trimmed.toLowerCase());
+        }
+      }
+    }
+
+    // Extract from capabilities list items
+    const capabilityMatches = content.match(/-\s*([^-\n]*)/g);
+    if (capabilityMatches) {
+      for (const match of capabilityMatches.slice(0, 10)) {
+        // Limit to first 10
+        const capability = match.replace(/-\s*/, "").trim().toLowerCase();
+        if (capability && capability.length > 2) {
+          keywords.push(capability);
+        }
+      }
+    }
+
+    // Remove duplicates and return
+    return [...new Set(keywords)];
+  }
+
+  /**
+   * Extract system prompt from role content
+   */
+  private extractSystemPrompt(content: string): string {
+    // Look for the role's core philosophy or description as system prompt
+    const philosophy = this.extractSection(content, "## Core Philosophy");
+    if (philosophy) {
+      return `You are ${this.extractDescription(content)}. ${philosophy}`;
+    }
+
+    const description = this.extractDescription(content);
+    return `You are ${description}. Follow the principles and best practices defined for this role.`;
+  }
+
+  /**
+   * Get all available roles
+   */
+  getAllRoles(): RoleDefinition[] {
+    return Array.from(this.roles.values());
+  }
+
+  /**
+   * Find best matching role for a query
+   */
+  findBestRole(query: string): RoleDefinition | null {
+    const queryLower = query.toLowerCase();
+    const queryWords = queryLower
+      .split(/\s+/)
+      .filter((word) => word.length > 2);
+
+    let bestMatch: RoleDefinition | null = null;
+    let highestScore = 0;
+
+    for (const role of this.roles.values()) {
+      const score = this.calculateRoleScore(role, queryWords);
+
+      if (score > highestScore) {
+        highestScore = score;
+        bestMatch = role;
+      }
+    }
+
+    // Only return a role if it has a reasonable score (> 0.1)
+    return highestScore > 0.1 ? bestMatch : null;
+  }
+
+  /**
+   * Calculate relevance score for a role against query terms
+   */
+  private calculateRoleScore(
+    role: RoleDefinition,
+    queryWords: string[]
+  ): number {
+    let score = 0;
+
+    // Check role name and specialty matches
+    const roleText =
+      `${role.name} ${role.specialty} ${role.description}`.toLowerCase();
+
+    for (const word of queryWords) {
+      // Exact matches get higher scores
+      if (roleText.includes(word)) {
+        score += 2;
+      }
+
+      // Partial matches get lower scores
+      if (
+        role.keywords.some(
+          (keyword) => keyword.includes(word) || word.includes(keyword)
+        )
+      ) {
+        score += 1;
+      }
+    }
+
+    // Bonus for multiple keyword matches in description
+    const descriptionMatches = queryWords.filter((word) =>
+      role.description.toLowerCase().includes(word)
+    ).length;
+
+    score += descriptionMatches * 0.5;
+
+    // Normalize score by role's keyword count to avoid bias toward roles with many keywords
+    if (role.keywords.length > 0) {
+      score = score / Math.sqrt(role.keywords.length);
+    }
+
+    return score;
+  }
+}
+
+/**
+ * Role definition interface
+ */
+export interface RoleDefinition {
+  id: string;
+  name: string;
+  specialty: string;
+  description: string;
+  keywords: string[];
+  systemPrompt: string;
+  source: string;
+}
+
 /**
  * Unified Knowledge Manager - Integrates all knowledge sources
  */
@@ -474,10 +787,19 @@ export interface Experience {
 export class CortexCore {
   private projectRoot: string;
   private experiencesDir: string;
+  private roleDatabase: RoleDatabase;
 
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
     this.experiencesDir = path.join(projectRoot, ".cortex", "experiences");
+    this.roleDatabase = new RoleDatabase(projectRoot);
+  }
+
+  /**
+   * Initialize the Cortex Core with role database
+   */
+  async initialize(): Promise<void> {
+    await this.roleDatabase.loadRoles();
   }
 
   async findRelevantExperiences(
@@ -547,5 +869,130 @@ export class CortexCore {
       console.error("Error recording experience:", error);
       throw error;
     }
+  }
+
+  /**
+   * Create a new Multi-Role workflow
+   */
+  async createWorkflow(
+    issueId: string,
+    title: string,
+    description: string
+  ): Promise<WorkflowState> {
+    const { WorkflowManager } = await import("./workflow-integration.js");
+    const workflowManager = new WorkflowManager(this, this.projectRoot);
+    return await workflowManager.createWorkflow(issueId, title, description);
+  }
+
+  /**
+   * Execute the next role in a workflow
+   */
+  async executeNextRole(workflowId: string): Promise<WorkflowExecution> {
+    const { WorkflowManager } = await import("./workflow-integration.js");
+    const workflowManager = new WorkflowManager(this, this.projectRoot);
+    return await workflowManager.executeWorkflowStep(workflowId);
+  }
+
+  /**
+   * Get workflow state
+   */
+  async getWorkflowState(workflowId: string): Promise<WorkflowState | null> {
+    const { WorkflowManager } = await import("./workflow-integration.js");
+    const workflowManager = new WorkflowManager(this, this.projectRoot);
+    return await workflowManager.getWorkflowState(workflowId);
+  }
+
+  /**
+   * Select appropriate Cortex Master role based on query analysis
+   */
+  async selectCortexMaster(query?: string): Promise<{
+    id: string;
+    name: string;
+    specialty: string;
+    description: string;
+    keywords: string[];
+    systemPrompt: string;
+  }> {
+    // Ensure role database is loaded
+    if (this.roleDatabase.getAllRoles().length === 0) {
+      await this.roleDatabase.loadRoles();
+    }
+
+    // Find the best matching role for the query
+    const bestRole = query ? this.roleDatabase.findBestRole(query) : null;
+
+    if (bestRole) {
+      return {
+        id: bestRole.id,
+        name: bestRole.name,
+        specialty: bestRole.specialty,
+        description: bestRole.description,
+        keywords: bestRole.keywords,
+        systemPrompt: bestRole.systemPrompt,
+      };
+    }
+
+    // Fallback to a default role if no specific match found
+    const defaultRole = this.roleDatabase
+      .getAllRoles()
+      .find((role) => role.id === "code-assistant");
+
+    if (defaultRole) {
+      return {
+        id: defaultRole.id,
+        name: defaultRole.name,
+        specialty: defaultRole.specialty,
+        description: defaultRole.description,
+        keywords: defaultRole.keywords,
+        systemPrompt: defaultRole.systemPrompt,
+      };
+    }
+
+    // Ultimate fallback if no roles are available
+    return {
+      id: "general-assistant",
+      name: "General Assistant",
+      specialty: "General Purpose AI",
+      description: "General purpose AI assistant for various tasks",
+      keywords: ["general", "assistant", "help", "support"],
+      systemPrompt:
+        "You are a helpful AI assistant ready to assist with various tasks and questions.",
+    };
+  }
+
+  /**
+   * Get available roles for debugging/testing purposes
+   */
+  async getAvailableRoles(): Promise<RoleDefinition[]> {
+    if (this.roleDatabase.getAllRoles().length === 0) {
+      await this.roleDatabase.loadRoles();
+    }
+    return this.roleDatabase.getAllRoles();
+  }
+
+  /**
+   * Enhance context with relevant experiences
+   */
+  async enhanceContext(
+    query: string,
+    maxItems: number = 5,
+    timeRange: number = 30
+  ): Promise<string> {
+    const experiences = await this.findRelevantExperiences(
+      query,
+      maxItems,
+      timeRange
+    );
+
+    if (experiences.length === 0) {
+      return "No relevant historical experiences found.";
+    }
+
+    return experiences
+      .map(
+        (exp) =>
+          `**Problem:** ${exp.input}\n**Solution:** ${exp.output}\n**Category:** ${exp.category}`
+      )
+      .join("\n\n");
   }
 }

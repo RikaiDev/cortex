@@ -33,7 +33,7 @@ To create consistent, personalized, and continuously improving AI collaboration 
 
 ### 🏗️ **Architecture**
 
-```
+```text
 🧠 Brain Layer (AI Platform Integration)
 ├── MDC (Cursor) - Integrated editor rules
 ├── CLAUDE - Anthropic Claude system prompts
@@ -151,38 +151,109 @@ sequenceDiagram
 ### **Installation**
 
 ```bash
-# Global installation
-npm install -g @rikaidev/cortex
+# Direct execution via npx (recommended)
+npx @rikaidev/cortex@latest
 
-# Or using npx
-npx @rikaidev/cortex
+# Or global installation
+npm install -g @rikaidev/cortex
+```
+
+> **Note**: Using `@rikaidev/cortex@latest` ensures you always get the latest version without manual updates.
+
+### **MCP Client Configuration**
+
+Add the following config to your MCP client:
+
+```json
+{
+  "mcpServers": {
+    "cortex-ai": {
+      "command": "npx",
+      "args": ["-y", "@rikaidev/cortex@latest"]
+    }
+  }
+}
+```
+
+#### **Supported MCP Clients**
+
+#### Claude Code
+
+```bash
+claude mcp add cortex-ai npx @rikaidev/cortex@latest
+```
+
+#### Cursor
+
+- Go to `Cursor Settings` → `MCP` → `New MCP Server`
+- Use the config provided above
+
+#### VS Code
+
+```bash
+code --add-mcp '{"name":"cortex-ai","command":"npx","args":["@rikaidev/cortex@latest"]}'
+```
+
+#### Copilot CLI
+
+```bash
+copilot
+/mcp add
+# Server name: cortex-ai
+# Command: npx
+# Arguments: -y, @rikaidev/cortex@latest
 ```
 
 ### **Initialize Project**
 
 ```bash
-# Initialize Cortex AI in your project
-cortex init
-
 # Generate IDE configurations
-cortex generate-ide
+npx @rikaidev/cortex@latest generate-ide
+```
+
+### **Initialize MCP Workspace** (Recommended)
+
+For the latest Multi-Role Pattern workflow features:
+
+```bash
+# Initialize Cortex MCP workspace structure
+npx @rikaidev/cortex@latest mcp init
+
+# Start MCP server for workflow management
+npx @rikaidev/cortex@latest mcp start
+
+# Run workflow demo to see Multi-Role Pattern in action
+node examples/integrated-multi-role-demo.js
+```
+
+The new MCP approach creates isolated workspaces for each workflow:
+
+```text
+.cortex/
+├── .cortexrc              # Configuration file
+├── workflows/             # Workflow state files
+├── workspaces/            # Individual workspace folders (hash-based)
+│   └── abc12345/          # Unique workspace for each workflow
+│       ├── handoff.md     # Role handoff documentation
+│       └── pr.md          # Pull request description
+└── roles/                 # Role definitions
 ```
 
 ### **Start Learning**
 
 ```bash
 # Start AI collaboration
-cortex start
+npx @rikaidev/cortex@latest start
 
 # Show version
-cortex version
+npx @rikaidev/cortex@latest version
 ```
 
 ## 🎯 **How It Works**
 
 ### **1. Learning from Conversation**
 
-```
+```text
 User: "Comments are in Chinese again?"
 AI: [Learns] Write all comments in English
 User: "we use uv run pytest"
@@ -193,7 +264,7 @@ AI: [Learns] Don't repeat the same mistake
 
 ### **2. Structured Thinking**
 
-```
+```text
 🔍 ANALYSIS PHASE: [Problem understanding]
 📚 KNOWLEDGE INTEGRATION: [Apply learned preferences]
 💡 SOLUTION DEVELOPMENT: [Consider user preferences]

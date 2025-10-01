@@ -174,7 +174,7 @@ All notable changes to this project will be documented in this file.
 
 ### 📦 **Migration**
 
-1. Run `cortex init` to regenerate configuration files
+1. Run `cortex mcp init` to initialize workspace
 2. Update custom MCP tool implementations to use new simplified interface
 3. Review and convert any remaining Chinese language content to English
 

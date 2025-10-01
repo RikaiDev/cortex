@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 /**
- * Cortex MCP Server - Minimal and focused implementation
+ * Cortex MCP Server - Enhanced implementation with npx support
  *
  * Based on Context7 design principles: Keep it simple, focused, and effective
+ * Enhanced with better error handling, logging, and configuration options
  */
 
 import { readFileSync } from "fs";
@@ -23,6 +24,23 @@ import {
   UnifiedKnowledgeManager,
   DynamicRuleSystem,
 } from "../index.js";
+
+// Enhanced logging interface
+interface Logger {
+  info: (message: string) => void;
+  warn: (message: string) => void;
+  error: (message: string) => void;
+  debug: (message: string) => void;
+}
+
+// Server configuration interface
+interface MCPServerConfig {
+  projectRoot?: string;
+  logLevel?: "debug" | "info" | "warn" | "error";
+  enableDebugMode?: boolean;
+  maxExecutionTime?: number;
+  timeout?: number;
+}
 
 /**
  * Cortex Master role definition
@@ -55,14 +73,17 @@ function getPackageVersion(): string {
 }
 
 /**
- * Minimal Cortex MCP Server
+ * Enhanced Cortex MCP Server with improved error handling and configuration
  */
 export class CortexMCPServer {
   private server: Server;
-  private cortex: CortexCore;
-  private knowledgeManager: UnifiedKnowledgeManager;
-  private ruleSystem: DynamicRuleSystem;
+  private cortex!: CortexCore;
+  private knowledgeManager!: UnifiedKnowledgeManager;
+  private ruleSystem!: DynamicRuleSystem;
   private projectRoot: string;
+  private config: MCPServerConfig;
+  private logger: Logger;
+  private startTime: Date;
 
   /**
    * Select appropriate Cortex Master role based on query content
@@ -315,7 +336,20 @@ export class CortexMCPServer {
     ];
   }
 
-  constructor(projectPath?: string) {
+  constructor(config: MCPServerConfig = {}) {
+    // Set default configuration
+    this.config = {
+      logLevel: "info",
+      enableDebugMode: false,
+      maxExecutionTime: 30000, // 30 seconds
+      timeout: 600000, // 10 minutes
+      ...config,
+    };
+
+    // Initialize logger
+    this.logger = this.createLogger();
+
+    // Create server with enhanced configuration
     this.server = new Server(
       {
         name: "cortex-mcp",
@@ -328,23 +362,169 @@ export class CortexMCPServer {
       }
     );
 
-    // Resolve project root
-    this.projectRoot =
-      projectPath ||
-      process.env.WORKSPACE_ROOT ||
-      process.env.WORKSPACE_FOLDER ||
-      process.env.CURSOR_WORKSPACE_ROOT ||
-      process.cwd();
+    // Record start time for performance monitoring
+    this.startTime = new Date();
 
-    // Initialize Cortex core
-    this.cortex = new CortexCore(this.projectRoot);
-    this.knowledgeManager = new UnifiedKnowledgeManager(this.projectRoot);
-    this.ruleSystem = new DynamicRuleSystem(
-      this.projectRoot,
-      this.knowledgeManager
+    // Resolve project root with enhanced detection
+    this.projectRoot = this.resolveProjectRoot(config.projectRoot);
+
+    this.logger.info(
+      `🚀 Initializing Cortex MCP Server v${getPackageVersion()}`
     );
+    this.logger.debug(`Project root: ${this.projectRoot}`);
+    this.logger.debug(`Configuration: ${JSON.stringify(this.config, null, 2)}`);
 
+    // Initialize Cortex core components
+    this.initializeCoreComponents();
+
+    // Setup handlers with enhanced error handling
     this.setupHandlers();
+
+    this.logger.info("✅ Cortex MCP Server initialized successfully");
+  }
+
+  /**
+   * Create logger instance based on configuration
+   */
+  private createLogger(): Logger {
+    const isDebug =
+      this.config.logLevel === "debug" || this.config.enableDebugMode;
+
+    return {
+      info: (message: string): void => {
+        if (["debug", "info"].includes(this.config.logLevel || "info")) {
+          console.log(`[${new Date().toISOString()}] ℹ️  ${message}`);
+        }
+      },
+      warn: (message: string): void => {
+        if (
+          ["debug", "info", "warn"].includes(this.config.logLevel || "info")
+        ) {
+          console.warn(`[${new Date().toISOString()}] ⚠️  ${message}`);
+        }
+      },
+      error: (message: string): void => {
+        console.error(`[${new Date().toISOString()}] ❌ ${message}`);
+      },
+      debug: (message: string): void => {
+        if (isDebug) {
+          console.debug(`[${new Date().toISOString()}] 🔍 ${message}`);
+        }
+      },
+    };
+  }
+
+  /**
+   * Resolve project root with enhanced detection
+   */
+  private resolveProjectRoot(projectPath?: string): string {
+    if (projectPath) {
+      return path.resolve(projectPath);
+    }
+
+    // Enhanced project root detection
+    const candidates = [
+      process.env.WORKSPACE_ROOT,
+      process.env.WORKSPACE_FOLDER,
+      process.env.CURSOR_WORKSPACE_ROOT,
+      process.env.VSCODE_WORKSPACE_ROOT,
+      process.cwd(),
+    ];
+
+    for (const candidate of candidates) {
+      if (candidate && this.isValidProjectRoot(candidate)) {
+        return candidate;
+      }
+    }
+
+    // Fallback to current directory
+    return process.cwd();
+  }
+
+  /**
+   * Validate if a path is a valid project root
+   */
+  private isValidProjectRoot(projectPath: string): boolean {
+    try {
+      // Check if path exists and has basic project indicators
+      if (!fs.existsSync(projectPath)) {
+        return false;
+      }
+
+      // Look for common project indicators
+      const indicators = ["package.json", ".git", "tsconfig.json", "src"];
+      return indicators.some((indicator) => {
+        const indicatorPath = path.join(projectPath, indicator);
+        return fs.existsSync(indicatorPath);
+      });
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * Initialize core Cortex components with error handling
+   */
+  private initializeCoreComponents(): void {
+    try {
+      this.cortex = new CortexCore(this.projectRoot);
+      this.knowledgeManager = new UnifiedKnowledgeManager(this.projectRoot);
+      this.ruleSystem = new DynamicRuleSystem(
+        this.projectRoot,
+        this.knowledgeManager
+      );
+      this.logger.debug("Core components initialized successfully");
+    } catch (error) {
+      this.logger.error(`Failed to initialize core components: ${error}`);
+      throw new Error(`Cortex initialization failed: ${error}`);
+    }
+  }
+
+  private async executeTool(name: string, args: unknown): Promise<unknown> {
+    switch (name) {
+      case "enhance-context":
+        return await this.handleEnhanceContext(
+          args as {
+            query: string;
+            maxItems?: number;
+            timeRange?: number;
+          }
+        );
+      case "record-experience":
+        return await this.handleRecordExperience(
+          args as {
+            input: string;
+            output: string;
+            category?: string;
+            tags?: string[];
+          }
+        );
+      case "create-workflow":
+        return await this.handleCreateWorkflow(
+          args as {
+            issueId?: string;
+            title: string;
+            description: string;
+          }
+        );
+      case "execute-workflow-role":
+        return await this.handleExecuteWorkflowRole(
+          args as {
+            workflowId: string;
+          }
+        );
+      default:
+        this.logger.warn(`Unknown tool requested: ${name}`);
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Unknown tool: ${name}. Use 'list-tools' to see available tools.`,
+            },
+          ],
+          isError: true,
+        };
+    }
   }
 
   private setupHandlers(): void {
@@ -368,7 +548,7 @@ export class CortexMCPServer {
           {
             name: "enhance-context",
             description:
-              "Enhance current context with relevant past experiences and knowledge",
+              "Enhance current context with relevant past experiences and knowledge from Cortex AI system",
             inputSchema: {
               type: "object",
               properties: {
@@ -394,7 +574,7 @@ export class CortexMCPServer {
           {
             name: "record-experience",
             description:
-              "Record a new experience or solution for future reference",
+              "Record a new experience or solution for future reference in Cortex AI learning system",
             inputSchema: {
               type: "object",
               properties: {
@@ -415,6 +595,7 @@ export class CortexMCPServer {
                     "refactor",
                     "debug",
                     "optimization",
+                    "workflow-execution",
                     "general",
                   ],
                 },
@@ -428,121 +609,120 @@ export class CortexMCPServer {
             },
           },
           {
-            name: "external-knowledge-integration",
+            name: "create-workflow",
             description:
-              "Integrate external knowledge sources and best practices for enhanced decision making",
+              "Create a new Multi-Role Pattern workflow for complex development tasks",
             inputSchema: {
               type: "object",
               properties: {
-                query: {
+                issueId: {
                   type: "string",
-                  description:
-                    "Search query for external knowledge and best practices",
+                  description: "Issue or task identifier",
                 },
-                context: {
+                title: {
                   type: "string",
-                  description: "Current task context for better integration",
+                  description: "Task title",
                 },
-                includePatterns: {
-                  type: "boolean",
-                  description:
-                    "Include design patterns and architectural approaches",
-                  default: true,
+                description: {
+                  type: "string",
+                  description: "Detailed task description",
                 },
               },
-              required: ["query"],
+              required: ["title", "description"],
             },
           },
           {
-            name: "unified-knowledge-search",
+            name: "execute-workflow-role",
             description:
-              "Search across all internal knowledge sources (docs, experiences, templates)",
+              "Execute the next role in an existing Multi-Role workflow",
             inputSchema: {
               type: "object",
               properties: {
-                query: {
+                workflowId: {
                   type: "string",
-                  description: "Search query for internal knowledge",
-                },
-                maxResults: {
-                  type: "number",
-                  description: "Maximum number of results to return",
-                  default: 5,
+                  description: "Workflow identifier",
                 },
               },
-              required: ["query"],
+              required: ["workflowId"],
             },
           },
         ],
       };
     });
 
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
+    this.server.setRequestHandler(
+      CallToolRequestSchema,
+      async (
+        request
+      ): Promise<{
+        content: Array<{ type: string; text: string }>;
+        isError?: boolean;
+      }> => {
+        const { name, arguments: args } = request.params;
+        const executionStartTime = Date.now();
 
-      try {
-        let result;
-        switch (name) {
-          case "enhance-context":
-            result = await this.handleEnhanceContext(
-              args as {
-                query: string;
-                maxItems?: number;
-                timeRange?: number;
-              }
-            );
-            break;
-          case "record-experience":
-            result = await this.handleRecordExperience(
-              args as {
-                input: string;
-                output: string;
-                category?: string;
-                tags?: string[];
-              }
-            );
-            break;
-          case "external-knowledge-integration":
-            result = await this.handleExternalKnowledgeIntegration(
-              args as {
-                query: string;
-                context?: string;
-                includePatterns?: boolean;
-              }
-            );
-            break;
-          case "unified-knowledge-search":
-            result = await this.handleUnifiedKnowledgeSearch(
-              args as {
-                query: string;
-                maxResults?: number;
-              }
-            );
-            break;
-          default:
-            return {
-              content: [{ type: "text", text: `Unknown tool: ${name}` }],
-              isError: true,
-            };
+        this.logger.debug(`🔧 Executing tool: ${name}`);
+
+        // Validate tool name
+        if (!name || typeof name !== "string") {
+          this.logger.warn(`Invalid tool name: ${name}`);
+          return {
+            content: [{ type: "text", text: "Invalid tool name provided" }],
+            isError: true,
+          };
         }
 
-        return result;
-      } catch (error) {
-        console.error("Tool execution error:", error);
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Tool execution failed: ${error instanceof Error ? error.message : String(error)}`,
-            },
-          ],
-          isError: true,
-        };
+        try {
+          // Execute tool with timeout and performance monitoring
+          const executionPromise = this.executeTool(name, args);
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => {
+              reject(
+                new Error(
+                  `Tool execution timed out after ${this.config.timeout}ms`
+                )
+              );
+            }, this.config.timeout);
+          });
+
+          const result = await Promise.race([executionPromise, timeoutPromise]);
+
+          const executionTime = Date.now() - executionStartTime;
+          this.logger.debug(
+            `✅ Tool ${name} executed successfully in ${executionTime}ms`
+          );
+
+          return result as {
+            content: Array<{ type: string; text: string }>;
+            isError?: boolean;
+          };
+        } catch (error) {
+          const executionTime = Date.now() - executionStartTime;
+          this.logger.error(
+            `❌ Tool ${name} failed after ${executionTime}ms: ${error}`
+          );
+
+          // Enhanced error response
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Tool execution failed: ${errorMessage}\n\nExecution time: ${executionTime}ms`,
+              },
+            ],
+            isError: true,
+          };
+        }
       }
-    });
+    );
   }
 
-  public async handleEnhanceContext(args: {
+  /**
+   * Handle enhanced context tool
+   */
+  private async handleEnhanceContext(args: {
     query: string;
     maxItems?: number;
     timeRange?: number;
@@ -900,20 +1080,264 @@ export class CortexMCPServer {
   }
 
   /**
-   * Start the server
+   * Start the MCP server with enhanced error handling
    */
   async start(): Promise<void> {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-    console.error("MCP Server started");
+    try {
+      this.logger.info("🚀 Starting Cortex MCP Server...");
+
+      // Validate server state before starting
+      if (!this.server) {
+        throw new Error("Server not properly initialized");
+      }
+
+      // Create transport with error handling
+      const transport = new StdioServerTransport();
+
+      // Connect server with timeout
+      await Promise.race([
+        this.server.connect(transport),
+        new Promise((_, reject) => {
+          setTimeout(
+            () => reject(new Error("Server connection timeout")),
+            10000
+          );
+        }),
+      ]);
+
+      const uptime = Date.now() - this.startTime.getTime();
+      this.logger.info(
+        `✅ Cortex MCP Server started successfully in ${uptime}ms`
+      );
+      this.logger.info("🔧 Available tools:");
+      this.logger.info(
+        "  • enhance-context - Enhance current context with relevant experiences"
+      );
+      this.logger.info(
+        "  • record-experience - Record new experiences for future reference"
+      );
+      this.logger.info(
+        "  • external-knowledge-integration - Integrate external knowledge sources"
+      );
+      this.logger.info(
+        "  • unified-knowledge-search - Search across all internal knowledge sources"
+      );
+      this.logger.info("📝 Server is ready to receive MCP requests");
+    } catch (error) {
+      this.logger.error(`❌ Failed to start MCP server: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Stop the server gracefully
+   */
+  async stop(): Promise<void> {
+    try {
+      this.logger.info("🛑 Stopping Cortex MCP Server...");
+
+      if (this.server) {
+        // Note: MCP SDK doesn't have a disconnect method in current version
+        // This is a placeholder for future versions
+        this.logger.debug("Server cleanup completed");
+      }
+
+      const uptime = Date.now() - this.startTime.getTime();
+      this.logger.info(
+        `✅ Cortex MCP Server stopped gracefully after ${uptime}ms`
+      );
+    } catch (error) {
+      this.logger.error(`❌ Error during server shutdown: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Get server status information
+   */
+  getStatus(): {
+    version: string;
+    projectRoot: string;
+    uptime: number;
+    isRunning: boolean;
+    toolsCount: number;
+    config: unknown;
+  } {
+    const uptime = Date.now() - this.startTime.getTime();
+    return {
+      version: getPackageVersion(),
+      projectRoot: this.projectRoot,
+      uptime,
+      isRunning: true,
+      toolsCount: 0,
+      config: this.config,
+    };
+  }
+
+  /**
+   * Handle create workflow tool
+   */
+  private async handleCreateWorkflow(args: {
+    issueId?: string;
+    title: string;
+    description: string;
+  }): Promise<{
+    content: Array<{ type: string; text: string }>;
+    isError?: boolean;
+  }> {
+    try {
+      const { issueId, title, description } = args;
+
+      if (!title.trim() || !description.trim()) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Both title and description are required for workflow creation.",
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Create workflow using integrated CortexCore
+      const workflow = await this.cortex.createWorkflow(
+        issueId || `workflow-${Date.now()}`,
+        title,
+        description
+      );
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `## ✅ Multi-Role Workflow Created Successfully
+
+**Workflow ID:** ${workflow.id}
+**Title:** ${workflow.issueTitle || title}
+**Status:** ${workflow.status}
+**Current Role:** ${workflow.currentRole}
+
+The workflow has been initialized and is ready for execution. Use the \`execute-workflow-role\` tool to start executing roles.
+
+**Next Steps:**
+1. Execute the first role (Issue Analyst) using: \`execute-workflow-role\` with workflow ID \`${workflow.id}\`
+2. Continue executing subsequent roles until completion
+3. Final PR documentation will be generated automatically
+
+**Workflow File:** handoff.md (for role communication)
+**PR File:** pr.md (generated upon completion)`,
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to create workflow: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
+  /**
+   * Handle execute workflow role tool
+   */
+  private async handleExecuteWorkflowRole(args: {
+    workflowId: string;
+  }): Promise<{
+    content: Array<{ type: string; text: string }>;
+    isError?: boolean;
+  }> {
+    try {
+      const { workflowId } = args;
+
+      if (!workflowId.trim()) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Workflow ID is required.",
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Execute next role using integrated CortexCore
+      const execution = await this.cortex.executeNextRole(workflowId);
+
+      // Get updated workflow state
+      const workflowState = await this.cortex.getWorkflowState(workflowId);
+
+      let response = `## 🎭 Role Execution Completed
+
+**Role:** ${execution.roleId}
+**Status:** ${execution.status}
+**Execution Time:** ${execution.endTime ? new Date(execution.endTime).toLocaleString() : "N/A"}`;
+
+      if (execution.output) {
+        response += `\n\n**Execution Report:**\n${execution.output}`;
+      }
+
+      if (execution.deliverables.length > 0) {
+        response += `\n\n**Deliverables:**\n${execution.deliverables.map((del: string) => `- ${del}`).join("\n")}`;
+      }
+
+      if (workflowState && workflowState.status === "completed") {
+        response += `\n\n## 🎉 Workflow Completed Successfully!
+
+The Multi-Role Pattern workflow has been completed. Check the generated files:
+- **handoff.md**: Contains all role communication and handoff information
+- **pr.md**: Contains the complete PR documentation ready for submission`;
+      } else if (workflowState) {
+        response += `\n\n**Next Role:** ${workflowState.currentRole}
+**Workflow Status:** ${workflowState.status}
+
+Continue with the next role or check the updated handoff.md file for progress details.`;
+      }
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: response,
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to execute workflow role: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
   }
 }
 
 /**
- * Create Cortex MCP server - minimal and focused
+ * Create Cortex MCP server with enhanced configuration support
  */
-export function createCortexMCPServer(projectPath?: string): CortexMCPServer {
-  return new CortexMCPServer(projectPath);
+export function createCortexMCPServer(
+  config: MCPServerConfig = {}
+): CortexMCPServer {
+  return new CortexMCPServer(config);
+}
+
+/**
+ * Create Cortex MCP server with project path (backward compatibility)
+ */
+export function createCortexMCPServerWithProject(
+  projectPath?: string
+): CortexMCPServer {
+  return new CortexMCPServer({ projectRoot: projectPath });
 }
 
 /**

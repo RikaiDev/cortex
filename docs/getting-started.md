@@ -38,8 +38,8 @@ curl -fsSL https://github.com/RikaiDev/cortex/releases/latest/download/cortex-cl
 # Navigate to your project
 cd your-project
 
-# Initialize Cortex
-cortex init
+# Initialize Cortex workspace (use the new MCP approach)
+cortex mcp init
 
 # Generate IDE configurations
 cortex generate-ide
@@ -126,9 +126,11 @@ The AI follows a 6-step thinking process:
 
 ## 🔧 Available Commands
 
+### Basic Commands
+
 ```bash
-# Initialize Cortex in your project
-cortex init
+# Initialize Cortex workspace (recommended)
+cortex mcp init
 
 # Generate IDE configurations
 cortex generate-ide
@@ -138,6 +140,22 @@ cortex start
 
 # Show version
 cortex version
+```
+
+### MCP Commands (Multi-Role Pattern)
+
+```bash
+# Initialize MCP workspace structure
+cortex mcp init
+
+# Start MCP server for workflow management
+cortex mcp start
+
+# List available MCP tools
+cortex mcp tools
+
+# Run workflow demo
+node examples/integrated-multi-role-demo.js
 ```
 
 ## 🎯 **Why This Works**

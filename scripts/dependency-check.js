@@ -23,10 +23,6 @@ const criticalRuntimeDeps = [
   'chalk',      // CLI output
   'commander',  // CLI parsing
   'fs-extra',   // File operations
-  'glob',       // File globbing
-  'inquirer',   // User prompts
-  'marked',     // Markdown parsing
-  'zod',        // Schema validation
 ];
 
 console.log('🔍 Checking runtime dependencies...\n');

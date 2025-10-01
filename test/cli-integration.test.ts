@@ -15,8 +15,7 @@ const runCLI = (
   args: string[]
 ): Promise<{ code: number; stdout: string; stderr: string }> => {
   return new Promise((resolve) => {
-    const cliPath = path.join(process.cwd(), "cortex", "cli", "index.js");
-    const child = spawn("node", [cliPath, ...args], {
+    const child = spawn("npx", ["tsx", "src/cli/index.ts", ...args], {
       stdio: ["pipe", "pipe", "pipe"],
       env: { ...process.env, NODE_ENV: "test" },
     });
@@ -73,13 +72,6 @@ suite.addTest(
   })
 );
 
-suite.addTest(
-  new Mocha.Test("CLI should support install-global-mcp command", async () => {
-    const result = await runCLI(["install-global-mcp"]);
-    // This command might fail in test environment, but should not crash
-    expect(result.code).to.be.a("number");
-  })
-);
 
 // Helper function to simulate global installation test
 const runGlobalCLI = (

@@ -416,4 +416,3 @@ alwaysApply: true
 
 // Legacy alias for backward compatibility
 export class CursorAdapter extends TaskEnhancementCursorRulesGenerator {}
-export const SimpleCursorRulesGenerator = TaskEnhancementCursorRulesGenerator;

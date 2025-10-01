@@ -92,9 +92,9 @@ fi
 
 # 7. CLI Functionality Check
 print_status $BLUE "📋 Step 7: CLI Functionality Check"
-if ! node cortex/cli/index.js --version > /dev/null 2>&1; then
+if ! node src/cli/index.ts --version > /dev/null 2>&1; then
     print_status $RED "❌ CLI version command failed"
-    node cortex/cli/index.js --version
+    node src/cli/index.ts --version
     exit 1
 fi
 print_status $GREEN "✅ CLI functionality check passed"
@@ -118,8 +118,8 @@ required_files=(
     "package.json"
     "README.md"
     "CHANGELOG.md"
-    "cortex/cli/index.js"
-    "cortex/core/mcp/server.js"
+    "src/cli/index.ts"
+    "scripts/mcp-server.js"
 )
 
 for file in "${required_files[@]}"; do
