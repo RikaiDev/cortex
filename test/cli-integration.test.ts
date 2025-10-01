@@ -5,8 +5,9 @@ import { spawn } from "child_process";
 import * as path from "path";
 import { getCurrentVersion, isValidSemver } from "./utils/version-helper.js";
 
-const mocha = new Mocha();
-mocha.timeout(10000);
+const mocha = new Mocha({
+  timeout: 10000
+});
 
 // --- Test Suite ---
 const suite = new Mocha.Suite("CLI Integration Tests");
