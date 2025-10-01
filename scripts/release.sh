@@ -205,10 +205,14 @@ perform_release() {
     print_status $BLUE "🔨 Building project..."
     npm run build
 
-    # 7. Commit changes
-    print_status $BLUE "📝 Committing changes..."
-    git add .
-    git commit -m "feat: release v$target_version"
+    # 7. Commit changes (only if there are changes to commit)
+    if ! git diff --quiet || ! git diff --staged --quiet; then
+        print_status $BLUE "📝 Committing changes..."
+        git add .
+        git commit -m "feat: release v$target_version"
+    else
+        print_status $BLUE "📝 No changes to commit, skipping..."
+    fi
 
     # 8. Create git tag
     print_status $BLUE "🏷️  Creating git tag..."
