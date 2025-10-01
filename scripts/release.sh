@@ -221,12 +221,22 @@ perform_release() {
 
         # 9. Create git tag (only after successful publish)
         print_status $BLUE "🏷️  Creating git tag..."
+        # Remove existing tag if it exists (from previous failed runs)
+        if git tag -l | grep -q "^v$target_version$"; then
+            print_status $YELLOW "⚠️  Tag v$target_version already exists, removing..."
+            git tag -d "v$target_version"
+        fi
         git tag "v$target_version"
 
         # 10. Push to remote
         print_status $BLUE "📤 Pushing to remote..."
+        # Push main branch first
         git push origin main
-        git push origin "v$target_version"
+        # Push tag (force if necessary)
+        if ! git push origin "v$target_version"; then
+            print_status $YELLOW "⚠️  Remote tag push failed, trying force push..."
+            git push origin "v$target_version" --force
+        fi
     else
         print_status $RED "❌ npm publish failed, aborting release"
         exit 1
