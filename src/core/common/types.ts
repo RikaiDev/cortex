@@ -4,6 +4,7 @@
 
 /**
  * Role interface representing an AI collaboration role
+ * @public
  */
 export interface Role {
   name: string;
@@ -15,6 +16,7 @@ export interface Role {
 
 /**
  * Project knowledge interface for storing project-specific information
+ * @public
  */
 export interface ProjectKnowledge {
   patterns: string[];
@@ -88,11 +90,13 @@ export type ToolResultData =
 
 /**
  * Generic tool result for backward compatibility
+ * @public
  */
 export type AnyToolResult = ToolResult<ToolResultData>;
 
 /**
  * Thinking Step interface
+ * @public
  */
 export interface ThinkingStep {
   id: string;
@@ -104,6 +108,7 @@ export interface ThinkingStep {
 
 /**
  * Message Processor type
+ * @public
  */
 export type MessageProcessor = (
   message: string,

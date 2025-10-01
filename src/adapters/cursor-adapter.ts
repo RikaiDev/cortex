@@ -21,6 +21,7 @@ interface CortexMaster {
 
 /**
  * Task Enhancement Cursor Rules Generator
+ * @public
  */
 export class TaskEnhancementCursorRulesGenerator {
   private projectRoot: string;

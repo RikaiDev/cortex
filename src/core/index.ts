@@ -13,6 +13,7 @@ export {
 } from "./common/types.js";
 
 // MCP modules
+/** @public */
 export { CortexMCPServer, createCortexMCPServer } from "./mcp/server.js";
 
 // Project modules - simplified
@@ -23,6 +24,7 @@ import path from "path";
 import crypto from "crypto";
 
 // Multi-Role Pattern workflow integration types and interfaces
+/** @public */
 export enum WorkflowStatus {
   PENDING = "pending",
   IN_PROGRESS = "in_progress",

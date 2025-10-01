@@ -2,6 +2,71 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.0] - 2025-10-01
+
+### 🚀 **Major Architecture Enhancement**
+
+**Enhanced MCP Server with Dependency Injection:**
+
+- **Dependency Injection System**: Complete dependency injection framework for better testability and modularity
+- **Enhanced MCP Server**: New `EnhancedCortexMCPServer` with layered configuration and modular architecture
+- **Comprehensive Error Handling**: Advanced error handling with recovery strategies and detailed error types
+- **Performance Monitoring**: Built-in performance monitoring with metrics collection and Prometheus-compatible output
+- **Modular Architecture**: Separate managers for configuration, session, and tool management
+- **Workflow Integration**: Enhanced workflow integration capabilities with state management
+
+**Key Features:**
+
+- Smart dependency injection with service locator pattern
+- Layered configuration system with environment overrides
+- Comprehensive error recovery and retry mechanisms
+- Real-time performance metrics and monitoring
+- Modular design for better maintainability and testing
+- Enhanced workflow state management and handoff capabilities
+
+### 🔧 **Code Quality Enhancements**
+
+- **TypeScript Improvements**: Replaced all `any` types with proper `unknown` types and type guards
+- **ESLint Compliance**: Fixed all ESLint warnings and improved code quality
+- **Prettier Formatting**: Consistent code formatting across the entire codebase
+- **Dependency Cleanup**: Removed unused dependencies and optimized package.json
+- **Build Process**: Enhanced build process with comprehensive quality gates
+
+### 🏗️ **Architecture Changes**
+
+- **Service Factory Pattern**: Implemented service factory for common MCP services
+- **Configuration Management**: Advanced configuration management with validation and hot-reloading
+- **Session Management**: Comprehensive session management with state tracking
+- **Tool Management**: Enhanced tool management with caching and performance optimization
+- **Error Classification**: Detailed error classification with specific recovery strategies
+
+### 📖 **Documentation & Cleanup**
+
+- Updated architecture documentation to reflect new modular design
+- Enhanced API documentation for new dependency injection system
+- Improved error handling documentation with recovery strategies
+- Added performance monitoring documentation
+- Updated configuration documentation with layered system details
+- Removed unused `Service` and `Inject` decorator functions
+- Cleaned up unused devDependencies
+- Optimized knip configuration for better unused code detection
+- Improved type safety across the entire codebase
+- Enhanced build process with comprehensive quality checks
+
+### ⚠️ **Breaking Changes**
+
+- **Dependency Injection**: New dependency injection system replaces direct instantiation
+- **Configuration**: Enhanced configuration system with layered approach
+- **Error Handling**: New error classification system with specific error types
+- **API Changes**: Some internal APIs have been refactored for better modularity
+
+### 📦 **Migration**
+
+1. Update imports to use new enhanced server classes
+2. Migrate to new dependency injection pattern
+3. Update configuration to use layered configuration system
+4. Review error handling to use new error classification system
+
 ## [0.8.4] - 2025-09-05
 
 ### 🧠 **Memory Bank Integration**

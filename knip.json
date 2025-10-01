@@ -1,4 +1,26 @@
 {
-  "entry": ["src/cli/index.ts", "src/core/mcp/server.ts", "scripts/mcp-server.js"],
-  "project": ["src/**/*.ts", "scripts/**/*.js", "test/**/*.ts"]
+  "entry": [
+    "src/core/mcp/server.ts", 
+    "src/core/mcp/enhanced-server.ts",
+    "test/enhanced-mcp-server-integration.test.ts"
+  ],
+  "project": ["src/**/*.ts", "scripts/**/*.js", "test/**/*.ts"],
+  "ignore": [
+    "src/core/mcp/config/layered-config.ts",
+    "src/core/mcp/dependency-injection.ts",
+    "src/core/mcp/error-handler.ts",
+    "src/core/mcp/modules/config-manager.ts",
+    "src/core/mcp/modules/index.ts",
+    "src/core/mcp/modules/performance-monitor.ts",
+    "src/core/mcp/modules/session-manager.ts",
+    "src/core/mcp/modules/tool-manager.ts",
+    "src/core/mcp/types.ts"
+  ],
+  "ignoreExportsUsedInFile": {
+    "interface": true,
+    "type": true,
+    "enum": true
+  },
+  "includeEntryExports": false,
+  "tags": ["@public"]
 }
