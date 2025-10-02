@@ -576,9 +576,19 @@ async function performRelease(newVersion) {
   print(GREEN, '✅ Release completed');
 }
 
-function updateChangelog(changelogEntry) {
+function updateChangelog(changelogEntry, newVersion) {
   const changelogPath = 'CHANGELOG.md';
   let changelog = fs.readFileSync(changelogPath, 'utf8');
+  
+  // If the changelog already contains this version, skip insertion
+  if (newVersion) {
+    const versionHeader = `## [${newVersion}]`;
+    if (changelog.includes(versionHeader)) {
+      print(GREEN, `✅ CHANGELOG.md already contains ${versionHeader}, skipping insert`);
+      fs.writeFileSync(changelogPath, changelog);
+      return;
+    }
+  }
 
   // Add new entry at the top (after the header)
   const headerEnd = changelog.indexOf('\n## [');
