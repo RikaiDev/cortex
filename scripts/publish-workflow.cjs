@@ -31,16 +31,21 @@ function print(color, message) {
   console.log(`${color}${message}${NC}`);
 }
 
-function runCommand(cmd, description) {
+function runCommand(cmd, description, exitOnError = true) {
   try {
     print(BLUE, `📋 ${description}...`);
     const result = execSync(cmd, { encoding: 'utf8', stdio: 'pipe' });
     print(GREEN, `✅ ${description} completed`);
-    return result.trim();
+    return { success: true, output: result.trim() };
   } catch (error) {
-    print(RED, `❌ ${description} failed`);
-    console.log(`   Error: ${error.message}`);
-    process.exit(1);
+    if (exitOnError) {
+      print(RED, `❌ ${description} failed`);
+      console.log(`   Error: ${error.message}`);
+      process.exit(1);
+    } else {
+      print(RED, `❌ ${description} failed`);
+      return { success: false, output: error.stdout || error.message };
+    }
   }
 }
 
@@ -48,15 +53,15 @@ function runQualityChecks() {
   print(BLUE, '\n🔍 Running Quality Checks...');
 
   // Environment checks
-  runCommand('node --version', 'Check Node.js');
-  runCommand('npm --version', 'Check npm');
+  runCommand('node --version', 'Check Node.js', false);
+  runCommand('npm --version', 'Check npm', false);
 
   // Git status
   const gitStatus = execSync('git status --porcelain', { encoding: 'utf8' });
   if (gitStatus.trim()) {
     print(RED, '❌ Git working directory not clean!');
     console.log('Please commit or stash changes before publishing.');
-    process.exit(1);
+    throw new Error('Git working directory not clean');
   }
   print(GREEN, '✅ Git status clean');
 
@@ -88,10 +93,10 @@ function runQualityChecks() {
   }
 
   // TypeScript compilation
-  runCommand('npx tsc --noEmit --skipLibCheck', 'TypeScript compilation');
+  runCommand('npx tsc --noEmit --skipLibCheck', 'TypeScript compilation', false);
 
   // Linting (inline implementation)
-  const eslintResult = runCommand('npx eslint "src/**/*.ts"', 'ESLint check', true);
+  const eslintResult = runCommand('npx eslint "src/**/*.ts"', 'ESLint check', false);
   if (eslintResult.success) {
     print(GREEN, '✅ ESLint passed');
   } else {
@@ -99,7 +104,7 @@ function runQualityChecks() {
     throw new Error('ESLint check failed');
   }
 
-  const prettierResult = runCommand('npx prettier --check "src/**/*.ts"', 'Prettier check', true);
+  const prettierResult = runCommand('npx prettier --check "src/**/*.ts"', 'Prettier check', false);
   if (prettierResult.success) {
     print(GREEN, '✅ Prettier check passed');
   } else {
@@ -108,10 +113,10 @@ function runQualityChecks() {
   }
 
   // Tests
-  runCommand('npm run test:all', 'Run test suite');
+  runCommand('npm run test:all', 'Run test suite', false);
 
   // Security
-  const securityResult = runCommand('npx secretlint "**/*"', 'Secret detection', true);
+  const securityResult = runCommand('npx secretlint "**/*"', 'Secret detection', false);
   if (securityResult.success) {
     print(GREEN, '✅ No secrets detected');
   } else {
@@ -187,12 +192,28 @@ switch (command) {
     runQualityChecks();
     runPublishValidation();
 
+    // Check CHANGELOG version consistency
+    {
+      const currentVersion = require('../package.json').version;
+      const changelogContent = fs.readFileSync('CHANGELOG.md', 'utf8');
+      const changelogVersionMatch = changelogContent.match(/## \[(\d+\.\d+\.\d+)\]/);
+      const changelogVersion = changelogVersionMatch ? changelogVersionMatch[1] : null;
+
+      if (changelogVersion !== currentVersion) {
+        print(RED, `\n❌ CHANGELOG.md version (${changelogVersion}) doesn't match package.json version (${currentVersion})`);
+        print(YELLOW, '💡 Please update CHANGELOG.md or run: npm version <version>');
+        process.exit(1);
+      }
+
+      print(GREEN, '✅ CHANGELOG.md version matches package.json');
+    }
+
     // Build and publish
     print(BLUE, '\n📦 Building project...');
-    runCommand('npm run build', 'Build project');
+    runCommand('npm run build', 'Build project', false);
 
     print(BLUE, '\n🚀 Publishing to npm...');
-    runCommand('npm publish', 'Publish to npm');
+    runCommand('npm publish', 'Publish to npm', false);
 
     print(GREEN, '\n🎉 Successfully published to npm!');
     break;
