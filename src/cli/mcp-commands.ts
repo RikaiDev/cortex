@@ -332,7 +332,9 @@ async function startMCPServer(projectRoot: string): Promise<void> {
 /**
  * Initialize Cortex workspace structure
  */
-async function initializeCortexWorkspace(projectPath: string): Promise<void> {
+export async function initializeCortexWorkspace(
+  projectPath: string
+): Promise<void> {
   console.log(chalk.blue("🏗️  Initializing Cortex workspace..."));
   console.log(chalk.gray(`Project path: ${projectPath}`));
   console.log();

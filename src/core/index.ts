@@ -860,17 +860,95 @@ export class CortexCore {
     try {
       await fs.ensureDir(this.experiencesDir);
 
+      // Summarize and optimize the experience content
+      const optimizedExperience = this.summarizeExperience(experience);
+
       const hash = crypto
         .createHash("sha256")
-        .update(`${experience.input}${experience.output}${Date.now()}`)
+        .update(
+          `${optimizedExperience.input}${optimizedExperience.output}${Date.now()}`
+        )
         .digest("hex");
 
       const filePath = path.join(this.experiencesDir, `${hash}.json`);
-      await fs.writeJson(filePath, experience, { spaces: 2 });
+      await fs.writeJson(filePath, optimizedExperience, { spaces: 2 });
     } catch (error) {
       console.error("Error recording experience:", error);
       throw error;
     }
+  }
+
+  /**
+   * Summarize and optimize experience content to keep it concise
+   */
+  private summarizeExperience(experience: Experience): Experience {
+    const summarized = { ...experience };
+
+    // Summarize input (question/query) - keep it concise but meaningful
+    summarized.input = this.summarizeText(experience.input, 200);
+
+    // Summarize output (solution/answer) - keep key points only
+    summarized.output = this.summarizeText(experience.output, 500);
+
+    return summarized;
+  }
+
+  /**
+   * Summarize text by keeping key information and removing verbosity
+   */
+  private summarizeText(text: string, maxLength: number): string {
+    if (text.length <= maxLength) {
+      return text;
+    }
+
+    // Remove excessive whitespace and line breaks
+    let summarized = text
+      .replace(/\n\s*\n/g, "\n") // Remove multiple empty lines
+      .replace(/\s+/g, " ") // Normalize whitespace
+      .trim();
+
+    // If still too long, extract key sentences
+    if (summarized.length > maxLength) {
+      const sentences = summarized
+        .split(/[.!?]+/)
+        .filter((s) => s.trim().length > 10);
+
+      // Keep first sentence and last sentence, plus middle ones if space allows
+      let result = sentences[0]?.trim() || "";
+
+      if (sentences.length > 1) {
+        // Add last sentence if it's different from first
+        const lastSentence = sentences[sentences.length - 1]?.trim();
+        if (
+          lastSentence &&
+          lastSentence !== result &&
+          result.length + lastSentence.length + 3 < maxLength
+        ) {
+          result += ". " + lastSentence;
+        }
+      }
+
+      // If we have more sentences and space, add middle ones
+      if (sentences.length > 2 && result.length < maxLength * 0.7) {
+        for (let i = 1; i < sentences.length - 1; i++) {
+          const sentence = sentences[i]?.trim();
+          if (sentence && result.length + sentence.length + 3 < maxLength) {
+            result += ". " + sentence;
+          } else {
+            break;
+          }
+        }
+      }
+
+      // If result is still too short, add "..." to indicate truncation
+      if (result.length < summarized.length * 0.8) {
+        result += "...";
+      }
+
+      summarized = result;
+    }
+
+    return summarized;
   }
 
   /**

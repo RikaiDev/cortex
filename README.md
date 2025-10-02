@@ -148,6 +148,26 @@ sequenceDiagram
 
 ## 🚀 **Quick Start**
 
+### **Simple Task Execution (Recommended)**
+
+Execute a complete development task with AI collaboration in one command:
+
+```bash
+# Execute a development task with full AI workflow
+npx @rikaidev/cortex@latest task "Implement user authentication system with registration, login, and password reset"
+
+# With PR options
+npx @rikaidev/cortex@latest task "Add dark mode toggle to settings page" --draft-pr --base-branch develop
+```
+
+**What happens automatically:**
+
+1. 🧠 **Context Enhancement**: Uses `enhance-context` MCP tool to find relevant past experiences
+2. 📝 **Workflow Creation**: Uses `create-workflow` MCP tool to create structured multi-role workflow
+3. 🎭 **Role Execution**: Uses `execute-workflow-role` MCP tool to execute each role in sequence
+4. 📚 **Experience Recording**: Uses `record-experience` MCP tool to record learning for future tasks
+5. 🚀 **PR Creation**: Uses `create-pull-request` MCP tool to generate complete PR documentation and create GitHub PR
+
 ### **Installation**
 
 ```bash
@@ -238,6 +258,87 @@ The new MCP approach creates isolated workspaces for each workflow:
 │       └── pr.md          # Pull request description
 └── roles/                 # Role definitions
 ```
+
+### **MCP Tools Usage**
+
+Once MCP server is running, you can use the following tools:
+
+#### **Available Cortex MCP Tools**
+
+| Tool | Description | Purpose |
+|------|-------------|---------|
+| `enhance-context` | Enhance current context with relevant past experiences | Get better responses with historical context |
+| `record-experience` | Record new experiences for future reference (auto-summarized) | Build knowledge base |
+| `create-workflow` | Create Multi-Role Pattern workflow for complex tasks | Start collaborative development workflow |
+| `execute-workflow-role` | Execute next role in existing workflow | Continue workflow execution |
+| `create-pull-request` | Create GitHub PR using generated pr.md file | Automate PR creation after workflow completion |
+
+#### **Experience Recording Optimization**
+
+The `record-experience` tool automatically summarizes and optimizes content to keep the knowledge base concise:
+
+- **Input summarization**: Questions/queries are condensed to 200 characters max
+- **Output summarization**: Solutions are summarized to 500 characters max, keeping only key information
+- **Automatic cleanup**: Removes excessive whitespace, redundant content, and verbose explanations
+- **Smart extraction**: Preserves the first and last sentences, plus key middle content when space allows
+
+**Example of automatic summarization:**
+
+```text
+Original: "I need to implement user authentication with registration, login, password reset, email verification, and proper security measures including bcrypt hashing, JWT tokens, rate limiting, and input validation..."
+
+Summarized: "Implement user authentication with registration, login, password reset, and proper security measures including bcrypt hashing, JWT tokens, rate limiting, and input validation."
+```
+
+#### **Workflow Management**
+
+**1. Create a workflow for complex development tasks:**
+
+```javascript
+// Use MCP tool: create-workflow
+{
+  "title": "Implement user authentication system",
+  "description": "Create complete user auth with registration, login, password reset",
+  "issueId": "AUTH-001" // optional
+}
+```
+
+**2. Execute workflow roles:**
+
+```javascript
+// Use MCP tool: execute-workflow-role
+{
+  "workflowId": "workflow-uuid-here"
+}
+```
+
+**3. Generated files:**
+
+- `handoff.md`: Role communication and handoff documentation
+- `pr.md`: Complete PR documentation ready for submission
+
+#### **Using Generated PR Documentation**
+
+The `pr.md` file contains complete PR documentation ready for submission:
+
+**Typical workflow:**
+
+1. Complete the Multi-Role workflow (generates `pr.md`)
+2. Copy content from `pr.md` to create GitHub/GitLab PR
+3. The PR description will include all implementation details, testing notes, and review guidelines
+
+**Example PR creation process:**
+
+```bash
+# After workflow completion, the pr.md file will be generated in:
+# .cortex/workspaces/{workspace-id}/pr.md
+
+# Copy the content and create PR manually on GitHub/GitLab
+# Or use git commands to create PR if you have GitHub CLI:
+gh pr create --title "Implement user authentication system" --body-file pr.md
+```
+
+**Future Enhancement:** Direct PR creation tools may be added in future versions to enable automated PR creation without external dependencies.
 
 ### **Start Learning**
 

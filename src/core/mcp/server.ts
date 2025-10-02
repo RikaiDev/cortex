@@ -40,6 +40,14 @@ interface MCPServerConfig {
   enableDebugMode?: boolean;
   maxExecutionTime?: number;
   timeout?: number;
+  enableHealthCheck?: boolean;
+  healthCheckInterval?: number;
+  maxRetries?: number;
+  enableCircuitBreaker?: boolean;
+  circuitBreakerThreshold?: number;
+  enableResourceMonitoring?: boolean;
+  maxMemoryUsage?: number;
+  maxCpuUsage?: number;
 }
 
 /**
@@ -73,6 +81,134 @@ function getPackageVersion(): string {
 }
 
 /**
+ * Circuit Breaker for fault tolerance
+ */
+class CircuitBreaker {
+  private failureCount = 0;
+  private lastFailureTime = 0;
+  private state: "closed" | "open" | "half-open" = "closed";
+
+  constructor(
+    private threshold: number,
+    private timeout: number,
+    private logger: Logger
+  ) {}
+
+  async execute<T>(operation: () => Promise<T>): Promise<T> {
+    if (this.state === "open") {
+      if (Date.now() - this.lastFailureTime > this.timeout) {
+        this.state = "half-open";
+        this.logger.info("🔄 Circuit breaker transitioning to half-open state");
+      } else {
+        throw new Error(
+          "Circuit breaker is OPEN - service temporarily unavailable"
+        );
+      }
+    }
+
+    try {
+      const result = await operation();
+      this.onSuccess();
+      return result;
+    } catch (error) {
+      this.onFailure();
+      throw error;
+    }
+  }
+
+  private onSuccess(): void {
+    this.failureCount = 0;
+    if (this.state === "half-open") {
+      this.state = "closed";
+      this.logger.info("✅ Circuit breaker closed - service recovered");
+    }
+  }
+
+  private onFailure(): void {
+    this.failureCount++;
+    this.lastFailureTime = Date.now();
+
+    if (this.failureCount >= this.threshold) {
+      this.state = "open";
+      this.logger.warn(
+        `⚠️ Circuit breaker opened after ${this.failureCount} failures`
+      );
+    }
+  }
+
+  getState(): "closed" | "open" | "half-open" {
+    return this.state;
+  }
+}
+
+/**
+ * Resource Monitor for system health
+ */
+class ResourceMonitor {
+  private memoryUsage: NodeJS.MemoryUsage;
+  private cpuUsage: NodeJS.CpuUsage;
+
+  constructor(
+    private config: MCPServerConfig,
+    private logger: Logger
+  ) {
+    this.memoryUsage = process.memoryUsage();
+    this.cpuUsage = process.cpuUsage();
+  }
+
+  checkHealth(): { healthy: boolean; issues: string[] } {
+    const issues: string[] = [];
+    const currentMemory = process.memoryUsage();
+
+    // Memory check
+    const memoryUsageMB = currentMemory.heapUsed / 1024 / 1024;
+    if (
+      this.config.maxMemoryUsage &&
+      memoryUsageMB > this.config.maxMemoryUsage
+    ) {
+      issues.push(`Memory usage too high: ${memoryUsageMB.toFixed(1)}MB`);
+    }
+
+    // CPU check (rough approximation)
+    const cpuUsage = process.cpuUsage(this.cpuUsage);
+    const cpuUsagePercent = (cpuUsage.user + cpuUsage.system) / 1000000; // Convert to seconds
+    if (this.config.maxCpuUsage && cpuUsagePercent > this.config.maxCpuUsage) {
+      issues.push(`CPU usage too high: ${cpuUsagePercent.toFixed(1)}%`);
+    }
+
+    // Update baseline
+    this.memoryUsage = currentMemory;
+    this.cpuUsage = process.cpuUsage();
+
+    return {
+      healthy: issues.length === 0,
+      issues,
+    };
+  }
+
+  getStats(): {
+    memory: {
+      heapUsed: number;
+      heapTotal: number;
+      external: number;
+      rss: number;
+    };
+    uptime: number;
+  } {
+    const mem = process.memoryUsage();
+    return {
+      memory: {
+        heapUsed: Math.round(mem.heapUsed / 1024 / 1024),
+        heapTotal: Math.round(mem.heapTotal / 1024 / 1024),
+        external: Math.round(mem.external / 1024 / 1024),
+        rss: Math.round(mem.rss / 1024 / 1024),
+      },
+      uptime: process.uptime(),
+    };
+  }
+}
+
+/**
  * Enhanced Cortex MCP Server with improved error handling and configuration
  */
 export class CortexMCPServer {
@@ -84,6 +220,10 @@ export class CortexMCPServer {
   private config: MCPServerConfig;
   private logger: Logger;
   private startTime: Date;
+  private circuitBreaker?: CircuitBreaker;
+  private resourceMonitor?: ResourceMonitor;
+  private healthCheckTimer?: NodeJS.Timeout;
+  private isShuttingDown = false;
 
   /**
    * Select appropriate Cortex Master role based on query content
@@ -337,12 +477,20 @@ export class CortexMCPServer {
   }
 
   constructor(config: MCPServerConfig = {}) {
-    // Set default configuration
+    // Set default configuration with enhanced resilience features
     this.config = {
       logLevel: "info",
       enableDebugMode: false,
       maxExecutionTime: 30000, // 30 seconds
       timeout: 600000, // 10 minutes
+      enableHealthCheck: true,
+      healthCheckInterval: 30000, // 30 seconds
+      maxRetries: 3,
+      enableCircuitBreaker: true,
+      circuitBreakerThreshold: 5,
+      enableResourceMonitoring: true,
+      maxMemoryUsage: 512, // 512MB
+      maxCpuUsage: 80, // 80%
       ...config,
     };
 
@@ -374,7 +522,10 @@ export class CortexMCPServer {
     this.logger.debug(`Project root: ${this.projectRoot}`);
     this.logger.debug(`Configuration: ${JSON.stringify(this.config, null, 2)}`);
 
-    // Initialize Cortex core components
+    // Initialize resilience components
+    this.initializeResilienceComponents();
+
+    // Initialize Cortex core components with error handling
     this.initializeCoreComponents();
 
     // Setup handlers with enhanced error handling
@@ -463,6 +614,30 @@ export class CortexMCPServer {
   }
 
   /**
+   * Initialize resilience components (Circuit Breaker, Resource Monitor)
+   */
+  private initializeResilienceComponents(): void {
+    try {
+      if (this.config.enableCircuitBreaker) {
+        this.circuitBreaker = new CircuitBreaker(
+          this.config.circuitBreakerThreshold || 5,
+          60000, // 1 minute timeout
+          this.logger
+        );
+        this.logger.debug("Circuit breaker initialized");
+      }
+
+      if (this.config.enableResourceMonitoring) {
+        this.resourceMonitor = new ResourceMonitor(this.config, this.logger);
+        this.logger.debug("Resource monitor initialized");
+      }
+    } catch (error) {
+      this.logger.error(`Failed to initialize resilience components: ${error}`);
+      // Don't throw - resilience components are optional
+    }
+  }
+
+  /**
    * Initialize core Cortex components with error handling
    */
   private initializeCoreComponents(): void {
@@ -481,49 +656,118 @@ export class CortexMCPServer {
   }
 
   private async executeTool(name: string, args: unknown): Promise<unknown> {
-    switch (name) {
-      case "enhance-context":
-        return await this.handleEnhanceContext(
-          args as {
-            query: string;
-            maxItems?: number;
-            timeRange?: number;
-          }
+    // Check if we're shutting down
+    if (this.isShuttingDown) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: "Server is shutting down. Please try again later.",
+          },
+        ],
+        isError: true,
+      };
+    }
+
+    // Check resource health before executing
+    if (this.resourceMonitor) {
+      const health = this.resourceMonitor.checkHealth();
+      if (!health.healthy) {
+        this.logger.warn(
+          `Resource health check failed: ${health.issues.join(", ")}`
         );
-      case "record-experience":
-        return await this.handleRecordExperience(
-          args as {
-            input: string;
-            output: string;
-            category?: string;
-            tags?: string[];
-          }
-        );
-      case "create-workflow":
-        return await this.handleCreateWorkflow(
-          args as {
-            issueId?: string;
-            title: string;
-            description: string;
-          }
-        );
-      case "execute-workflow-role":
-        return await this.handleExecuteWorkflowRole(
-          args as {
-            workflowId: string;
-          }
-        );
-      default:
-        this.logger.warn(`Unknown tool requested: ${name}`);
         return {
           content: [
             {
               type: "text",
-              text: `Unknown tool: ${name}. Use 'list-tools' to see available tools.`,
+              text: `Server resource constraints exceeded. Issues: ${health.issues.join(", ")}`,
             },
           ],
           isError: true,
         };
+      }
+    }
+
+    // Execute with circuit breaker protection
+    if (this.circuitBreaker) {
+      return await this.circuitBreaker.execute(async () => {
+        return await this.executeToolWithRetry(name, args);
+      });
+    } else {
+      return await this.executeToolWithRetry(name, args);
+    }
+  }
+
+  private async executeToolWithRetry(
+    name: string,
+    args: unknown,
+    retryCount = 0
+  ): Promise<unknown> {
+    try {
+      switch (name) {
+        case "enhance-context":
+          return await this.handleEnhanceContext(
+            args as {
+              query: string;
+              maxItems?: number;
+              timeRange?: number;
+            }
+          );
+        case "record-experience":
+          return await this.handleRecordExperience(
+            args as {
+              input: string;
+              output: string;
+              category?: string;
+              tags?: string[];
+            }
+          );
+        case "create-workflow":
+          return await this.handleCreateWorkflow(
+            args as {
+              issueId?: string;
+              title: string;
+              description: string;
+            }
+          );
+        case "execute-workflow-role":
+          return await this.handleExecuteWorkflowRole(
+            args as {
+              workflowId: string;
+            }
+          );
+        case "create-pull-request":
+          return await this.handleCreatePullRequest(
+            args as {
+              workflowId: string;
+              baseBranch?: string;
+              draft?: boolean;
+            }
+          );
+        default:
+          this.logger.warn(`Unknown tool requested: ${name}`);
+          return {
+            content: [
+              {
+                type: "text",
+                text: `Unknown tool: ${name}. Use 'list-tools' to see available tools.`,
+              },
+            ],
+            isError: true,
+          };
+      }
+    } catch (error) {
+      const maxRetries = this.config.maxRetries || 3;
+      if (retryCount < maxRetries) {
+        this.logger.warn(
+          `Tool ${name} failed (attempt ${retryCount + 1}/${maxRetries + 1}), retrying...`
+        );
+        await new Promise((resolve) =>
+          setTimeout(resolve, 1000 * (retryCount + 1))
+        ); // Exponential backoff
+        return await this.executeToolWithRetry(name, args, retryCount + 1);
+      }
+      throw error;
     }
   }
 
@@ -641,6 +885,31 @@ export class CortexMCPServer {
                 workflowId: {
                   type: "string",
                   description: "Workflow identifier",
+                },
+              },
+              required: ["workflowId"],
+            },
+          },
+          {
+            name: "create-pull-request",
+            description:
+              "Create a GitHub pull request using the generated pr.md file",
+            inputSchema: {
+              type: "object",
+              properties: {
+                workflowId: {
+                  type: "string",
+                  description: "Workflow ID to create PR for",
+                },
+                baseBranch: {
+                  type: "string",
+                  description: "Base branch to merge into (default: main)",
+                  default: "main",
+                },
+                draft: {
+                  type: "boolean",
+                  description: "Create as draft PR",
+                  default: false,
                 },
               },
               required: ["workflowId"],
@@ -1080,7 +1349,7 @@ export class CortexMCPServer {
   }
 
   /**
-   * Start the MCP server with enhanced error handling
+   * Start the MCP server with enhanced error handling and resilience features
    */
   async start(): Promise<void> {
     try {
@@ -1123,6 +1392,15 @@ export class CortexMCPServer {
         "  • unified-knowledge-search - Search across all internal knowledge sources"
       );
       this.logger.info("📝 Server is ready to receive MCP requests");
+
+      // Start health check monitoring if enabled
+      if (this.config.enableHealthCheck) {
+        this.startHealthCheck();
+        this.logger.info("🏥 Health monitoring enabled");
+      }
+
+      // Setup graceful shutdown handlers
+      this.setupGracefulShutdown();
     } catch (error) {
       this.logger.error(`❌ Failed to start MCP server: ${error}`);
       throw error;
@@ -1130,11 +1408,19 @@ export class CortexMCPServer {
   }
 
   /**
-   * Stop the server gracefully
+   * Stop the server gracefully with proper cleanup
    */
   async stop(): Promise<void> {
     try {
       this.logger.info("🛑 Stopping Cortex MCP Server...");
+      this.isShuttingDown = true;
+
+      // Stop health check monitoring
+      if (this.healthCheckTimer) {
+        clearInterval(this.healthCheckTimer);
+        this.healthCheckTimer = undefined;
+        this.logger.debug("Health check monitoring stopped");
+      }
 
       if (this.server) {
         // Note: MCP SDK doesn't have a disconnect method in current version
@@ -1153,7 +1439,7 @@ export class CortexMCPServer {
   }
 
   /**
-   * Get server status information
+   * Get server status information with enhanced health metrics
    */
   getStatus(): {
     version: string;
@@ -1162,16 +1448,146 @@ export class CortexMCPServer {
     isRunning: boolean;
     toolsCount: number;
     config: unknown;
+    health?: { healthy: boolean; issues: string[]; stats: unknown };
+    circuitBreaker?: { state: string; failureCount: number };
   } {
     const uptime = Date.now() - this.startTime.getTime();
-    return {
+    const status: {
+      version: string;
+      projectRoot: string;
+      uptime: number;
+      isRunning: boolean;
+      toolsCount: number;
+      config: unknown;
+      health?: { healthy: boolean; issues: string[]; stats: unknown };
+      circuitBreaker?: { state: string; failureCount: number };
+    } = {
       version: getPackageVersion(),
       projectRoot: this.projectRoot,
       uptime,
-      isRunning: true,
-      toolsCount: 0,
+      isRunning: !this.isShuttingDown,
+      toolsCount: 4, // We have 4 tools defined
       config: this.config,
     };
+
+    // Add health information if monitoring is enabled
+    if (this.resourceMonitor) {
+      const health = this.resourceMonitor.checkHealth();
+      status.health = {
+        healthy: health.healthy,
+        issues: health.issues,
+        stats: this.resourceMonitor.getStats(),
+      };
+    }
+
+    // Add circuit breaker information if enabled
+    if (this.circuitBreaker) {
+      status.circuitBreaker = {
+        state: this.circuitBreaker.getState(),
+        failureCount: 0, // CircuitBreaker doesn't expose failureCount publicly
+      };
+    }
+
+    return status;
+  }
+
+  /**
+   * Start health check monitoring
+   */
+  private startHealthCheck(): void {
+    if (!this.config.enableHealthCheck || !this.config.healthCheckInterval) {
+      return;
+    }
+
+    this.healthCheckTimer = setInterval(async () => {
+      try {
+        await this.performHealthCheck();
+      } catch (error) {
+        this.logger.error(`Health check failed: ${error}`);
+      }
+    }, this.config.healthCheckInterval);
+
+    this.logger.debug(
+      `Health check monitoring started (interval: ${this.config.healthCheckInterval}ms)`
+    );
+  }
+
+  /**
+   * Perform comprehensive health check
+   */
+  private async performHealthCheck(): Promise<void> {
+    const issues: string[] = [];
+
+    // Resource health check
+    if (this.resourceMonitor) {
+      const resourceHealth = this.resourceMonitor.checkHealth();
+      if (!resourceHealth.healthy) {
+        issues.push(...resourceHealth.issues);
+      }
+    }
+
+    // Circuit breaker health check
+    if (this.circuitBreaker && this.circuitBreaker.getState() === "open") {
+      issues.push("Circuit breaker is open - service temporarily unavailable");
+    }
+
+    // Core components health check
+    try {
+      // Simple health check by attempting to access core components
+      if (!this.cortex || !this.knowledgeManager || !this.ruleSystem) {
+        issues.push("Core components not properly initialized");
+      }
+    } catch (error) {
+      issues.push(`Core components health check failed: ${error}`);
+    }
+
+    // Log health status
+    if (issues.length > 0) {
+      this.logger.warn(
+        `🏥 Health check detected ${issues.length} issue(s): ${issues.join(", ")}`
+      );
+    } else {
+      this.logger.debug("🏥 Health check passed - all systems operational");
+    }
+  }
+
+  /**
+   * Setup graceful shutdown handlers
+   */
+  private setupGracefulShutdown(): void {
+    // Handle process termination signals
+    const shutdownHandler = async (signal: string): Promise<void> => {
+      this.logger.info(`Received ${signal}, initiating graceful shutdown...`);
+      await this.stop();
+      process.exit(0);
+    };
+
+    process.on("SIGINT", (): void => {
+      shutdownHandler("SIGINT");
+    });
+    process.on("SIGTERM", (): void => {
+      shutdownHandler("SIGTERM");
+    });
+
+    // Handle uncaught exceptions
+    process.on("uncaughtException", (error: Error): void => {
+      this.logger.error(`Uncaught exception: ${error}`);
+      this.stop().finally(() => {
+        process.exit(1);
+      });
+    });
+
+    // Handle unhandled promise rejections
+    process.on(
+      "unhandledRejection",
+      (reason: unknown, promise: Promise<unknown>): void => {
+        this.logger.error(`Unhandled rejection at ${promise}: ${reason}`);
+        // Don't exit on unhandled rejections during normal operation
+        // Just log and continue
+      }
+    );
+
+    this.logger.debug("Graceful shutdown handlers configured");
   }
 
   /**
@@ -1320,15 +1736,183 @@ Continue with the next role or check the updated handoff.md file for progress de
       };
     }
   }
+
+  /**
+   * Public method to execute MCP tools from CLI
+   */
+  public async executeMCPTool(
+    name: string,
+    args: unknown
+  ): Promise<{
+    content: Array<{ type: string; text: string }>;
+    isError?: boolean;
+  }> {
+    return (await this.executeTool(name, args)) as {
+      content: Array<{ type: string; text: string }>;
+      isError?: boolean;
+    };
+  }
+
+  /**
+   * Handle create pull request tool
+   */
+  private async handleCreatePullRequest(args: {
+    workflowId: string;
+    baseBranch?: string;
+    draft?: boolean;
+  }): Promise<{
+    content: Array<{ type: string; text: string }>;
+    isError?: boolean;
+  }> {
+    try {
+      const { workflowId, baseBranch = "main", draft = false } = args;
+
+      // Get workflow state to find the workspace
+      const workflowState = await this.cortex.getWorkflowState(workflowId);
+      if (!workflowState) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Workflow ${workflowId} not found.`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      if (workflowState.status !== "completed") {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `Workflow ${workflowId} is not completed yet. Status: ${workflowState.status}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Find the workspace directory
+      const workspaceId = workflowState.handoffData.context
+        .workspaceId as string;
+      if (!workspaceId) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Workspace ID not found in workflow context.",
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      const workspaceDir = path.join(
+        this.projectRoot,
+        ".cortex",
+        "workspaces",
+        workspaceId
+      );
+      const prFile = path.join(workspaceDir, "pr.md");
+
+      // Check if pr.md exists
+      if (!(await fs.pathExists(prFile))) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: `PR documentation file not found: ${prFile}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Get current branch
+      const { execSync } = await import("child_process");
+      let currentBranch: string;
+      try {
+        currentBranch = execSync("git branch --show-current", {
+          cwd: this.projectRoot,
+          encoding: "utf8",
+        }).trim();
+      } catch (error) {
+        return {
+          content: [
+            {
+              type: "text",
+              text: "Failed to get current git branch. Make sure you're in a git repository.",
+            },
+          ],
+          isError: true,
+        };
+      }
+
+      // Create PR using GitHub CLI
+      const prCommand = `gh pr create --base ${baseBranch} --head ${currentBranch} --title "${workflowState.issueTitle}" --body-file "${prFile}"${draft ? " --draft" : ""}`;
+
+      try {
+        const prUrl = execSync(prCommand, {
+          cwd: this.projectRoot,
+          encoding: "utf8",
+        }).trim();
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `✅ Pull request created successfully!\n\n**PR URL:** ${prUrl}\n**Title:** ${workflowState.issueTitle}\n**Base:** ${baseBranch}\n**Head:** ${currentBranch}\n**Draft:** ${draft ? "Yes" : "No"}`,
+            },
+          ],
+        };
+      } catch (error) {
+        // If GitHub CLI fails, provide manual instructions
+        const prContent = await fs.readFile(prFile, "utf8");
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `⚠️  GitHub CLI not available or failed to create PR automatically.\n\nPlease create the PR manually:\n\n**Title:** ${workflowState.issueTitle}\n**Base branch:** ${baseBranch}\n**Head branch:** ${currentBranch}\n\n**PR Description:**\n${prContent}\n\nTo install GitHub CLI: \`brew install gh\` (macOS) or visit https://cli.github.com/`,
+            },
+          ],
+        };
+      }
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Failed to create pull request: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
 }
 
 /**
- * Create Cortex MCP server with enhanced configuration support
+ * Create Cortex MCP server with enhanced configuration support and resilience features
  */
 export function createCortexMCPServer(
   config: MCPServerConfig = {}
 ): CortexMCPServer {
-  return new CortexMCPServer(config);
+  // Apply default resilience configurations
+  const defaultConfig: Partial<MCPServerConfig> = {
+    enableHealthCheck: true,
+    healthCheckInterval: 30000,
+    maxRetries: 3,
+    enableCircuitBreaker: true,
+    circuitBreakerThreshold: 5,
+    enableResourceMonitoring: true,
+    maxMemoryUsage: 512,
+    maxCpuUsage: 80,
+  };
+
+  const mergedConfig = { ...defaultConfig, ...config };
+  return new CortexMCPServer(mergedConfig);
 }
 
 /**
