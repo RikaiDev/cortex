@@ -24,6 +24,7 @@
     "quality": "node scripts/quality-check.js",
     "knip": "knip",
     "publish": "node scripts/publish-workflow.cjs",
+    "release": "node scripts/release-workflow.cjs",
     "unpublish": "./scripts/release.sh unpublish"
   },
   "keywords": [
