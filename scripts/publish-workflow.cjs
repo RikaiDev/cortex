@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 
 const command = process.argv[2] || 'help';
+const versionArg = process.argv[3];
 
 console.log('🧠 Cortex AI - Unified Workflow');
 console.log('===============================\n');
@@ -162,20 +163,113 @@ function runPublishValidation() {
   print(GREEN, '🎉 Publish validation passed!');
 }
 
+function getNewVersion(currentVersion, bumpType) {
+  const [major, minor, patch] = currentVersion.split('.').map(Number);
+
+  switch (bumpType) {
+    case 'patch':
+      return `${major}.${minor}.${patch + 1}`;
+    case 'minor':
+      return `${major}.${minor + 1}.0`;
+    case 'major':
+      return `${major + 1}.0.0`;
+    default:
+      return currentVersion;
+  }
+}
+
+function updateChangelog(newVersion, currentVersion) {
+  const changelogPath = 'CHANGELOG.md';
+  let changelog = fs.readFileSync(changelogPath, 'utf8');
+
+  // Add new version entry at the top
+  const date = new Date().toISOString().split('T')[0];
+  const newEntry = `## [${newVersion}] - ${date}\n\n### 🔧 **Bug Fixes**\n\n- Release ${newVersion}\n\n## [${currentVersion}]`;
+
+  // Replace the first version header
+  const versionPattern = /^## \[(\d+\.\d+\.\d+)\]/m;
+  changelog = changelog.replace(versionPattern, newEntry);
+
+  fs.writeFileSync(changelogPath, changelog);
+  print(GREEN, `✅ Updated CHANGELOG.md to version ${newVersion}`);
+}
+
+function releaseVersion(bumpType) {
+  print(YELLOW, `🚀 Releasing ${bumpType} version...`);
+
+  // Get current version
+  const currentVersion = require('../package.json').version;
+  const newVersion = getNewVersion(currentVersion, bumpType);
+
+  print(BLUE, `📋 Current version: ${currentVersion}`);
+  print(BLUE, `📋 New version: ${newVersion}`);
+
+  // Step 1: Run quality checks
+  print(BLUE, '\n🔍 Running Quality Checks...');
+  runQualityChecks();
+
+  // Step 2: Update CHANGELOG
+  print(BLUE, '\n📝 Updating CHANGELOG...');
+  updateChangelog(newVersion, currentVersion);
+
+  // Step 3: Set version (this will create commit and tag)
+  print(BLUE, '\n🏷️  Setting version...');
+  runCommand(`npm version ${newVersion}`, 'Version bump');
+
+  // Step 4: Push commits and tags
+  print(BLUE, '\n📤 Pushing to repository...');
+  runCommand('git push origin main', 'Push commits');
+  runCommand(`git push origin v${newVersion}`, 'Push tags');
+
+  // Step 5: Publish to npm (reuse existing publish logic)
+  print(BLUE, '\n🚀 Publishing to npm...');
+
+  // Run publish validation
+  runPublishValidation();
+
+  // Check CHANGELOG version consistency (should pass now)
+  const currentVersionCheck = require('../package.json').version;
+  const changelogContent = fs.readFileSync('CHANGELOG.md', 'utf8');
+  const changelogVersionMatch = changelogContent.match(/## \[(\d+\.\d+\.\d+)\]/);
+  const changelogVersion = changelogVersionMatch ? changelogVersionMatch[1] : null;
+
+  if (changelogVersion !== currentVersionCheck) {
+    print(RED, `\n❌ CHANGELOG.md version (${changelogVersion}) doesn't match package.json version (${currentVersionCheck})`);
+    process.exit(1);
+  }
+
+  print(GREEN, '✅ CHANGELOG.md version matches package.json');
+
+  // Build project
+  print(BLUE, '\n📦 Building project...');
+  const buildResult = runCommand('npm run build', 'Build project', false);
+  if (!buildResult.success) {
+    print(RED, '❌ Build failed - cannot publish broken code!');
+    process.exit(1);
+  }
+
+  // Publish to npm
+  runCommand('npm publish', 'Publish to npm', false);
+
+  print(GREEN, '\n🎉 Successfully released version ' + newVersion + '!');
+  print(GREEN, '📦 Available at: https://www.npmjs.com/package/@rikaidev/cortex');
+}
+
 function showHelp() {
   console.log('Usage: npm run publish <command>');
   console.log('');
   console.log('Commands:');
   console.log('  check     - Run all pre-publish checks');
   console.log('  publish   - Full publish workflow (check + publish)');
+  console.log('  patch     - Release patch version (0.0.x)');
+  console.log('  minor     - Release minor version (0.x.0)');
+  console.log('  major     - Release major version (x.0.0)');
   console.log('  help      - Show this help message');
   console.log('');
-  console.log('Workflow:');
-  console.log('  1. Update CHANGELOG.md');
-  console.log('  2. npm version x.y.z');
-  console.log('  3. git push && git push --tags');
-  console.log('  4. npm run publish check');
-  console.log('  5. npm run publish publish');
+  console.log('Quick Release Workflow:');
+  console.log('  npm run publish patch    # Bug fixes');
+  console.log('  npm run publish minor    # New features');
+  console.log('  npm run publish major    # Breaking changes');
 }
 
 switch (command) {
@@ -223,6 +317,12 @@ switch (command) {
     runCommand('npm publish', 'Publish to npm', false);
 
     print(GREEN, '\n🎉 Successfully published to npm!');
+    break;
+
+  case 'patch':
+  case 'minor':
+  case 'major':
+    releaseVersion(command);
     break;
 
   case 'help':
