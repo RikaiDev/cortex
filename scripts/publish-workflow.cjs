@@ -37,10 +37,11 @@ function run(cmd, desc) {
 // Load package.json for version info
 const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
-async function runPreReleaseChecks() {
-  print(BLUE, '🔍 Running pre-release checks...');
+async function runQualityChecks() {
+  print(BLUE, '\n🔍 Phase 1: Quality checks and fixes...');
 
-  // Environment checks
+  // Round 1: Environment & Dependencies
+  print(BLUE, '\n📋 Round 1: Environment validation');
   run('node --version', 'Node.js check');
   run('npm --version', 'npm check');
 
@@ -52,17 +53,36 @@ async function runPreReleaseChecks() {
     }
   }
 
-  // Git status check
+  // Round 2: Code Quality
+  print(BLUE, '\n📋 Round 2: Code quality checks');
+  run('npm run quality', 'Quality checks');
+
+  // Round 3: Build Verification
+  print(BLUE, '\n📋 Round 3: Build verification');
+  run('npm run build', 'Build verification');
+
+  // Round 4: Git Status
+  print(BLUE, '\n📋 Round 4: Git status validation');
   const gitStatus = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
   if (gitStatus) {
-    print(YELLOW, `📝 Found ${gitStatus.split('\n').length} uncommitted change(s) - will be included in release commit`);
+    print(YELLOW, `📝 Found ${gitStatus.split('\n').length} uncommitted change(s)`);
+    print(YELLOW, 'These will be reviewed in changelog phase');
   }
 
-  // Quality checks
-  run('npm run quality', 'Quality checks');
-  run('npm run test:all', 'All tests');
+  print(GREEN, '✅ Quality checks completed');
+}
 
-  print(GREEN, '✅ Pre-release checks passed');
+async function runReleaseTests() {
+  print(BLUE, '\n🧪 Phase 2: Release testing...');
+  
+  // Test all functionality before release
+  run('npm run test:all', 'All tests');
+  
+  // Additional release-specific tests
+  print(BLUE, '📋 Testing CLI functionality...');
+  run('node dist/cli/index.js --help', 'CLI help test');
+  
+  print(GREEN, '✅ Release tests passed');
 }
 
 function getNextVersion(current, type) {
@@ -74,9 +94,6 @@ function getNextVersion(current, type) {
   }
 }
 
-function hasUncommittedChanges() {
-  return !!execSync('git status --porcelain', { encoding: 'utf8' }).trim();
-}
 
 async function generateChangelog(newVersion) {
   print(BLUE, '\n📝 Generating changelog...');
@@ -402,15 +419,15 @@ function formatCommitEntryForAI(commit) {
 
 function humanizeSubject(subject) {
   const replacements = {
-    'feat': '新增功能',
-    'fix': '修復問題',
-    'docs': '更新文檔',
-    'refactor': '程式碼重構',
-    'test': '測試改進',
-    'ci': '建置流程',
-    'perf': '效能優化',
-    'security': '安全性修復',
-    'deps': '依賴更新'
+    'feat': 'Feature',
+    'fix': 'Fix',
+    'docs': 'Documentation',
+    'refactor': 'Refactor',
+    'test': 'Test',
+    'ci': 'CI/CD',
+    'perf': 'Performance',
+    'security': 'Security',
+    'deps': 'Dependencies'
   };
 
   let result = subject;
@@ -425,35 +442,35 @@ function humanizeSubject(subject) {
 
 function generateDescription(commit) {
   if (commit.impact.userFacing) {
-    return `這個變更讓使用者能夠 ${describeUserValue(commit.subject, commit.fileChanges)}.`;
+    return `Enables users to ${describeUserValue(commit.subject, commit.fileChanges)}.`;
   } else if (commit.impact.developerFacing) {
-    return `改進了開發體驗，特別是在 ${describeDeveloperValue(commit.subject, commit.fileChanges)} 方面。`;
+    return `Improves developer experience in ${describeDeveloperValue(commit.subject, commit.fileChanges)}.`;
   } else {
-    return `技術改進，提升了系統的整體品質。`;
+    return `Technical improvement that enhances overall system quality.`;
   }
 }
 
 function describeUserValue(subject, fileChanges) {
   if (fileChanges.importantFiles.some(f => f.includes('cli/'))) {
-    return '透過命令列介面更方便地使用系統功能';
+    return 'use system features more conveniently through command line interface';
   }
   if (fileChanges.importantFiles.some(f => f.includes('README') || f.includes('docs/'))) {
-    return '獲得更清楚的使用說明和文檔';
+    return 'access clearer documentation and usage instructions';
   }
-  return '享受更好的使用者體驗';
+  return 'enjoy better user experience';
 }
 
 function describeDeveloperValue(subject, fileChanges) {
   if (fileChanges.importantFiles.some(f => f.includes('src/core/'))) {
-    return '核心系統架構';
+    return 'core system architecture';
   }
   if (fileChanges.importantFiles.some(f => f.includes('test/'))) {
-    return '測試覆蓋率和品質';
+    return 'test coverage and quality';
   }
   if (fileChanges.importantFiles.some(f => f.includes('package.json'))) {
-    return '依賴管理和建置流程';
+    return 'dependency management and build process';
   }
-  return '程式碼品質和維護性';
+  return 'code quality and maintainability';
 }
 
 function matchPattern(text, patterns) {
@@ -478,17 +495,17 @@ async function generateHumanReadableSections(analysis, context) {
 
 async function generateSectionContent(category, items, context) {
   const titles = {
-    features: '🚀 新功能',
-    bugfixes: '🔧 問題修復',
-    improvements: '🛠️ 改進項目',
-    documentation: '📚 文檔更新',
-    testing: '🧪 測試改進',
-    devops: '🔄 開發工具',
-    security: '🔒 安全性更新',
-    performance: '⚡ 效能優化',
-    dependencies: '📦 依賴更新',
-    breakingChanges: '⚠️ 重大變更',
-    other: '🔄 其他變更'
+    features: '🚀 Features',
+    bugfixes: '🔧 Bug Fixes',
+    improvements: '🛠️ Improvements',
+    documentation: '📚 Documentation',
+    testing: '🧪 Testing',
+    devops: '🔄 DevOps',
+    security: '🔒 Security',
+    performance: '⚡ Performance',
+    dependencies: '📦 Dependencies',
+    breakingChanges: '⚠️ Breaking Changes',
+    other: '🔄 Other Changes'
   };
 
   let content = `### ${titles[category]}\n\n`;
@@ -528,52 +545,58 @@ async function executeRelease(versionType) {
 
   print(BLUE, `📦 ${currentVersion} → ${newVersion}`);
 
-  // Phase 1: Pre-release checks
-  await runPreReleaseChecks();
+  // Phase 1: Quality checks and fixes
+  await runQualityChecks();
 
-  // Phase 2: Prepare release
-  await prepareRelease(newVersion);
+  // Phase 2: Release testing
+  await runReleaseTests();
 
-  // Phase 3: Execute release
-  await performRelease(newVersion);
+  // Phase 3: Changelog and commit
+  await prepareReleaseCommit(newVersion);
 
-  print(GREEN, `\n🎉 Successfully released ${newVersion}!`);
-  print(GREEN, '📦 Available at: https://www.npmjs.com/package/@rikaidev/cortex');
+  // Phase 4: Manual publish step
+  showPublishInstructions(newVersion);
+
+  print(GREEN, `\n🎉 Version ${newVersion} ready for manual publish!`);
 }
 
-async function prepareRelease(newVersion) {
-  print(BLUE, '\n📋 Preparing release...');
+async function prepareReleaseCommit(newVersion) {
+  print(BLUE, '\n📝 Phase 3: changelog & commit...');
 
   // Generate changelog
+  print(BLUE, '📋 Generating changelog...');
   const changelog = await generateChangelog(newVersion);
-  updateChangelog(changelog);
+  updateChangelog(changelog, newVersion);
 
-  print(GREEN, '✅ Release prepared');
-}
-
-async function performRelease(newVersion) {
-  print(BLUE, '\n🚀 Performing release...');
-
-  // Build first
-  run('npm run build', 'Build project');
-
-  // Git operations
-  if (hasUncommittedChanges()) {
-    run('git add .', 'Stage all changes');
-    run(`git commit -m "chore: release ${newVersion}"`, 'Commit changes');
+  // Show what will be committed
+  const gitStatus = execSync('git status --porcelain', { encoding: 'utf8' }).trim();
+  if (gitStatus) {
+    print(YELLOW, '\n📝 Changes to be committed:');
+    console.log(gitStatus);
+    
+    // Stage and commit changes
+    run('git add .', 'Stage changelog and other changes');
+    run(`git commit -m "chore: release ${newVersion}\n\nUpdated CHANGELOG.md with release notes"`, 'Commit release changes');
   }
 
   // Version bump (creates commit and tag)
-  run(`npm version ${newVersion}`, 'Version bump');
+  run(`npm version ${newVersion}`, 'Version bump and tag');
 
-  // Push everything
-  run('git push origin main', 'Push commits');
-  run(`git push origin v${newVersion}`, 'Push tags');
+  print(GREEN, '✅ Changelog and commit completed');
+}
 
-  // Publish to NPM
-  run('npm publish', 'Publish to NPM');
-
-  print(GREEN, '✅ Release completed');
+function showPublishInstructions(newVersion) {
+  print(BLUE, '\n📦 Phase 4: Manual publish...');
+  print(YELLOW, '\n⚠️ MANUAL STEPS REQUIRED FOR SAFETY:');
+  print(YELLOW, '');
+  print(YELLOW, '1. 📋 Review all changes carefully');
+  print(YELLOW, '2. 🔍 Verify version tag is correct');
+  print(YELLOW, `3. 📤 git push origin main`);
+  print(YELLOW, `4. 🏷️  git push origin v${newVersion}`);
+  print(YELLOW, '5. 🚀 npm publish');
+  print(YELLOW, '');
+  print(GREEN, '✅ Version prepared and tagged locally');
+  print(YELLOW, '⚠️ Complete manual steps to publish to NPM');
 }
 
 function updateChangelog(changelogEntry, newVersion) {
