@@ -23,8 +23,9 @@
     "lint": "npm run quality -- --fix",
     "quality": "node scripts/quality-check.js",
     "knip": "knip",
-    "publish": "node scripts/publish-workflow.cjs",
-    "release": "node scripts/release-workflow.cjs",
+    "release:patch": "node scripts/publish-workflow.cjs patch",
+    "release:minor": "node scripts/publish-workflow.cjs minor",
+    "release:major": "node scripts/publish-workflow.cjs major",
     "unpublish": "./scripts/release.sh unpublish"
   },
   "keywords": [
@@ -53,6 +54,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.17.1",
+    "@secretlint/secretlint-rule-preset-recommend": "^11.2.4",
     "chalk": "^5.0.0",
     "commander": "^11.0.0",
     "fs-extra": "^11.0.0",
@@ -69,6 +71,7 @@
     "chai": "^5.2.1",
     "eslint": "^8.0.0",
     "knip": "^5.64.1",
+    "markdownlint-cli": "^0.45.0",
     "mocha": "^11.7.1",
     "secretlint": "^11.2.0",
     "tsx": "^4.20.3"

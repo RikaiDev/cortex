@@ -22,6 +22,6 @@
     "enum": true
   },
   "includeEntryExports": false,
-  "ignoreDependencies": ["secretlint"],
+  "ignoreDependencies": ["secretlint", "@secretlint/secretlint-rule-preset-recommend", "markdownlint-cli"],
   "tags": ["@public"]
 }

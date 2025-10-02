@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.1] - 2025-10-02
+
+### 🚀 Features
+
+- feat: add simple release commands (patch/minor/major)
+- fix: prevent publishing when build fails, add secretlint to knip ignore
+- fix: inline quality checks in publish workflow, add CHANGELOG validation
+
+### 🔧 Bug Fixes
+
+- fix: remove unused release script from package.json
+- fix: inline all quality checks in publish workflow to avoid deleted script dependencies
+
+## [0.10.1] - 2025-10-02
+
+### 🚀 Features
+
+- feat: add simple release commands (patch/minor/major)
+- fix: prevent publishing when build fails, add secretlint to knip ignore
+- fix: inline quality checks in publish workflow, add CHANGELOG validation
+
+### 🔧 Bug Fixes
+
+- fix: remove unused release script from package.json
+- fix: inline all quality checks in publish workflow to avoid deleted script dependencies
+
+## [0.10.1] - 2025-10-02
+
+### 🔧 **Bug Fixes**
+
+- Fixed publish workflow to properly handle changelog updates
+- Improved changelog management - removed automatic release entries
+
 ## [0.10.0] - 2025-10-02
 
 ### 🚀 **Major Feature Enhancements**
