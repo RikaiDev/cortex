@@ -2,14 +2,34 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.6] - 2025-01-28
+
+### 🚀 Major Improvements
+
+- **Refactor: Simplify CLI command structure**
+  - Removed confusing `cortex cortex` command structure
+  - All commands now use direct `cortex <command>` format
+  - Commands: `cortex task`, `cortex tools`, `cortex init`, `cortex start`, `cortex generate-rules`
+
+### 🔧 Bug Fixes
+
+- **Fix: Error fallback functionality for MCP commands**
+  - Added automatic workspace initialization when commands fail
+  - Improved error handling and user experience
+  - Commands now automatically create `.cortex` directory when needed
+
+### 📝 Documentation
+
+- **Update: All help messages and prompts**
+  - Updated command references from `cortex cortex` to `cortex`
+  - Improved user guidance and error messages
+
 ## [0.10.5] - 2025-10-02
 
 ### 🔧 Bug Fixes
 
 - **Fix: improve changelog generation and Fix missing 0.10.2/0.10.3 content**
   Technical improvement that enhances overall system quality.
-
-
 
 ## [0.10.4] - 2025-10-02
 
@@ -18,8 +38,6 @@ All notable changes to this project will be documented in this file.
 - **Fix: remove async from getCodeDiff function to Fix changelog generation**
   Technical improvement that enhances overall system quality.
 
-
-
 ## [0.10.3] - 2025-10-02
 
 ### 🔧 Bug Fixes
@@ -27,7 +45,6 @@ All notable changes to this project will be documented in this file.
 - Fixed publish workflow changelog generation bug
 - Improved release process stability and error handling
 - Enhanced changelog AI generation fallback mechanism
-
 
 ## [0.10.2] - 2025-10-02
 

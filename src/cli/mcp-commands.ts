@@ -10,31 +10,80 @@ import chalk from "chalk";
 import { Command } from "commander";
 
 /**
+ * Ensure Cortex workspace exists with error fallback
+ */
+export async function ensureCortexWorkspace(
+  projectPath: string
+): Promise<void> {
+  const fs = await import("fs-extra");
+  const path = await import("path");
+
+  try {
+    const cortexDir = path.join(projectPath, ".cortex");
+    const rolesDir = path.join(cortexDir, "roles");
+
+    if (!(await fs.pathExists(rolesDir))) {
+      console.log(
+        chalk.yellow("⚠️  Cortex workspace not found, initializing...")
+      );
+      await initializeCortexWorkspace(projectPath);
+    }
+  } catch (error) {
+    console.log(chalk.red("❌ Failed to ensure Cortex workspace:"));
+    console.log(
+      chalk.gray(
+        `Error: ${error instanceof Error ? error.message : String(error)}`
+      )
+    );
+    console.log(
+      chalk.yellow("💡 Please run 'cortex init' to initialize the workspace")
+    );
+    throw error;
+  }
+}
+
+/**
  * Add MCP commands to the CLI
  */
 export function addMCPCommands(program: Command): void {
-  const mcpGroup = program
-    .command("mcp")
-    .description("🧠 Cortex MCP (Model Context Protocol) commands");
+  // Add individual commands directly to the main program
 
   // List tools command
-  mcpGroup
+  program
     .command("tools")
     .description("List available MCP tools")
     .action(async () => {
-      await listMCPTools();
+      try {
+        await listMCPTools();
+      } catch (error) {
+        console.log(
+          chalk.yellow("⚠️  Attempting to initialize workspace due to error...")
+        );
+        const projectPath = process.cwd();
+        await ensureCortexWorkspace(projectPath);
+        await listMCPTools();
+      }
     });
 
   // Execute specific tool command
-  mcpGroup
+  program
     .command("tool <toolName> [input]")
     .description("Execute a specific MCP tool")
     .action(async (toolName, input) => {
-      await executeMCPTool(toolName, input || "{}");
+      try {
+        await executeMCPTool(toolName, input || "{}");
+      } catch (error) {
+        console.log(
+          chalk.yellow("⚠️  Attempting to initialize workspace due to error...")
+        );
+        const projectPath = process.cwd();
+        await ensureCortexWorkspace(projectPath);
+        await executeMCPTool(toolName, input || "{}");
+      }
     });
 
   // Generate rules command
-  mcpGroup
+  program
     .command("generate-rules")
     .description("Regenerate Cortex rules with latest role definitions")
     .option(
@@ -42,25 +91,42 @@ export function addMCPCommands(program: Command): void {
       "Project path (default: current directory)"
     )
     .action(async (options) => {
-      const projectPath = options.projectPath || process.cwd();
-      await regenerateRules(projectPath);
+      try {
+        const projectPath = options.projectPath || process.cwd();
+        await regenerateRules(projectPath);
+      } catch (error) {
+        console.log(
+          chalk.yellow("⚠️  Attempting to initialize workspace due to error...")
+        );
+        const projectPath = options.projectPath || process.cwd();
+        await ensureCortexWorkspace(projectPath);
+        await regenerateRules(projectPath);
+      }
     });
 
   // Initialize workspace command
-  mcpGroup
+  program
     .command("init")
-    .description("Initialize Cortex workspace structure")
+    .description("Initialize Cortex workspace structure and IDE integration")
     .option(
       "-p, --project-path <path>",
       "Project path (default: current directory)"
     )
+    .option("--skip-ide", "Skip IDE integration (only initialize workspace)")
     .action(async (options) => {
       const projectPath = options.projectPath || process.cwd();
       await initializeCortexWorkspace(projectPath);
+
+      // Automatically run IDE integration unless skipped
+      if (!options.skipIde) {
+        console.log();
+        console.log(chalk.cyan("🔧 Setting up IDE integration..."));
+        await regenerateRules(projectPath);
+      }
     });
 
   // Start MCP server command
-  mcpGroup
+  program
     .command("start")
     .description("Start Cortex MCP server")
     .option(
@@ -69,9 +135,19 @@ export function addMCPCommands(program: Command): void {
     )
     .option("--project-root <path>", "Project root path (for MCP integration)")
     .action(async (options) => {
-      const projectRoot =
-        options.projectRoot || options.projectPath || process.cwd();
-      await startMCPServer(projectRoot);
+      try {
+        const projectRoot =
+          options.projectRoot || options.projectPath || process.cwd();
+        await startMCPServer(projectRoot);
+      } catch (error) {
+        console.log(
+          chalk.yellow("⚠️  Attempting to initialize workspace due to error...")
+        );
+        const projectRoot =
+          options.projectRoot || options.projectPath || process.cwd();
+        await ensureCortexWorkspace(projectRoot);
+        await startMCPServer(projectRoot);
+      }
     });
 }
 
@@ -83,6 +159,16 @@ async function listMCPTools(): Promise<void> {
   console.log();
 
   try {
+    // Check if Cortex workspace exists
+    const fs = await import("fs-extra");
+    const path = await import("path");
+    const cortexDir = path.join(process.cwd(), ".cortex");
+    const rolesDir = path.join(cortexDir, "roles");
+
+    if (!(await fs.pathExists(rolesDir))) {
+      throw new Error("Cortex workspace not initialized");
+    }
+
     // List the available tools
     const tools = ["enhance-context", "record-experience"];
 
@@ -116,10 +202,10 @@ async function listMCPTools(): Promise<void> {
     console.log(chalk.cyan("🚀 MCP Server Status:"));
     console.log("- MCP server provides context engineering tools");
     console.log("- Tools are designed to work with Cursor IDE integration");
-    console.log("- Use 'cortex mcp start' to start the MCP server");
+    console.log("- Use 'cortex start' to start the MCP server");
   } catch (error) {
     console.error(chalk.red("❌ Failed to list tools:"), error);
-    process.exit(1);
+    throw error; // Re-throw to allow error fallback to handle it
   }
 }
 
@@ -330,6 +416,163 @@ async function startMCPServer(projectRoot: string): Promise<void> {
 }
 
 /**
+ * Execute a complete development task with AI collaboration workflow
+ */
+export async function executeTask(
+  description: string,
+  projectPath: string,
+  options: { draftPr?: boolean; baseBranch?: string }
+): Promise<void> {
+  const { createCortexMCPServer } = await import("../core/mcp/server.js");
+  const fs = await import("fs-extra");
+  const path = await import("path");
+
+  console.log("🧠 Cortex AI - Starting collaborative development task");
+  console.log("==================================================");
+  console.log(`📋 Task: ${description}`);
+  console.log(`📁 Project: ${projectPath}`);
+  console.log();
+
+  try {
+    // Step 1: Ensure MCP workspace is initialized
+    console.log("🔧 Checking MCP workspace...");
+    const cortexDir = path.join(projectPath, ".cortex");
+    const rolesDir = path.join(cortexDir, "roles");
+
+    if (!(await fs.pathExists(rolesDir))) {
+      console.log("📦 Initializing MCP workspace...");
+      await initializeCortexWorkspace(projectPath);
+    }
+
+    // Step 2: Initialize MCP server
+    console.log("🤖 Initializing AI collaboration system...");
+    const mcpServer = createCortexMCPServer({ projectRoot: projectPath });
+
+    // Step 3: Enhance context with relevant past experiences
+    console.log("🧠 Enhancing context with past experiences...");
+    try {
+      const enhanceResult = await mcpServer.executeMCPTool("enhance-context", {
+        query: description,
+        maxItems: 5,
+      });
+      if (enhanceResult.content && enhanceResult.content[0]) {
+        console.log("📚 Found relevant experiences to enhance context");
+      }
+    } catch (error) {
+      console.log(
+        "ℹ️  No relevant past experiences found, proceeding with fresh context"
+      );
+    }
+
+    // Step 4: Create workflow using MCP tool
+    console.log("📝 Creating workflow...");
+    const createWorkflowResult = await mcpServer.executeMCPTool(
+      "create-workflow",
+      {
+        title: `Task: ${description}`,
+        description: description,
+      }
+    );
+
+    if (createWorkflowResult.isError || !createWorkflowResult.content?.[0]) {
+      throw new Error("Failed to create workflow");
+    }
+
+    // Extract workflow ID from result
+    const resultText = createWorkflowResult.content[0].text;
+    const workflowIdMatch =
+      resultText.match(/workflow\s+(\w+)/i) || resultText.match(/ID:\s*(\w+)/i);
+    if (!workflowIdMatch) {
+      throw new Error("Could not extract workflow ID from creation result");
+    }
+    const workflowId = workflowIdMatch[1];
+    console.log(`✅ Workflow created: ${workflowId}`);
+    console.log();
+
+    // Step 5: Execute workflow roles automatically using MCP tool
+    console.log("🎭 Executing workflow roles...");
+    let stepCount = 0;
+    const maxSteps = 10; // Prevent infinite loops
+
+    while (stepCount < maxSteps) {
+      stepCount++;
+      console.log(`\n📍 Step ${stepCount}: Executing next workflow role`);
+
+      try {
+        const executeResult = await mcpServer.executeMCPTool(
+          "execute-workflow-role",
+          {
+            workflowId: workflowId,
+          }
+        );
+
+        if (executeResult.isError || !executeResult.content?.[0]) {
+          console.log(
+            `❌ Step ${stepCount} failed: Could not execute workflow role`
+          );
+          break;
+        }
+
+        const executionText = executeResult.content[0].text;
+        console.log("✅ Role execution completed");
+
+        // Check if workflow is completed
+        if (
+          executionText.includes("Workflow Completed Successfully") ||
+          executionText.includes("workflow has been completed")
+        ) {
+          console.log("\n🎉 Workflow completed successfully!");
+          break;
+        }
+      } catch (error) {
+        console.error(
+          `❌ Step ${stepCount} failed: ${error instanceof Error ? error.message : String(error)}`
+        );
+        break;
+      }
+    }
+
+    // Step 6: Record experience for future learning
+    console.log("📚 Recording experience for future learning...");
+    try {
+      await mcpServer.executeMCPTool("record-experience", {
+        input: description,
+        output: `Completed multi-role workflow for: ${description}. Generated PR documentation and workspace files.`,
+        category: "workflow-execution",
+      });
+      console.log("✅ Experience recorded successfully");
+    } catch (error) {
+      console.log("⚠️  Could not record experience, but task completed");
+    }
+
+    // Step 7: Create PR if workflow completed
+    console.log("\n🚀 Creating pull request...");
+    try {
+      const prResult = await mcpServer.executeMCPTool("create-pull-request", {
+        workflowId: workflowId,
+        baseBranch: options.baseBranch || "main",
+        draft: options.draftPr || false,
+      });
+
+      if (prResult.content && prResult.content[0]) {
+        console.log(prResult.content[0].text);
+      }
+    } catch (error) {
+      console.log("⚠️  PR creation failed, but workflow files are available");
+      console.log("💡 Check .cortex/workspaces/ directory for generated files");
+    }
+
+    console.log("\n✨ Task execution completed!");
+  } catch (error) {
+    console.error(
+      "❌ Task execution failed:",
+      error instanceof Error ? error.message : String(error)
+    );
+    process.exit(1);
+  }
+}
+
+/**
  * Initialize Cortex workspace structure
  */
 export async function initializeCortexWorkspace(
@@ -394,7 +637,7 @@ export async function initializeCortexWorkspace(
     console.log(`  └── roles/             # Role definitions`);
     console.log();
     console.log(chalk.yellow("💡 Next steps:"));
-    console.log("  1. Run 'cortex mcp start' to start the MCP server");
+    console.log("  1. Run 'cortex start' to start the MCP server");
     console.log("  2. Use MCP tools to create and manage workflows");
     console.log("  3. Each workflow will have its own workspace folder");
   } catch (error) {

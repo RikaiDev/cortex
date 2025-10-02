@@ -8,11 +8,13 @@
 
 ## 🧠 AI Collaboration Brain
 
-**Cortex AI** is an intelligent AI collaboration system that transforms AI models into reliable, learning partners. It solves the fundamental problems of AI inconsistency and lack of memory through **prompt injection** and **real-time preference learning**.
+**Cortex AI** is an intelligent AI collaboration system that transforms AI models into reliable, learning partners.
+It solves the fundamental problems of AI inconsistency and lack of memory through **prompt injection** and **real-time preference learning**.
 
 ### 🎯 **Core Mission**
 
-To create consistent, personalized, and continuously improving AI collaboration experiences that adapt to individual developers and project needs, eliminating the frustration of repetitive explanations and inconsistent AI behavior.
+To create consistent, personalized, and continuously improving AI collaboration experiences that adapt to individual developers and project needs,
+eliminating the frustration of repetitive explanations and inconsistent AI behavior.
 
 ### 🎯 **Why Cortex?**
 
@@ -69,7 +71,8 @@ To create consistent, personalized, and continuously improving AI collaboration 
 
 5. **Explicit Reasoning and Documentation** - All transformations from few-shot to fine-tune are explicit, documented, and traceable through our workflow.
 
-This philosophy drives our implementation of an intelligent system that transforms simple user inputs (few-shot examples) into comprehensive, production-ready fine-tune prompts through mandatory processing steps.
+This philosophy drives our implementation of an intelligent system that transforms simple user inputs (few-shot examples) into comprehensive,
+production-ready fine-tune prompts through mandatory processing steps.
 
 #### MCP Workflow Architecture
 
@@ -227,8 +230,14 @@ copilot
 ### **Initialize Project**
 
 ```bash
-# Generate IDE configurations
-npx @rikaidev/cortex@latest generate-ide
+# Initialize Cortex workspace structure and IDE integration
+npx @rikaidev/cortex@latest init
+
+# Or skip IDE integration if you only want workspace setup
+npx @rikaidev/cortex@latest init --skip-ide
+
+# Regenerate IDE configurations later (if needed)
+npx @rikaidev/cortex@latest generate-rules
 ```
 
 ### **Initialize MCP Workspace** (Recommended)
@@ -236,11 +245,11 @@ npx @rikaidev/cortex@latest generate-ide
 For the latest Multi-Role Pattern workflow features:
 
 ```bash
-# Initialize Cortex MCP workspace structure
-npx @rikaidev/cortex@latest mcp init
+# Initialize Cortex workspace structure
+npx @rikaidev/cortex@latest init
 
 # Start MCP server for workflow management
-npx @rikaidev/cortex@latest mcp start
+npx @rikaidev/cortex@latest start
 
 # Run workflow demo to see Multi-Role Pattern in action
 node examples/integrated-multi-role-demo.js
@@ -265,13 +274,13 @@ Once MCP server is running, you can use the following tools:
 
 #### **Available Cortex MCP Tools**
 
-| Tool | Description | Purpose |
-|------|-------------|---------|
-| `enhance-context` | Enhance current context with relevant past experiences | Get better responses with historical context |
-| `record-experience` | Record new experiences for future reference (auto-summarized) | Build knowledge base |
-| `create-workflow` | Create Multi-Role Pattern workflow for complex tasks | Start collaborative development workflow |
-| `execute-workflow-role` | Execute next role in existing workflow | Continue workflow execution |
-| `create-pull-request` | Create GitHub PR using generated pr.md file | Automate PR creation after workflow completion |
+| Tool                    | Description                                                   | Purpose                                        |
+| ----------------------- | ------------------------------------------------------------- | ---------------------------------------------- |
+| `enhance-context`       | Enhance current context with relevant past experiences        | Get better responses with historical context   |
+| `record-experience`     | Record new experiences for future reference (auto-summarized) | Build knowledge base                           |
+| `create-workflow`       | Create Multi-Role Pattern workflow for complex tasks          | Start collaborative development workflow       |
+| `execute-workflow-role` | Execute next role in existing workflow                        | Continue workflow execution                    |
+| `create-pull-request`   | Create GitHub PR using generated pr.md file                   | Automate PR creation after workflow completion |
 
 #### **Experience Recording Optimization**
 
@@ -285,7 +294,8 @@ The `record-experience` tool automatically summarizes and optimizes content to k
 **Example of automatic summarization:**
 
 ```text
-Original: "I need to implement user authentication with registration, login, password reset, email verification, and proper security measures including bcrypt hashing, JWT tokens, rate limiting, and input validation..."
+Original: "I need to implement user authentication with registration, login, password reset, email verification, and proper security measures including
+bcrypt hashing, JWT tokens, rate limiting, and input validation..."
 
 Summarized: "Implement user authentication with registration, login, password reset, and proper security measures including bcrypt hashing, JWT tokens, rate limiting, and input validation."
 ```

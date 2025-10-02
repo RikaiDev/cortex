@@ -130,8 +130,14 @@ copilot
 ### **初始化專案**
 
 ```bash
-# 產生 IDE 設定
-npx @rikaidev/cortex@latest generate-ide
+# 初始化 Cortex 工作區結構和 IDE 整合
+npx @rikaidev/cortex@latest init
+
+# 或跳過 IDE 整合，僅設定工作區
+npx @rikaidev/cortex@latest init --skip-ide
+
+# 稍後重新產生 IDE 設定（如需要）
+npx @rikaidev/cortex@latest generate-rules
 ```
 
 ### **初始化 MCP 工作區**（推薦）
@@ -139,11 +145,11 @@ npx @rikaidev/cortex@latest generate-ide
 針對最新的多角色模式工作流程：
 
 ```bash
-# 初始化 Cortex MCP 工作區結構
-npx @rikaidev/cortex@latest mcp init
+# 初始化 Cortex 工作區結構
+npx @rikaidev/cortex@latest init
 
 # 啟動 MCP 伺服器進行工作流程管理
-npx @rikaidev/cortex@latest mcp start
+npx @rikaidev/cortex@latest start
 
 # 運行工作流程演示查看多角色模式運作
 node examples/integrated-multi-role-demo.js
