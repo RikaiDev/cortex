@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.4] - 2025-10-02
+
+### 🔧 Bug Fixes
+
+- **Fix: remove async from getCodeDiff function to Fix changelog generation**
+  Technical improvement that enhances overall system quality.
+
+
+
 ## [0.10.3] - 2025-10-02
 
 
