@@ -60,17 +60,64 @@ function runQualityChecks() {
   }
   print(GREEN, '✅ Git status clean');
 
-  // Dependencies
-  runCommand('node scripts/dependency-check.js', 'Check dependencies');
+  // Dependencies check (inline implementation)
+  const projectRoot = path.join(__dirname, '..');
+  const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
+
+  const criticalRuntimeDeps = [
+    'typescript', // Used in project-scanner.ts
+    'chalk',      // CLI output
+    'commander',  // CLI parsing
+    'fs-extra',   // File operations
+  ];
+
+  let depsGood = true;
+  for (const dep of criticalRuntimeDeps) {
+    if (packageJson.devDependencies && packageJson.devDependencies[dep]) {
+      print(RED, `❌ "${dep}" incorrectly in devDependencies but used at runtime!`);
+      depsGood = false;
+    } else if (packageJson.dependencies && packageJson.dependencies[dep]) {
+      print(GREEN, `✅ "${dep}" correctly in dependencies`);
+    } else {
+      print(YELLOW, `⚠️  "${dep}" not found in any dependencies`);
+    }
+  }
+
+  if (!depsGood) {
+    throw new Error('Dependency placement issues found');
+  }
 
   // TypeScript compilation
   runCommand('npx tsc --noEmit --skipLibCheck', 'TypeScript compilation');
 
-  // Linting
-  runCommand('node scripts/code-quality-check.js', 'Code quality checks');
+  // Linting (inline implementation)
+  const eslintResult = runCommand('npx eslint "src/**/*.ts"', 'ESLint check', true);
+  if (eslintResult.success) {
+    print(GREEN, '✅ ESLint passed');
+  } else {
+    print(RED, '❌ ESLint failed');
+    throw new Error('ESLint check failed');
+  }
+
+  const prettierResult = runCommand('npx prettier --check "src/**/*.ts"', 'Prettier check', true);
+  if (prettierResult.success) {
+    print(GREEN, '✅ Prettier check passed');
+  } else {
+    print(RED, '❌ Prettier check failed');
+    throw new Error('Prettier check failed');
+  }
 
   // Tests
   runCommand('npm run test:all', 'Run test suite');
+
+  // Security
+  const securityResult = runCommand('npx secretlint "**/*"', 'Secret detection', true);
+  if (securityResult.success) {
+    print(GREEN, '✅ No secrets detected');
+  } else {
+    print(RED, '❌ Potential secrets found');
+    throw new Error('Security check failed');
+  }
 
   print(GREEN, '🎉 All quality checks passed!');
 }
