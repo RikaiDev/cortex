@@ -199,7 +199,7 @@ async function getDetailedCommitsWithDiff() {
     const fileChanges = parseFileChanges(diff);
 
     // Get code diff for important files
-    const codeDiff = await getCodeDiff(hash, fileChanges.importantFiles.slice(0, 3));
+    const codeDiff = getCodeDiff(hash, fileChanges.importantFiles.slice(0, 3));
 
     commits.push({
       hash,
@@ -253,7 +253,7 @@ function parseFileChanges(diffOutput) {
   return changes;
 }
 
-async function getCodeDiff(commitHash, importantFiles) {
+function getCodeDiff(commitHash, importantFiles) {
   const codeDiffs = {};
 
   for (const file of importantFiles) {
