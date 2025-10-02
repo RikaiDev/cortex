@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.10.5] - 2025-10-02
+
+### 🔧 Bug Fixes
+
+- **Fix: improve changelog generation and Fix missing 0.10.2/0.10.3 content**
+  Technical improvement that enhances overall system quality.
+
+
+
 ## [0.10.4] - 2025-10-02
 
 ### 🔧 Bug Fixes
