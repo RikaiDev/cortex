@@ -1,6 +1,6 @@
 {
   "name": "@rikaidev/cortex",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "description": "Cortex AI - AI Collaboration Brain with real-time preference learning and structured thinking",
   "main": "dist/index.js",
   "type": "module",
