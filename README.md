@@ -340,6 +340,92 @@ gh pr create --title "Implement user authentication system" --body-file pr.md
 
 **Future Enhancement:** Direct PR creation tools may be added in future versions to enable automated PR creation without external dependencies.
 
+### **Publishing Workflow**
+
+Follow this step-by-step process for stable releases:
+
+#### **Pre-Publish Checklist**
+
+**1. Update CHANGELOG.md with new version:**
+
+```bash
+# Add new version entry to CHANGELOG.md
+# Example:
+## [0.9.8] - 2025-10-02
+### Added
+- Add cortex task command with full MCP tools integration
+- Implement intelligent experience summarization
+
+### Changed
+- Update MCP tools documentation
+- Improve CLI user experience
+
+### Fixed
+- Fix various minor issues
+```
+
+**2. Set version and create git tag:**
+
+```bash
+# Check latest published version first
+npm view @rikaidev/cortex version
+
+# Set specific version (this also creates git tag)
+npm version 0.9.8    # replace with your chosen version
+
+# This command will:
+# 1. Update package.json version
+# 2. Update package-lock.json
+# 3. Create git commit with message "0.9.8"
+# 4. Create git tag "v0.9.8"
+```
+
+**3. Push commits and tags:**
+
+```bash
+# Push the version commit and tag
+git push origin main
+git push origin v0.9.8
+```
+
+**4. Run unified publish workflow:**
+
+```bash
+# Option A: Check only (recommended before manual publish)
+npm run publish check
+
+# Option B: Full workflow (check + publish)
+npm run publish publish
+```
+
+### Alternative: Manual Steps
+
+```bash
+# Run quality checks only
+npm run publish check
+
+# Publish to npm manually
+npm publish
+```
+
+#### **Release Quality Checks**
+
+Run comprehensive quality checks before publishing:
+
+```bash
+# Run all release quality checks
+npm run release:check
+```
+
+#### **Unpublish (if needed)**
+
+To unpublish a version (use with caution):
+
+```bash
+# Unpublish a specific version
+npm run release:unpublish 0.9.7
+```
+
 ### **Start Learning**
 
 ```bash
