@@ -117,7 +117,8 @@ function getRecentCommits() {
   return execSync(`git log ${range} --oneline --no-merges`, { encoding: 'utf8' })
     .split('\n')
     .filter(line => line.trim())
-    .map(line => line.replace(/^[a-f0-9]+\s*/, ''));
+    .map(line => line.replace(/^[a-f0-9]+\s*/, ''))
+    .filter(commit => !commit.includes('chore: release') && !commit.match(/^\d+\.\d+\.\d+$/));
 }
 
 async function generateSimpleChangelog(newVersion, commits) {

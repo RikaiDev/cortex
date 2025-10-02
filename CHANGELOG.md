@@ -13,7 +13,20 @@ All notable changes to this project will be documented in this file.
 
 ## [0.10.3] - 2025-10-02
 
+### 🔧 Bug Fixes
 
+- Fixed publish workflow changelog generation bug
+- Improved release process stability and error handling
+- Enhanced changelog AI generation fallback mechanism
+
+
+## [0.10.2] - 2025-10-02
+
+### 🔧 Bug Fixes
+
+- Fixed publish workflow dependency issues (secretlint rule preset)
+- Improved knip configuration to ignore quality check dependencies
+- Enhanced release process stability and error handling
 
 ## [0.10.1] - 2025-10-02
 
