@@ -22,5 +22,6 @@
     "enum": true
   },
   "includeEntryExports": false,
+  "ignoreDependencies": ["secretlint"],
   "tags": ["@public"]
 }

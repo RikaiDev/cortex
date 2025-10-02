@@ -208,10 +208,17 @@ switch (command) {
       print(GREEN, '✅ CHANGELOG.md version matches package.json');
     }
 
-    // Build and publish
+    // Build project
     print(BLUE, '\n📦 Building project...');
-    runCommand('npm run build', 'Build project', false);
+    {
+      const buildResult = runCommand('npm run build', 'Build project', false);
+      if (!buildResult.success) {
+        print(RED, '❌ Build failed - cannot publish broken code!');
+        process.exit(1);
+      }
+    }
 
+    // Publish to npm
     print(BLUE, '\n🚀 Publishing to npm...');
     runCommand('npm publish', 'Publish to npm', false);
 
