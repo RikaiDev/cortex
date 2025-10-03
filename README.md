@@ -192,7 +192,7 @@ Add the following config to your MCP client:
   "mcpServers": {
     "cortex-ai": {
       "command": "npx",
-      "args": ["-y", "@rikaidev/cortex@latest"]
+      "args": ["-y", "@rikaidev/cortex@latest", "start"]
     }
   }
 }
@@ -203,7 +203,7 @@ Add the following config to your MCP client:
 #### Claude Code
 
 ```bash
-claude mcp add cortex-ai npx @rikaidev/cortex@latest
+claude mcp add cortex-ai npx -y @rikaidev/cortex@latest start
 ```
 
 #### Cursor
@@ -214,7 +214,7 @@ claude mcp add cortex-ai npx @rikaidev/cortex@latest
 #### VS Code
 
 ```bash
-code --add-mcp '{"name":"cortex-ai","command":"npx","args":["@rikaidev/cortex@latest"]}'
+code --add-mcp '{"name":"cortex-ai","command":"npx","args":["-y","@rikaidev/cortex@latest","start"]}'
 ```
 
 #### Copilot CLI
@@ -224,7 +224,7 @@ copilot
 /mcp add
 # Server name: cortex-ai
 # Command: npx
-# Arguments: -y, @rikaidev/cortex@latest
+# Arguments: -y, @rikaidev/cortex@latest, start
 ```
 
 ### **Initialize Project**
