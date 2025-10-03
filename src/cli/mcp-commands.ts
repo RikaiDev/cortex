@@ -170,7 +170,14 @@ async function listMCPTools(): Promise<void> {
     }
 
     // List the available tools
-    const tools = ["enhance-context", "record-experience"];
+    const tools = [
+      "task",
+      "enhance-context",
+      "record-experience",
+      "create-workflow",
+      "execute-workflow-role",
+      "create-pull-request",
+    ];
 
     if (tools.length === 0) {
       console.log(
@@ -191,10 +198,22 @@ async function listMCPTools(): Promise<void> {
     console.log();
     console.log(chalk.cyan("📋 Available MCP Tools:"));
     console.log(
+      "- task: Execute a complete development task with AI collaboration workflow"
+    );
+    console.log(
       "- enhance-context: Enhance current context with relevant past experiences and knowledge"
     );
     console.log(
       "- record-experience: Record a new experience or solution for future reference"
+    );
+    console.log(
+      "- create-workflow: Create a new Multi-Role Pattern workflow for complex development tasks"
+    );
+    console.log(
+      "- execute-workflow-role: Execute the next role in an existing Multi-Role workflow"
+    );
+    console.log(
+      "- create-pull-request: Create a GitHub pull request using the generated pr.md file"
     );
 
     // Show MCP server status
@@ -222,14 +241,64 @@ async function executeMCPTool(
 
   try {
     console.log(chalk.gray(`Raw input string: ${inputStr}`));
-    const input: Record<string, unknown> = JSON.parse(inputStr);
+
+    let input: Record<string, unknown>;
+    try {
+      // Try to parse as JSON first
+      input = JSON.parse(inputStr);
+    } catch (jsonError) {
+      // If not valid JSON, treat as a simple string and wrap it appropriately
+      console.log(
+        chalk.yellow(
+          `⚠️  Input is not valid JSON, treating as string parameter`
+        )
+      );
+
+      // For different tools, wrap the string input appropriately
+      switch (toolName) {
+        case "enhance-context":
+          input = { query: inputStr };
+          break;
+        case "record-experience":
+          input = {
+            title: inputStr,
+            description: inputStr,
+            tags: [],
+          };
+          break;
+        case "create-workflow":
+          input = {
+            title: inputStr,
+            description: inputStr,
+          };
+          break;
+        case "execute-workflow-role":
+          input = {
+            workflowId: inputStr,
+          };
+          break;
+        case "create-pull-request":
+          input = {
+            workflowId: inputStr,
+          };
+          break;
+        case "task":
+          input = {
+            description: inputStr,
+          };
+          break;
+        default:
+          input = { input: inputStr };
+      }
+    }
+
     console.log(chalk.gray(`Parsed input: ${JSON.stringify(input, null, 2)}`));
 
     // Create MCP server
     const { createCortexMCPServer } = await import("../core/mcp/server.js");
 
     const projectPath = process.cwd();
-    const server = createCortexMCPServer({ projectRoot: projectPath });
+    const server = createCortexMCPServer(projectPath);
 
     // Simple CLI testing - direct method call
     let result;
@@ -259,6 +328,37 @@ async function executeMCPTool(
           output: string;
           category?: string;
           tags?: string[];
+        }
+      );
+    } else if (toolName === "create-workflow") {
+      result = await server.handleCreateWorkflow(
+        input as {
+          issueId?: string;
+          title: string;
+          description: string;
+        }
+      );
+    } else if (toolName === "execute-workflow-role") {
+      result = await server.handleExecuteWorkflowRole(
+        input as {
+          workflowId: string;
+          roleName?: string;
+        }
+      );
+    } else if (toolName === "create-pull-request") {
+      result = await server.handleCreatePullRequest(
+        input as {
+          workflowId: string;
+          baseBranch?: string;
+          draft?: boolean;
+        }
+      );
+    } else if (toolName === "task") {
+      result = await server.handleTask(
+        input as {
+          description: string;
+          draftPr?: boolean;
+          baseBranch?: string;
         }
       );
     } else {
@@ -391,7 +491,7 @@ async function startMCPServer(projectRoot: string): Promise<void> {
     // Import and start the MCP server
     const { createCortexMCPServer } = await import("../core/mcp/server.js");
 
-    const server = createCortexMCPServer({ projectRoot: resolvedProjectRoot });
+    const server = createCortexMCPServer(resolvedProjectRoot);
 
     console.log(chalk.green("✅ MCP server started successfully!"));
     console.log(chalk.gray("Server is running and ready for connections"));
@@ -416,7 +516,80 @@ async function startMCPServer(projectRoot: string): Promise<void> {
 }
 
 /**
+ * Execute MCP tool directly (helper function for tool chain)
+ */
+async function executeMCPToolDirect(
+  mcpServer: {
+    handleEnhanceContext: (args: {
+      query: string;
+      maxItems?: number;
+    }) => Promise<{
+      content?: Array<{ type: string; text: string }>;
+      isError?: boolean;
+    }>;
+    handleCreateWorkflow: (args: {
+      title: string;
+      description: string;
+    }) => Promise<{
+      content?: Array<{ type: string; text: string }>;
+      isError?: boolean;
+    }>;
+    handleExecuteWorkflowRole: (args: { workflowId: string }) => Promise<{
+      content?: Array<{ type: string; text: string }>;
+      isError?: boolean;
+    }>;
+    handleRecordExperience: (args: {
+      input: string;
+      output: string;
+      category: string;
+    }) => Promise<{
+      content?: Array<{ type: string; text: string }>;
+      isError?: boolean;
+    }>;
+    handleCreatePullRequest: (args: {
+      workflowId: string;
+      baseBranch?: string;
+      draft?: boolean;
+    }) => Promise<{
+      content?: Array<{ type: string; text: string }>;
+      isError?: boolean;
+    }>;
+  },
+  toolName: string,
+  args: Record<string, unknown>
+): Promise<{
+  content?: Array<{ type: string; text: string }>;
+  isError?: boolean;
+}> {
+  switch (toolName) {
+    case "enhance-context":
+      return await mcpServer.handleEnhanceContext(
+        args as { query: string; maxItems?: number }
+      );
+    case "create-workflow":
+      return await mcpServer.handleCreateWorkflow(
+        args as { title: string; description: string }
+      );
+    case "execute-workflow-role":
+      return await mcpServer.handleExecuteWorkflowRole(
+        args as { workflowId: string }
+      );
+    case "record-experience":
+      return await mcpServer.handleRecordExperience(
+        args as { input: string; output: string; category: string }
+      );
+    case "create-pull-request":
+      return await mcpServer.handleCreatePullRequest(
+        args as { workflowId: string; baseBranch?: string; draft?: boolean }
+      );
+    default:
+      throw new Error(`Unknown tool: ${toolName}`);
+  }
+}
+
+/**
  * Execute a complete development task with AI collaboration workflow
+ * Uses proper MCP tool calling pattern as recommended by Context7
  */
 export async function executeTask(
   description: string,
@@ -446,120 +619,169 @@ export async function executeTask(
 
     // Step 2: Initialize MCP server
     console.log("🤖 Initializing AI collaboration system...");
-    const mcpServer = createCortexMCPServer({ projectRoot: projectPath });
+    const mcpServer = createCortexMCPServer(projectPath);
 
-    // Step 3: Enhance context with relevant past experiences
-    console.log("🧠 Enhancing context with past experiences...");
-    try {
-      const enhanceResult = await mcpServer.executeMCPTool("enhance-context", {
-        query: description,
-        maxItems: 5,
-      });
-      if (enhanceResult.content && enhanceResult.content[0]) {
-        console.log("📚 Found relevant experiences to enhance context");
-      }
-    } catch (error) {
-      console.log(
-        "ℹ️  No relevant past experiences found, proceeding with fresh context"
-      );
-    }
+    // Step 3-7: Execute MCP tool chain workflow using Context7 best practices
+    console.log("🔗 Executing MCP tool chain workflow...");
 
-    // Step 4: Create workflow using MCP tool
-    console.log("📝 Creating workflow...");
-    const createWorkflowResult = await mcpServer.executeMCPTool(
-      "create-workflow",
+    // Define the tool chain based on Context7 Chain of Tools pattern
+    const toolChain = [
+      { name: "enhance-context", args: { query: description, maxItems: 5 } },
       {
-        title: `Task: ${description}`,
-        description: description,
-      }
-    );
+        name: "create-workflow",
+        args: { title: `Task: ${description}`, description: description },
+      },
+      { name: "execute-workflow-role", args: {} }, // Will be updated with workflowId
+      {
+        name: "record-experience",
+        args: {
+          input: description,
+          output: "",
+          category: "workflow-execution",
+        },
+      },
+      {
+        name: "create-pull-request",
+        args: {
+          baseBranch: options.baseBranch || "main",
+          draft: options.draftPr || false,
+        },
+      },
+    ];
 
-    if (createWorkflowResult.isError || !createWorkflowResult.content?.[0]) {
-      throw new Error("Failed to create workflow");
-    }
+    const currentResult: { workflowId: string | null } = { workflowId: null };
+    const allResults: Record<string, string> = { input: description };
 
-    // Extract workflow ID from result
-    const resultText = createWorkflowResult.content[0].text;
-    const workflowIdMatch =
-      resultText.match(/workflow\s+(\w+)/i) || resultText.match(/ID:\s*(\w+)/i);
-    if (!workflowIdMatch) {
-      throw new Error("Could not extract workflow ID from creation result");
-    }
-    const workflowId = workflowIdMatch[1];
-    console.log(`✅ Workflow created: ${workflowId}`);
-    console.log();
-
-    // Step 5: Execute workflow roles automatically using MCP tool
-    console.log("🎭 Executing workflow roles...");
-    let stepCount = 0;
-    const maxSteps = 10; // Prevent infinite loops
-
-    while (stepCount < maxSteps) {
-      stepCount++;
-      console.log(`\n📍 Step ${stepCount}: Executing next workflow role`);
+    // Execute each tool in the chain
+    for (let i = 0; i < toolChain.length; i++) {
+      const tool = toolChain[i];
+      console.log(`\n📍 Step ${i + 1}: Executing ${tool.name}...`);
 
       try {
-        const executeResult = await mcpServer.executeMCPTool(
-          "execute-workflow-role",
-          {
-            workflowId: workflowId,
-          }
+        // Update args with previous results
+        if (tool.name === "execute-workflow-role" && currentResult.workflowId) {
+          (tool.args as Record<string, unknown>).workflowId =
+            currentResult.workflowId;
+        }
+        if (tool.name === "record-experience") {
+          (tool.args as Record<string, unknown>).output =
+            `Completed multi-role workflow for: ${description}. Generated PR documentation and workspace files.`;
+        }
+        if (tool.name === "create-pull-request" && currentResult.workflowId) {
+          (tool.args as Record<string, unknown>).workflowId =
+            currentResult.workflowId;
+        }
+
+        // Execute the tool using proper MCP tool calling
+        const result = await executeMCPToolDirect(
+          mcpServer,
+          tool.name,
+          tool.args
         );
 
-        if (executeResult.isError || !executeResult.content?.[0]) {
+        if (result.isError) {
           console.log(
-            `❌ Step ${stepCount} failed: Could not execute workflow role`
+            `❌ Step ${i + 1} failed: ${result.content?.[0]?.text || "Unknown error"}`
           );
           break;
         }
 
-        const executionText = executeResult.content[0].text;
-        console.log("✅ Role execution completed");
+        console.log(`✅ ${tool.name} completed successfully`);
+        allResults[tool.name] = result.content?.[0]?.text || "";
 
-        // Check if workflow is completed
-        if (
-          executionText.includes("Workflow Completed Successfully") ||
-          executionText.includes("workflow has been completed")
-        ) {
-          console.log("\n🎉 Workflow completed successfully!");
-          break;
+        // Extract workflow ID from create-workflow result
+        if (tool.name === "create-workflow" && result.content?.[0]) {
+          const resultText = result.content[0].text;
+          const workflowIdMatch =
+            resultText.match(/ID:\s*workflow-(\d+)/i) ||
+            resultText.match(/workflow-(\d+)/i) ||
+            resultText.match(/ID:\s*([\w-]+)/i);
+
+          if (workflowIdMatch) {
+            currentResult.workflowId = workflowIdMatch[1].startsWith(
+              "workflow-"
+            )
+              ? workflowIdMatch[1]
+              : `workflow-${workflowIdMatch[1]}`;
+
+            // Create workspace directory
+            const workspaceDir = path.join(
+              projectPath,
+              ".cortex",
+              "workspaces",
+              currentResult.workflowId
+            );
+            await fs.ensureDir(workspaceDir);
+            console.log(`📁 Created workspace directory: ${workspaceDir}`);
+          }
+        }
+
+        // For execute-workflow-role, run multiple iterations
+        if (tool.name === "execute-workflow-role" && currentResult.workflowId) {
+          console.log("🎭 Executing multiple workflow roles...");
+          for (let roleStep = 1; roleStep <= 10; roleStep++) {
+            try {
+              const roleResult = await executeMCPToolDirect(
+                mcpServer,
+                "execute-workflow-role",
+                {
+                  workflowId: currentResult.workflowId,
+                }
+              );
+
+              if (roleResult.isError) {
+                console.log(`❌ Role step ${roleStep} failed`);
+                break;
+              }
+
+              console.log(`✅ Role step ${roleStep} completed`);
+
+              // Check if workflow is completed
+              const roleText = roleResult.content?.[0]?.text || "";
+              if (
+                roleText.includes("Workflow Completed Successfully") ||
+                roleText.includes("workflow has been completed")
+              ) {
+                console.log("🎉 Workflow completed successfully!");
+                break;
+              }
+            } catch (error) {
+              console.log(`❌ Role step ${roleStep} failed: ${error}`);
+              break;
+            }
+          }
         }
       } catch (error) {
         console.error(
-          `❌ Step ${stepCount} failed: ${error instanceof Error ? error.message : String(error)}`
+          `❌ Step ${i + 1} failed: ${error instanceof Error ? error.message : String(error)}`
         );
         break;
       }
     }
 
-    // Step 6: Record experience for future learning
-    console.log("📚 Recording experience for future learning...");
-    try {
-      await mcpServer.executeMCPTool("record-experience", {
-        input: description,
-        output: `Completed multi-role workflow for: ${description}. Generated PR documentation and workspace files.`,
-        category: "workflow-execution",
-      });
-      console.log("✅ Experience recorded successfully");
-    } catch (error) {
-      console.log("⚠️  Could not record experience, but task completed");
-    }
+    // Step 8: Generate handoff.md and pr.md files
+    if (currentResult.workflowId) {
+      console.log("\n📝 Generating handoff.md and pr.md files...");
+      try {
+        // Import WorkflowManager to generate files
+        const { WorkflowManager } = await import(
+          "../core/workflow-integration.js"
+        );
+        const { CortexAI } = await import("../core/index.js");
+        const cortex = new CortexAI(projectPath);
+        const workflowManager = new WorkflowManager(cortex, projectPath);
 
-    // Step 7: Create PR if workflow completed
-    console.log("\n🚀 Creating pull request...");
-    try {
-      const prResult = await mcpServer.executeMCPTool("create-pull-request", {
-        workflowId: workflowId,
-        baseBranch: options.baseBranch || "main",
-        draft: options.draftPr || false,
-      });
-
-      if (prResult.content && prResult.content[0]) {
-        console.log(prResult.content[0].text);
+        // Generate handoff and PR files
+        await workflowManager.generateWorkflowFiles(currentResult.workflowId);
+        console.log("✅ handoff.md and pr.md generated successfully");
+      } catch (error) {
+        console.log(
+          "⚠️  Could not generate handoff/pr files, but task completed"
+        );
+        console.log(
+          `Error: ${error instanceof Error ? error.message : String(error)}`
+        );
       }
-    } catch (error) {
-      console.log("⚠️  PR creation failed, but workflow files are available");
-      console.log("💡 Check .cortex/workspaces/ directory for generated files");
     }
 
     console.log("\n✨ Task execution completed!");
@@ -575,9 +797,7 @@ export async function executeTask(
 /**
  * Initialize Cortex workspace structure
  */
-export async function initializeCortexWorkspace(
-  projectPath: string
-): Promise<void> {
+async function initializeCortexWorkspace(projectPath: string): Promise<void> {
   console.log(chalk.blue("🏗️  Initializing Cortex workspace..."));
   console.log(chalk.gray(`Project path: ${projectPath}`));
   console.log();

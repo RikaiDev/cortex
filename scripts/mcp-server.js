@@ -7,7 +7,7 @@
  * Usage: npx @rikaidev/cortex mcp
  */
 
-import { createCortexMCPServer } from '../dist/core/mcp/server.js';
+import { createCortexMCPServer } from "../dist/core/mcp/server.js";
 
 async function main() {
   // Parse command line arguments
@@ -18,27 +18,27 @@ async function main() {
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
-      case '--debug':
+      case "--debug":
         config.enableDebugMode = true;
-        config.logLevel = 'debug';
+        config.logLevel = "debug";
         break;
-      case '--dev':
+      case "--dev":
         config.enableDebugMode = true;
-        config.logLevel = 'debug';
+        config.logLevel = "debug";
         break;
-      case '--project':
-      case '--project-root':
+      case "--project":
+      case "--project-root":
         if (i + 1 < args.length) {
           config.projectRoot = args[++i];
         }
         break;
-      case '--log-level':
+      case "--log-level":
         if (i + 1 < args.length) {
           config.logLevel = args[++i];
         }
         break;
-      case '--help':
-      case '-h':
+      case "--help":
+      case "-h":
         console.log(`
 Cortex MCP Server
 
@@ -62,44 +62,41 @@ Examples:
   }
 
   try {
-    console.log('🚀 Starting Cortex MCP Server...');
+    console.log("🚀 Starting Cortex MCP Server...");
 
     // Create and start server
     const server = createCortexMCPServer(config);
 
     // Handle graceful shutdown
-    process.on('SIGINT', async () => {
-      console.log('\n🛑 Received SIGINT, shutting down...');
+    process.on("SIGINT", async () => {
+      console.log("\n🛑 Received SIGINT, shutting down...");
       try {
         await server.stop();
       } catch (error) {
-        console.error('Error during shutdown:', error);
+        console.error("Error during shutdown:", error);
       }
       process.exit(0);
     });
 
-    process.on('SIGTERM', async () => {
-      console.log('\n🛑 Received SIGTERM, shutting down...');
+    process.on("SIGTERM", async () => {
+      console.log("\n🛑 Received SIGTERM, shutting down...");
       try {
         await server.stop();
       } catch (error) {
-        console.error('Error during shutdown:', error);
+        console.error("Error during shutdown:", error);
       }
       process.exit(0);
     });
 
     // Start server
     await server.start();
-
   } catch (error) {
-    console.error('❌ Failed to start MCP server:', error);
+    console.error("❌ Failed to start MCP server:", error);
     process.exit(1);
   }
 }
 
 main().catch((error) => {
-  console.error('❌ Unhandled error:', error);
+  console.error("❌ Unhandled error:", error);
   process.exit(1);
 });
-
-

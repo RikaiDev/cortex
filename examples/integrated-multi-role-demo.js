@@ -13,14 +13,14 @@
  * Usage: node examples/integrated-multi-role-demo.js
  */
 
-import { CortexCore } from '../src/core/index.js';
-import { WorkflowManager } from '../src/core/workflow-integration.js';
+import { CortexCore } from "../src/core/index.js";
+import { WorkflowManager } from "../src/core/workflow-integration.js";
 
 async function main() {
-  console.log('🚀 Integrated Multi-Role Pattern Demo');
-  console.log('=====================================\n');
+  console.log("🚀 Integrated Multi-Role Pattern Demo");
+  console.log("=====================================\n");
 
-  console.log('💡 Prerequisites check:');
+  console.log("💡 Prerequisites check:");
   console.log('   1. Run "cortex mcp init" to initialize workspace');
   console.log('   2. Run "cortex mcp start" to start MCP server');
   console.log();
@@ -31,11 +31,11 @@ async function main() {
 
   try {
     // Create a sample workflow using the integrated system
-    console.log('📋 Creating workflow for sample issue...\n');
+    console.log("📋 Creating workflow for sample issue...\n");
     const workflow = await workflowManager.createWorkflow(
-      'demo-001',
-      'Implement user authentication system',
-      'Create a complete user authentication system with registration, login, and password reset functionality. The system should include proper security measures and be integrated with the existing user management module.'
+      "demo-001",
+      "Implement user authentication system",
+      "Create a complete user authentication system with registration, login, and password reset functionality. The system should include proper security measures and be integrated with the existing user management module."
     );
 
     console.log(`✅ Workflow created: ${workflow.id}`);
@@ -51,24 +51,29 @@ async function main() {
       console.log(`🎭 Executing workflow step ${stepCount}...`);
 
       try {
-        const execution = await workflowManager.executeWorkflowStep(workflow.id);
+        const execution = await workflowManager.executeWorkflowStep(
+          workflow.id
+        );
 
         console.log(`✅ Role ${execution.roleId} completed successfully`);
-        console.log(`📄 Deliverables: ${execution.deliverables.join(', ')}`);
+        console.log(`📄 Deliverables: ${execution.deliverables.join(", ")}`);
 
         if (execution.output) {
-          console.log(`📝 Output preview: ${execution.output.substring(0, 100)}...`);
+          console.log(
+            `📝 Output preview: ${execution.output.substring(0, 100)}...`
+          );
         }
 
         // Check if workflow is completed
-        const currentWorkflow = await workflowManager.getWorkflowState(workflow.id);
-        if (currentWorkflow.status === 'completed') {
-          console.log('\n🎉 Workflow completed!');
+        const currentWorkflow = await workflowManager.getWorkflowState(
+          workflow.id
+        );
+        if (currentWorkflow.status === "completed") {
+          console.log("\n🎉 Workflow completed!");
           break;
         }
 
         console.log(`📊 Next role: ${currentWorkflow.currentRole}\n`);
-
       } catch (error) {
         console.log(`❌ Workflow step failed: ${error.message}`);
         break;
@@ -77,10 +82,12 @@ async function main() {
 
     // Show final workflow status
     const finalWorkflow = await workflowManager.getWorkflowState(workflow.id);
-    console.log('📊 Final workflow status:');
+    console.log("📊 Final workflow status:");
     console.log(`   - Status: ${finalWorkflow.status}`);
     console.log(`   - Roles executed: ${finalWorkflow.executions.length}`);
-    console.log(`   - Total deliverables: ${finalWorkflow.executions.flatMap(e => e.deliverables).length}`);
+    console.log(
+      `   - Total deliverables: ${finalWorkflow.executions.flatMap((e) => e.deliverables).length}`
+    );
 
     // Get workspace information
     const workspaceInfo = await workflowManager.getWorkspaceInfo(workflow.id);
@@ -93,28 +100,33 @@ async function main() {
       console.log(`   - pr.md: ${workspaceInfo.prFile}`);
 
       // Check if files were generated
-      const fs = await import('fs-extra');
+      const fs = await import("fs-extra");
       const handoffExists = await fs.pathExists(workspaceInfo.handoffFile);
       const prExists = await fs.pathExists(workspaceInfo.prFile);
 
       console.log(`\n📁 File generation status:`);
-      console.log(`   - handoff.md: ${handoffExists ? '✅ Generated' : '❌ Missing'}`);
-      console.log(`   - pr.md: ${prExists ? '✅ Generated' : '❌ Missing'}`);
+      console.log(
+        `   - handoff.md: ${handoffExists ? "✅ Generated" : "❌ Missing"}`
+      );
+      console.log(`   - pr.md: ${prExists ? "✅ Generated" : "❌ Missing"}`);
 
       if (handoffExists) {
-        console.log('\n📖 Handoff file preview:');
-        const handoffContent = await fs.readFile(workspaceInfo.handoffFile, 'utf-8');
-        console.log(handoffContent.substring(0, 200) + '...');
+        console.log("\n📖 Handoff file preview:");
+        const handoffContent = await fs.readFile(
+          workspaceInfo.handoffFile,
+          "utf-8"
+        );
+        console.log(handoffContent.substring(0, 200) + "...");
       }
 
       if (prExists) {
-        console.log('\n📋 PR file preview:');
-        const prContent = await fs.readFile(workspaceInfo.prFile, 'utf-8');
-        console.log(prContent.substring(0, 200) + '...');
+        console.log("\n📋 PR file preview:");
+        const prContent = await fs.readFile(workspaceInfo.prFile, "utf-8");
+        console.log(prContent.substring(0, 200) + "...");
       }
 
       // Show workspace directory structure
-      console.log('\n📂 Workspace structure:');
+      console.log("\n📂 Workspace structure:");
       console.log(`   .cortex/`);
       console.log(`   ├── workflows/          # Workflow state files`);
       console.log(`   │   └── ${workflow.id}.json`);
@@ -126,31 +138,34 @@ async function main() {
     }
 
     // List all workspaces
-    console.log('\n📋 All workspaces:');
+    console.log("\n📋 All workspaces:");
     const allWorkspaces = await workflowManager.listWorkspaces();
     if (allWorkspaces.length > 0) {
       allWorkspaces.forEach((ws, index) => {
         console.log(`   ${index + 1}. ${ws.id} (${ws.workflowId})`);
       });
     } else {
-      console.log('   No workspaces found');
+      console.log("   No workspaces found");
     }
 
     // Demonstrate experience learning integration
-    console.log('\n🧠 Experience Learning Integration:');
+    console.log("\n🧠 Experience Learning Integration:");
     const relevantExperiences = await cortex.findRelevantExperiences(
-      'Multi-Role workflow execution',
+      "Multi-Role workflow execution",
       3,
       30
     );
 
-    console.log(`Found ${relevantExperiences.length} related experiences in the system`);
+    console.log(
+      `Found ${relevantExperiences.length} related experiences in the system`
+    );
     relevantExperiences.forEach((exp, index) => {
-      console.log(`  ${index + 1}. ${exp.category}: ${exp.input.substring(0, 50)}...`);
+      console.log(
+        `  ${index + 1}. ${exp.category}: ${exp.input.substring(0, 50)}...`
+      );
     });
-
   } catch (error) {
-    console.error('❌ Demo failed:', error);
+    console.error("❌ Demo failed:", error);
     process.exit(1);
   }
 }

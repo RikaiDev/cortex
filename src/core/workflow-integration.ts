@@ -10,7 +10,7 @@ import fs from "fs-extra";
 import path from "path";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
-import { CortexCore } from "./index.js";
+import { CortexAI } from "./index.js";
 
 /**
  * Workflow execution record
@@ -82,13 +82,13 @@ export interface WorkspaceData {
  * Workflow Manager integrated with Cortex AI
  */
 export class WorkflowManager {
-  private cortex: CortexCore;
+  private cortex: CortexAI;
   private projectRoot: string;
   private workflowsDir: string;
   private workspacesDir: string;
   private rolesDir: string;
 
-  constructor(cortex: CortexCore, projectRoot: string) {
+  constructor(cortex: CortexAI, projectRoot: string) {
     this.cortex = cortex;
     this.projectRoot = projectRoot;
     this.workflowsDir = path.join(projectRoot, ".cortex", "workflows");
@@ -177,12 +177,12 @@ export class WorkflowManager {
   ): Promise<string> {
     // Use Cortex's role selection logic
     const query = `Current workflow: ${workflowState.issueTitle}. Current role: ${workflowState.currentRole}`;
-    const selectedMaster = await this.cortex.selectCortexMaster(query);
-    return selectedMaster.id;
+    const selectedRole = await this.cortex.findBestRole(query);
+    return selectedRole?.id || "code-assistant";
   }
 
   /**
-   * Execute current role
+   * Execute current role with context compression for long-horizon tasks
    */
   private async executeCurrentRole(
     workflowState: WorkflowState
@@ -200,6 +200,11 @@ export class WorkflowManager {
     };
 
     try {
+      // Compress context if executions exceed threshold (e.g., 5 executions)
+      if (workflowState.executions.length > 5) {
+        await this.compressWorkflowContext(workflowState);
+      }
+
       // Update workflow state
       workflowState.status = "in_progress";
       workflowState.executions.push(execution);
@@ -244,6 +249,44 @@ export class WorkflowManager {
   }
 
   /**
+   * Compress workflow context for long-horizon tasks
+   */
+  private async compressWorkflowContext(
+    workflowState: WorkflowState
+  ): Promise<void> {
+    // Summarize executions and handoff data to reduce token count
+    const summary = {
+      totalExecutions: workflowState.executions.length,
+      completedTasks: workflowState.handoffData.completedTasks.length,
+      pendingTasks: workflowState.handoffData.pendingTasks.length,
+      deliverables: workflowState.handoffData.deliverables.length,
+      keyNotes:
+        workflowState.handoffData.notes?.substring(0, 500) || "No notes",
+      lastRole: workflowState.currentRole,
+    };
+
+    // Use Cortex's enhanceContext to create a compact summary
+    const compressedQuery = `Summarize workflow ${workflowState.id}: ${workflowState.issueTitle}. Context: ${JSON.stringify(summary)}`;
+    const compressedContext = await this.cortex.enhanceContext(
+      compressedQuery,
+      3
+    );
+
+    // Update handoff data with compressed context
+    workflowState.handoffData.context = {
+      ...workflowState.handoffData.context,
+      compressedSummary: compressedContext,
+    };
+
+    // Clear old executions beyond the last 3 for memory efficiency
+    if (workflowState.executions.length > 3) {
+      workflowState.executions = workflowState.executions.slice(-3);
+    }
+
+    await this.saveWorkflowState(workflowState);
+  }
+
+  /**
    * Execute specific role
    */
   private async executeRole(
@@ -261,11 +304,7 @@ export class WorkflowManager {
     );
 
     // Use Cortex's context enhancement
-    const enhancedContext = await this.cortex.enhanceContext(
-      context.query,
-      5,
-      30
-    );
+    const enhancedContext = await this.cortex.enhanceContext(context.query, 5);
 
     const response = await this.generateRoleResponse(
       roleDefinition,
@@ -501,6 +540,11 @@ Based on my expertise as a ${roleDefinition.name}, I recommend:
    * Format handoff content
    */
   private formatHandoffContent(workflowState: WorkflowState): string {
+    const completedTasks = workflowState.handoffData.completedTasks || [];
+    const pendingTasks = workflowState.handoffData.pendingTasks || [];
+    const deliverables = workflowState.handoffData.deliverables || [];
+    const nextSteps = workflowState.handoffData.nextSteps || [];
+
     return `# Workflow Handoff
 
 ## Current Status
@@ -514,16 +558,16 @@ Based on my expertise as a ${roleDefinition.name}, I recommend:
 - **Description**: ${workflowState.issueDescription}
 
 ## Completed Tasks
-${workflowState.handoffData.completedTasks.map((task) => `- ${task}`).join("\n")}
+${completedTasks.map((task) => `- ${task}`).join("\n") || "- No completed tasks recorded"}
 
 ## Pending Tasks
-${workflowState.handoffData.pendingTasks.map((task) => `- ${task}`).join("\n")}
+${pendingTasks.map((task) => `- ${task}`).join("\n") || "- No pending tasks recorded"}
 
 ## Deliverables
-${workflowState.handoffData.deliverables.map((del) => `- ${del}`).join("\n")}
+${deliverables.map((del) => `- ${del}`).join("\n") || "- No deliverables recorded"}
 
 ## Next Steps
-${workflowState.handoffData.nextSteps.map((step) => `- ${step}`).join("\n")}
+${nextSteps.map((step) => `- ${step}`).join("\n") || "- No next steps recorded"}
 
 ## Context
 ${JSON.stringify(workflowState.handoffData.context, null, 2)}
@@ -537,16 +581,13 @@ ${workflowState.handoffData.notes || "No additional notes"}
    * Format PR content
    */
   private formatPRContent(workflowState: WorkflowState): string {
+    const deliverables = workflowState.handoffData.deliverables || [];
     const prContent = {
       title: workflowState.issueTitle || "Multi-Role Workflow Implementation",
       description:
         workflowState.issueDescription || "Automated workflow execution",
-      testing: workflowState.handoffData.deliverables.filter((d) =>
-        d.includes("test")
-      ),
-      documentation: workflowState.handoffData.deliverables.filter((d) =>
-        d.includes("doc")
-      ),
+      testing: deliverables.filter((d) => d.includes("test")),
+      documentation: deliverables.filter((d) => d.includes("doc")),
       relatedIssues: [workflowState.issueId].filter(Boolean),
     };
 
@@ -559,18 +600,18 @@ ${prContent.title}
 ${prContent.description}
 
 ## Testing
-${prContent.testing.map((test) => `- ${test}`).join("\n")}
+${prContent.testing.map((test) => `- ${test}`).join("\n") || "- No testing deliverables recorded"}
 
 ## Documentation
-${prContent.documentation.map((doc) => `- ${doc}`).join("\n")}
+${prContent.documentation.map((doc) => `- ${doc}`).join("\n") || "- No documentation deliverables recorded"}
 
 ## Related Issues
 ${prContent.relatedIssues.map((issue) => `- ${issue}`).join("\n")}
 
 ## Workflow Details
 - **Workflow ID**: ${workflowState.id}
-- **Completed At**: ${workflowState.completedAt}
-- **Total Executions**: ${workflowState.executions.length}
+- **Completed At**: ${workflowState.completedAt || "Not completed"}
+- **Total Executions**: ${workflowState.executions?.length || 0}
 `;
   }
 
@@ -654,6 +695,19 @@ ${prContent.relatedIssues.map((issue) => `- ${issue}`).join("\n")}
   }
 
   /**
+   * Generate handoff and PR files for a workflow
+   */
+  async generateWorkflowFiles(workflowId: string): Promise<void> {
+    const workflowState = await this.getWorkflowState(workflowId);
+    if (!workflowState) {
+      throw new Error(`Workflow ${workflowId} not found`);
+    }
+
+    await this.updateHandoffFile(workflowState);
+    await this.generatePRDocumentation(workflowState);
+  }
+
+  /**
    * List all workspaces
    */
   async listWorkspaces(): Promise<WorkspaceData[]> {
@@ -708,12 +762,10 @@ ${prContent.relatedIssues.map((issue) => `- ${issue}`).join("\n")}
     workflowState: WorkflowState,
     execution: WorkflowExecution
   ): Promise<void> {
-    await this.cortex.recordExperience({
-      input: `Workflow execution: ${execution.roleId} for ${workflowState.issueTitle}`,
-      output: `Role ${execution.roleId} completed: ${execution.deliverables.join(", ")}`,
-      category: "workflow-execution",
-      tags: [execution.roleId, "multi-role", workflowState.currentRole],
-      timestamp: new Date().toISOString(),
-    });
+    await this.cortex.recordExperience(
+      `Workflow execution: ${execution.roleId} for ${workflowState.issueTitle}`,
+      `Role ${execution.roleId} completed: ${execution.deliverables.join(", ")}`,
+      "workflow-execution"
+    );
   }
 }

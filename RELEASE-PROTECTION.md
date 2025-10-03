@@ -7,6 +7,7 @@ This document describes the release protection mechanisms in place to ensure con
 The following operations are **BLOCKED** to prevent bypassing the release workflow:
 
 ### ❌ Direct Version Bumping
+
 ```bash
 npm version patch    # BLOCKED
 npm version minor    # BLOCKED
@@ -14,6 +15,7 @@ npm version major    # BLOCKED
 ```
 
 ### ❌ Direct Publishing
+
 ```bash
 npm publish          # BLOCKED
 ```
@@ -21,12 +23,15 @@ npm publish          # BLOCKED
 ## ✅ Allowed Workflow
 
 ### 1. Release Check (Required)
+
 ```bash
 npm run release:check
 ```
+
 This runs comprehensive quality checks and creates a `.release-check-passed` marker.
 
 ### 2. Version Bumping (Protected)
+
 ```bash
 npm run release:patch    # ✅ Allowed
 npm run release:minor    # ✅ Allowed
@@ -34,6 +39,7 @@ npm run release:major    # ✅ Allowed
 ```
 
 ### 3. Publishing (Protected)
+
 ```bash
 npm publish             # ✅ Allowed (after release:check)
 ```
@@ -41,6 +47,7 @@ npm publish             # ✅ Allowed (after release:check)
 ## 🛡️ Protection Mechanisms
 
 ### 1. Pre-publish Hook
+
 - **File**: `scripts/prepublish-check.cjs`
 - **Function**: Runs before every `npm publish`
 - **Checks**:
@@ -50,16 +57,19 @@ npm publish             # ✅ Allowed (after release:check)
   - Release check was completed recently
 
 ### 2. Version Protection
+
 - **File**: `scripts/protect-release.cjs`
 - **Function**: Blocks direct `npm version` commands
 - **Enforced In**: `release:patch`, `release:minor`, `release:major`
 
 ### 3. Workflow Enforcer
+
 - **File**: `scripts/enforce-release-workflow.cjs`
 - **Function**: Global protection for version/publish operations
 - **Checks**: Release check completion and recency
 
 ### 4. NPM Configuration
+
 - **File**: `.npmrc`
 - **Function**: NPM-level protection hooks
 

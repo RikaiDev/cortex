@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.0] - 2025-10-03
+
+### 🔧 Bug Fixes
+
+- **Fix: resolve markdownlint MD013 line length errors in README.md**
+  Enables users to use system features more conveniently through command line interface.
+
+
+
 ## [0.10.6] - 2025-01-28
 
 ### 🚀 Major Improvements
@@ -67,12 +76,14 @@ All notable changes to this project will be documented in this file.
 ### 🚀 **Major Feature Enhancements**
 
 **Unified Development Workflow:**
+
 - **Cortex Task Command**: New `cortex task "description"` command with full AI collaboration workflow
 - **MCP Tools Integration**: All MCP tools (enhance-context, create-workflow, execute-workflow-role, record-experience, create-pull-request) now work seamlessly
 - **Intelligent Experience Summarization**: Experience records are automatically summarized to keep knowledge base concise
 - **Automated PR Creation**: Direct GitHub PR creation with proper documentation
 
 **System Simplification:**
+
 - **Unified Quality Check**: Single `npm run quality` command replaces 4 separate quality checks
 - **Unified Publish Workflow**: Single `npm run publish` command handles complete publish process
 - **Script Cleanup**: Reduced from 13 scripts to 3 core scripts (77% complexity reduction)
@@ -81,12 +92,14 @@ All notable changes to this project will be documented in this file.
 ### 🔧 **Technical Improvements**
 
 **Code Quality & Architecture:**
+
 - **Experience Optimization**: Automatic summarization of experience records (200 char limit for inputs, 500 for outputs)
 - **Dependency Management**: Enhanced runtime dependency validation
 - **Security Integration**: Unified security checks in quality pipeline
 - **Future-Proofing**: Reserved variables for future development phases
 
 **Build & Development:**
+
 - **Simplified Build Process**: Streamlined build pipeline with integrated quality checks
 - **Enhanced CLI**: Improved command-line interface with better error messages
 - **Documentation Updates**: Comprehensive documentation for new workflows
@@ -94,6 +107,7 @@ All notable changes to this project will be documented in this file.
 ### 📦 **Breaking Changes**
 
 **Command Interface Changes:**
+
 - Removed: `mcp:init`, `release:patch/minor/major`, `cleanup:old-versions`
 - Changed: `npm run lint` now runs with `--fix` automatically
 - New: `npm run quality` (unified quality checks), `npm run publish` (unified publish workflow)
@@ -101,6 +115,7 @@ All notable changes to this project will be documented in this file.
 ### 🐛 **Bug Fixes**
 
 **Workflow Stability:**
+
 - **Version Consistency**: Fixed CHANGELOG vs package.json version mismatch issues
 - **Git State Management**: Proper handling of uncommitted changes in publish workflow
 - **Error Handling**: Better error messages and recovery guidance in publish process
@@ -110,6 +125,7 @@ All notable changes to this project will be documented in this file.
 ### 🔧 **Bug Fixes**
 
 **TypeScript Import Path Resolution:**
+
 - Fixed TypeScript import path issues for ES modules
 - Updated tsconfig.json to use NodeNext module resolution
 - Corrected CLI script execution to use compiled files

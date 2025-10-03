@@ -1,13 +1,10 @@
 module.exports = {
-  parser: '@typescript-eslint/parser',
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-  ],
-  plugins: ['@typescript-eslint'],
+  parser: "@typescript-eslint/parser",
+  extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  plugins: ["@typescript-eslint"],
   parserOptions: {
     ecmaVersion: 2020,
-    sourceType: 'module',
+    sourceType: "module",
   },
   env: {
     node: true,
@@ -15,23 +12,23 @@ module.exports = {
   },
   overrides: [
     {
-      files: ['test/**/*.ts'],
+      files: ["test/**/*.ts"],
       env: {
         mocha: true,
       },
     },
     {
-      files: ['examples/**/*.js', 'scripts/**/*.js', 'scripts/**/*.cjs'],
+      files: ["examples/**/*.js", "scripts/**/*.js", "scripts/**/*.cjs"],
       rules: {
-        '@typescript-eslint/explicit-function-return-type': 'off',
-        '@typescript-eslint/no-var-requires': 'off',
+        "@typescript-eslint/explicit-function-return-type": "off",
+        "@typescript-eslint/no-var-requires": "off",
       },
     },
   ],
   rules: {
-    '@typescript-eslint/no-unused-vars': 'warn',
-    '@typescript-eslint/explicit-function-return-type': 'warn',
-    '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/no-var-requires': 'warn',
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/explicit-function-return-type": "warn",
+    "@typescript-eslint/no-explicit-any": "warn",
+    "@typescript-eslint/no-var-requires": "warn",
   },
 };

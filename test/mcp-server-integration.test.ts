@@ -138,6 +138,27 @@ suite.addTest(
 
 suite.addTest(
   new Mocha.Test(
+    "MCP server should handle create-workflow tool",
+    async function () {
+      expect(server).to.not.be.null;
+
+      const result = await server!.handleCreateWorkflow({
+        title: "Test Workflow",
+        description: "A test workflow for integration testing",
+      });
+
+      expect(result).to.have.property("content");
+      expect(result.content).to.be.an("array");
+      expect(result.content[0]).to.have.property("type", "text");
+      expect(result.content[0].text).to.include(
+        "Workflow created successfully"
+      );
+    }
+  )
+);
+
+suite.addTest(
+  new Mocha.Test(
     "handleRecordExperience should record experiences successfully",
     async function () {
       expect(server).to.not.be.null;
