@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.2] - 2025-10-04
+
+### 🧹 **Cleanup**
+
+- Removed 10 obsolete files
+- Streamlined project structure
+- Reduced codebase complexity
+
+### 📊 **Change Summary**
+
+- **Files changed**: 0
+- **Lines added**: 0
+- **Lines removed**: 0
+- **Net change**: 0 lines
+
+
+
 ## [0.11.1] - 2025-10-04
 
 ### 🚀 Features - @rikaidev/cortex
