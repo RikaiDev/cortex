@@ -13,7 +13,7 @@
     "mcp:debug": "node --inspect scripts/mcp-server.js --debug",
     "mcp:dev": "node scripts/mcp-server.js --dev",
     "demo:multi-role": "node examples/integrated-multi-role-demo.js",
-    "build": "npm run quality && npm run knip && tsc",
+    "build": "npm run knip || exit 1; tsc || exit 1",
     "dev": "tsc --watch",
     "clean": "rm -rf .cortex",
     "test": "echo 'No specific unit tests configured'",

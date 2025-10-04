@@ -1,6 +1,6 @@
 # Cortex AI
 
-[![Version](https://img.shields.io/badge/version-v0.8.0-blue.svg)](https://github.com/RikaiDev/cortex/releases)
+[![Version](https://img.shields.io/badge/version-v0.11.1-blue.svg)](https://github.com/RikaiDev/cortex/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/runtime-Node.js-green.svg)](https://nodejs.org/)
 
@@ -57,97 +57,168 @@ eliminating the frustration of repetitive explanations and inconsistent AI behav
 └── Simplified CLI for core operations
 ```
 
-### 🧠 **Core Principles**
+### 🧠 **Core Principles** - The Ingenious Design Philosophy
 
-**Cortex AI** implements proven principles for reliable AI collaboration:
+**Cortex AI** implements revolutionary principles that transform AI collaboration through architectural brilliance:
 
-1. **Few-Shot to Fine-Tune Transformation** - We transform simple few-shot examples into comprehensive fine-tune prompts automatically, eliminating the need for manual prompt engineering.
+1. **🔮 Few-Shot to Fine-Tune Transformation** - **The Alchemical Process**: We don't just use few-shot examples - we *transmute* them.
+A simple user instruction like *"write comments in English"* becomes a comprehensive, production-ready prompt system that enforces this preference across all future interactions.
+This isn't learning - it's systematic transformation.
 
-2. **Hook-Based Interception System** - Our architecture intercepts all user inputs and processes them through a structured pipeline that guarantees consistent quality and behavior.
+2. **🪝 Hook-Based Interception System** - **The Invisible Conductor**: Every single user input is intercepted before reaching the AI model.
+We don't wait for AI responses - we *shape* them.
+This architectural sleight-of-hand ensures that no matter which AI model you use (Cursor, Claude, Gemini), they all behave consistently because we've already predetermined the outcome.
 
-3. **Deterministic Expansion Over Randomness** - Rather than relying on emergent behaviors, we systematically expand minimal user inputs into complete, well-structured instructions.
+3. **⚙️ Deterministic Expansion Over Randomness** - **The Clockwork Mind**: We reject the "emergent behavior" fallacy.
+Instead of hoping AI will "figure it out," we systematically expand minimal inputs into complete, well-structured instructions.
+When you say *"fix the bug,"* we don't hope the AI understands - we *tell* it exactly what to do, how to do it, and why.
 
-4. **Guaranteed Processing Pipeline** - Every user input is processed through our complete pipeline with 100% execution rate, ensuring no step is ever skipped.
+4. **🔒 Guaranteed Processing Pipeline** - **The Unbreakable Chain**: Every input goes through our complete pipeline with 100% execution rate.
+No step is ever skipped, no process is ever bypassed.
+This isn't reliability - it's *architectural inevitability*. The system cannot fail to apply your preferences because failure is literally impossible.
 
-5. **Explicit Reasoning and Documentation** - All transformations from few-shot to fine-tune are explicit, documented, and traceable through our workflow.
+5. **📋 Explicit Reasoning and Documentation** - **The Transparent Brain**: Every transformation is logged, every decision is documented, every preference change is traceable.
+You can literally see how *"use TypeScript"* becomes a system-wide directive that affects every code suggestion, every comment, every response.
 
-This philosophy drives our implementation of an intelligent system that transforms simple user inputs (few-shot examples) into comprehensive,
-production-ready fine-tune prompts through mandatory processing steps.
+This philosophy creates an intelligent system that doesn't just respond - it *evolves with you*,
+learning your patterns and preferences not through trial and error, but through systematic, deterministic transformation of your intent into perfect execution.
 
-#### MCP Workflow Architecture
+**The Result?** Simple inputs become comprehensive, personalized AI experiences.
+*"Don't use async/await"* becomes a universal rule that shapes every code suggestion, every refactoring, every architectural decision.
+
+#### MCP Workflow Architecture - The Architectural Masterpiece
+
+This diagram reveals the ingenious design that makes Cortex AI truly unique:
 
 ```mermaid
 graph TD
-    A[User Input] --> B[Cursor Processing]
-    B --> C{MCP Interceptor}
-    C -->|Enforced Execution| D[MCP Workflow]
-    D --> E[Intent Analysis]
-    E --> F[Task Decomposition]
-    F --> G[Role Selection]
-    G --> H[Best Practice Search]
-    H --> I[Instruction Generation]
-    I --> J[User Response]
+    A[User Input] --> B[AI Platform Processing]
+    B --> C[MCP Protocol Layer]
+    C --> D[Intelligent Workflow]
+    D --> E[Task Analysis & Planning]
+    E --> F[Role Collaboration Execution]
+    F --> G[Result Integration Output]
 
-    subgraph "MCP Enforcement Mechanism"
-    C
-    K[.cursor/rules/cortex.mdc]
-    L[prompt-injection.ts]
-    M[thought-interceptor.ts]
+    subgraph "The Three Pillars of Genius"
+        C
+        H[🪝 Interception Architecture - Every input is caught and shaped]
+        I[🔮 Transformation Engine - Simple → Sophisticated]
+        J[⚙️ Deterministic Pipeline - Predictable perfection]
     end
 
-    K --> C
-    L --> C
-    M --> C
+    H -.-> C
+    I -.-> C
+    J -.-> C
 ```
 
-#### MCP Processing Sequence
+**The Hidden Brilliance:**
+- **Interception Point (C)**: The pivotal moment where raw user input becomes orchestrated intelligence
+- **Transformation Flow**: Watch how *"fix the bug"* becomes a multi-step symphony of analysis, planning, and execution
+- **Guaranteed Outcome**: Every path leads to the same destination - your preferences perfectly applied
+
+#### MCP Processing Sequence - The Choreographed Intelligence
+
+This sequence diagram unveils the intricate dance of intelligence transformation:
 
 ```mermaid
 sequenceDiagram
-    participant User as User
-    participant Cursor as Cursor AI
-    participant Rules as .cursor/rules/cortex.mdc
-    participant Interceptor as Thought Interceptor
-    participant MCP as MCP Workflow
-    participant Tools as MCP Tools
+    participant U as User
+    participant A as AI Platform
+    participant R as Cortex Rules
+    participant I as Thought Interceptor
+    participant W as Workflow Engine
+    participant T as MCP Tools
 
-    User->>Cursor: Input Message
-    Cursor->>Rules: Load Rules
-    Rules->>Cursor: Enforce MCP Rules
-    Cursor->>Interceptor: Intercept User Input
-    Interceptor->>MCP: Force MCP Workflow Execution
-    MCP->>Tools: Execute Intent Analysis
-    Tools->>MCP: Return Intent Results
-    MCP->>Tools: Execute Task Decomposition
-    Tools->>MCP: Return Task Structure
-    MCP->>Tools: Execute Role Selection
-    Tools->>MCP: Return Role Assignments
-    MCP->>Interceptor: Return Complete MCP Results
-    Interceptor->>Cursor: Inject Structured Thinking
-    Cursor->>User: Return MCP-Based Response
+    U->>A: Input Message
+    A->>R: Load Cortex Rules
+    R->>A: Enforce Structured Thinking
+    A->>I: Intercept User Input for Processing
+    I->>W: Initiate Intelligent Workflow
+    W->>T: Execute Intent Analysis
+    T->>W: Return Analysis Results
+    W->>T: Execute Task Decomposition
+    T->>W: Return Task Structure
+    W->>T: Execute Role Selection
+    T->>W: Return Role Assignments
+    W->>I: Return Complete Processing Results
+    I->>A: Inject Structured Thinking Results
+    A->>U: Return Intelligent Response
 ```
+
+**The Choreographic Brilliance:**
+- **Rule Loading (Step 2)**: Before any AI processing, we load your personalized rules
+- **Interception Point (Step 4)**: The critical moment where raw input becomes structured intelligence
+- **Workflow Orchestration (Steps 5-10)**: A symphony of analysis, decomposition, and role assignment
+- **Result Injection (Step 12)**: The final transformation where structured thinking becomes natural response
+
+**Why This Matters:** This isn't just processing - it's a deterministic transformation where *"help me code"* becomes a multi-step, multi-role collaboration that respects every preference you've ever expressed.
 
 ## ✨ **Core Features**
 
-### **🧠 Structured Thinking**
+### **🧠 MCP Protocol Support**
 
-- **6-Step Thinking Process**: Intent Exploration → Problem Analysis → Knowledge Integration → Solution Development → Implementation Planning → Quality Validation
-- **Mandatory Protocol**: Forces AI to think systematically, regardless of model capabilities
-- **Quality Validation**: Ensures complete and logical thinking
+**Cortex AI** fully supports MCP (Model Context Protocol), providing rich tools, resources, and prompt systems that build upon our core principles:
 
-### **📚 Real-Time Learning**
+#### **🛠️ MCP Tools**
 
-- **User Preference Detection**: Learns from keywords like "wrong", "we use", "don't"
-- **Immediate Application**: Applies learned preferences to current response
-- **No Repetition**: Never repeats corrected mistakes
-- **Frustration Detection**: Recognizes and learns from user frustration
+| Tool Name | Description | Purpose |
+|-----------|-------------|---------|
+| `cortex-task` | Create and execute complete AI collaboration workflows | Launch multi-role collaboration for complex development tasks |
+| `execute-workflow-role` | Execute the next role in a workflow | Continue ongoing workflow execution |
+| `submit-role-result` | Submit AI-processed results back to workflow | Complete role tasks and pass results |
+| `get-workflow-status` | Get workflow status and progress | Track workflow execution status |
+| `list-workflows` | List all available workflows | View project workflow list |
+| `create-pull-request` | Create pull requests for workflow results | Automate PR creation process |
+
+#### **📚 MCP Resources**
+
+| Resource URI | Name | Description | Format |
+|-------------|------|-------------|--------|
+| `cortex://workflows` | Cortex Workflows | List of all Cortex AI workflows | JSON |
+| `cortex://workflows/{id}/handoff` | Workflow Handoff | Handoff document for specific workflow | Markdown |
+| `cortex://workflows/{id}/pr` | Workflow PR | Pull request document for specific workflow | Markdown |
+| `cortex://snapshots/project` | Project Snapshot | Current project structure and architecture snapshot | JSON |
+| `cortex://snapshots/{id}` | Workflow Snapshot | Workflow execution and decision snapshot | JSON |
+| `cortex://project/tasks` | Project Tasks | Development tasks from .vscode/tasks.json | JSON |
+| `cortex://ide/integration-guide` | IDE Integration Guide | Cortex AI IDE integration setup guide | Markdown |
+
+#### **💬 MCP Prompts**
+
+| Prompt Name | Description | Parameters |
+|-------------|-------------|------------|
+| `workflow-role-analysis` | Generate structured analysis for roles in workflows | `roleId`, `workflowId` |
+| `technical-code-review` | Generate technical code review and assessment | `codebase`, `requirements`, `role` |
+| `workflow-progress-summary` | Generate workflow progress and decision summaries | `workflowId`, `includeTechnicalDetails` |
+
+### **🔄 Multi-Role Workflows**
+
+**Cortex AI** supports multi-role collaboration patterns, with each role focusing on specific domains:
+
+- **🏗️ Architecture Designer** - System architecture design and decisions
+- **💻 Code Assistant** - Code writing and quality assurance
+- **📝 Documentation Specialist** - Documentation writing and maintenance
+- **🔒 Security Specialist** - Security review and best practices
+- **🧪 Testing Specialist** - Testing strategy and implementation
+- **🎨 UI/UX Designer** - User experience design
+- **⚛️ React Expert** - React ecosystem expertise
+
+Each role has specialized templates and guidelines ensuring professionalism and consistency.
+
+### **📚 Enhanced Learning System**
+
+Our core principles enable advanced learning capabilities:
+
+- **User Preference Detection** - Learns from keywords like "wrong", "we use", "don't"
+- **Immediate Application** - Applies learned preferences to current responses
+- **No Error Repetition** - Never repeats corrected mistakes
+- **Frustration Detection** - Identifies and learns from user frustration
 
 ### **🔄 Cross-Platform Consistency**
 
-- **Cursor Integration**: Enhanced MDC with preference learning
-- **Claude Support**: Context-aware system messages
-- **Gemini Support**: Platform-specific prompt engineering
-- **Unified Behavior**: Same learning and thinking across all platforms
+- **Cursor Integration** - Enhanced MDC with preference learning
+- **Claude Support** - Context-aware system messages
+- **Gemini Support** - Platform-specific prompt engineering
+- **Unified Behavior** - Same learning and thinking across all platforms
 
 ## 🚀 **Quick Start**
 
@@ -163,13 +234,13 @@ npx @rikaidev/cortex@latest task "Implement user authentication system with regi
 npx @rikaidev/cortex@latest task "Add dark mode toggle to settings page" --draft-pr --base-branch develop
 ```
 
-**What happens automatically:**
+**Automatic execution flow:**
 
-1. 🧠 **Context Enhancement**: Uses `enhance-context` MCP tool to find relevant past experiences
-2. 📝 **Workflow Creation**: Uses `create-workflow` MCP tool to create structured multi-role workflow
-3. 🎭 **Role Execution**: Uses `execute-workflow-role` MCP tool to execute each role in sequence
-4. 📚 **Experience Recording**: Uses `record-experience` MCP tool to record learning for future tasks
-5. 🚀 **PR Creation**: Uses `create-pull-request` MCP tool to generate complete PR documentation and create GitHub PR
+1. 🧠 **Context Enhancement** - Uses MCP tools to find relevant past experiences
+2. 📝 **Workflow Creation** - Creates structured multi-role workflows
+3. 🎭 **Role Execution** - Executes each role task in sequence
+4. 📚 **Experience Recording** - Records learning for future tasks
+5. 🚀 **PR Creation** - Generates complete PR documentation and creates GitHub PR
 
 ### **Installation**
 
@@ -200,34 +271,21 @@ Add the following config to your MCP client:
 
 #### **Supported MCP Clients**
 
-#### Claude Code
-
+**Claude Code**
 ```bash
 claude mcp add cortex-ai npx -y @rikaidev/cortex@latest start
 ```
 
-#### Cursor
-
+**Cursor**
 - Go to `Cursor Settings` → `MCP` → `New MCP Server`
 - Use the config provided above
 
-#### VS Code
-
+**VS Code**
 ```bash
 code --add-mcp '{"name":"cortex-ai","command":"npx","args":["-y","@rikaidev/cortex@latest","start"]}'
 ```
 
-#### Copilot CLI
-
-```bash
-copilot
-/mcp add
-# Server name: cortex-ai
-# Command: npx
-# Arguments: -y, @rikaidev/cortex@latest, start
-```
-
-### **Initialize Project**
+### **Project Initialization**
 
 ```bash
 # Initialize Cortex workspace structure and IDE integration
@@ -235,27 +293,11 @@ npx @rikaidev/cortex@latest init
 
 # Or skip IDE integration if you only want workspace setup
 npx @rikaidev/cortex@latest init --skip-ide
-
-# Regenerate IDE configurations later (if needed)
-npx @rikaidev/cortex@latest generate-rules
 ```
 
-### **Initialize MCP Workspace** (Recommended)
+### **Workspace Structure**
 
-For the latest Multi-Role Pattern workflow features:
-
-```bash
-# Initialize Cortex workspace structure
-npx @rikaidev/cortex@latest init
-
-# Start MCP server for workflow management
-npx @rikaidev/cortex@latest start
-
-# Run workflow demo to see Multi-Role Pattern in action
-node examples/integrated-multi-role-demo.js
-```
-
-The new MCP approach creates isolated workspaces for each workflow:
+Cortex creates isolated workspaces for each workflow:
 
 ```text
 .cortex/
@@ -268,220 +310,12 @@ The new MCP approach creates isolated workspaces for each workflow:
 └── roles/                 # Role definitions
 ```
 
-### **MCP Tools Usage**
-
-Once MCP server is running, you can use the following tools:
-
-#### **Available Cortex MCP Tools**
-
-| Tool                    | Description                                                   | Purpose                                        |
-| ----------------------- | ------------------------------------------------------------- | ---------------------------------------------- |
-| `enhance-context`       | Enhance current context with relevant past experiences        | Get better responses with historical context   |
-| `record-experience`     | Record new experiences for future reference (auto-summarized) | Build knowledge base                           |
-| `create-workflow`       | Create Multi-Role Pattern workflow for complex tasks          | Start collaborative development workflow       |
-| `execute-workflow-role` | Execute next role in existing workflow                        | Continue workflow execution                    |
-| `create-pull-request`   | Create GitHub PR using generated pr.md file                   | Automate PR creation after workflow completion |
-
-#### **Experience Recording Optimization**
-
-The `record-experience` tool automatically summarizes and optimizes content to keep the knowledge base concise:
-
-- **Input summarization**: Questions/queries are condensed to 200 characters max
-- **Output summarization**: Solutions are summarized to 500 characters max, keeping only key information
-- **Automatic cleanup**: Removes excessive whitespace, redundant content, and verbose explanations
-- **Smart extraction**: Preserves the first and last sentences, plus key middle content when space allows
-
-**Example of automatic summarization:**
-
-```text
-Original: "I need to implement user authentication with registration, login, password reset, email verification, and proper security measures including
-bcrypt hashing, JWT tokens, rate limiting, and input validation..."
-
-Summarized: "Implement user authentication with registration, login, password reset, and proper security measures including bcrypt hashing, JWT tokens, rate limiting, and input validation."
-```
-
-#### **Workflow Management**
-
-**1. Create a workflow for complex development tasks:**
-
-```javascript
-// Use MCP tool: create-workflow
-{
-  "title": "Implement user authentication system",
-  "description": "Create complete user auth with registration, login, password reset",
-  "issueId": "AUTH-001" // optional
-}
-```
-
-**2. Execute workflow roles:**
-
-```javascript
-// Use MCP tool: execute-workflow-role
-{
-  "workflowId": "workflow-uuid-here"
-}
-```
-
-**3. Generated files:**
-
-- `handoff.md`: Role communication and handoff documentation
-- `pr.md`: Complete PR documentation ready for submission
-
-#### **Using Generated PR Documentation**
-
-The `pr.md` file contains complete PR documentation ready for submission:
-
-**Typical workflow:**
-
-1. Complete the Multi-Role workflow (generates `pr.md`)
-2. Copy content from `pr.md` to create GitHub/GitLab PR
-3. The PR description will include all implementation details, testing notes, and review guidelines
-
-**Example PR creation process:**
-
-```bash
-# After workflow completion, the pr.md file will be generated in:
-# .cortex/workspaces/{workspace-id}/pr.md
-
-# Copy the content and create PR manually on GitHub/GitLab
-# Or use git commands to create PR if you have GitHub CLI:
-gh pr create --title "Implement user authentication system" --body-file pr.md
-```
-
-**Future Enhancement:** Direct PR creation tools may be added in future versions to enable automated PR creation without external dependencies.
-
-### **Publishing Workflow**
-
-Follow this step-by-step process for stable releases:
-
-#### **Pre-Publish Checklist**
-
-**1. Update CHANGELOG.md with new version:**
-
-```bash
-# Add new version entry to CHANGELOG.md
-# Example:
-## [0.9.8] - 2025-10-02
-### Added
-- Add cortex task command with full MCP tools integration
-- Implement intelligent experience summarization
-
-### Changed
-- Update MCP tools documentation
-- Improve CLI user experience
-
-### Fixed
-- Fix various minor issues
-```
-
-**2. Set version and create git tag:**
-
-```bash
-# Check latest published version first
-npm view @rikaidev/cortex version
-
-# Set specific version (this also creates git tag)
-npm version 0.9.8    # replace with your chosen version
-
-# This command will:
-# 1. Update package.json version
-# 2. Update package-lock.json
-# 3. Create git commit with message "0.9.8"
-# 4. Create git tag "v0.9.8"
-```
-
-**3. Push commits and tags:**
-
-```bash
-# Push the version commit and tag
-git push origin main
-git push origin v0.9.8
-```
-
-**4. Run unified publish workflow:**
-
-```bash
-# Option A: Check only (recommended before manual publish)
-npm run publish check
-
-# Option B: Full workflow (check + publish)
-npm run publish publish
-```
-
-### Alternative: Manual Steps
-
-```bash
-# Run quality checks only
-npm run publish check
-
-# Publish to npm manually
-npm publish
-```
-
-#### **Release Quality Checks**
-
-Run comprehensive quality checks before publishing:
-
-```bash
-# Run all release quality checks
-npm run release:check
-```
-
-#### **Unpublish (if needed)**
-
-To unpublish a version (use with caution):
-
-```bash
-# Unpublish a specific version
-npm run release:unpublish 0.9.7
-```
-
-### **Start Learning**
-
-```bash
-# Start AI collaboration
-npx @rikaidev/cortex@latest start
-
-# Show version
-npx @rikaidev/cortex@latest version
-```
-
-## 🎯 **How It Works**
-
-### **1. Learning from Conversation**
-
-```text
-User: "Comments are in Chinese again?"
-AI: [Learns] Write all comments in English
-User: "we use uv run pytest"
-AI: [Learns] Always use uv run for Python commands
-User: "again"
-AI: [Learns] Don't repeat the same mistake
-```
-
-### **2. Structured Thinking**
-
-```text
-🔍 ANALYSIS PHASE: [Problem understanding]
-📚 KNOWLEDGE INTEGRATION: [Apply learned preferences]
-💡 SOLUTION DEVELOPMENT: [Consider user preferences]
-⚡ IMPLEMENTATION PLAN: [Respect user patterns]
-✅ QUALITY VALIDATION: [Ensure preference compliance]
-```
-
-### **3. Cross-Platform Consistency**
-
-- **Same learning** across Cursor, Claude, and Gemini
-- **Same thinking** process on all platforms
-- **Same preferences** applied everywhere
-- **Same evolution** through conversation
-
 ## 📚 **Documentation**
 
 - **[Getting Started](docs/getting-started.md)** - Quick setup guide
-- **[AI Collaboration](docs/ai-collaboration/)** - System architecture and roles
-- **[Experience Learning](docs/experiences/)** - Learning and improvement system
-- **[Updates & Notifications](docs/updates/)** - Stay informed about changes
+- **[Architecture](docs/architecture.md)** - System architecture details
+- **[Code Patterns](docs/code-patterns.md)** - Code style guidelines
+- **[Development](docs/development/)** - Development environment setup
 - **[Roadmap](ROADMAP.md)** - Future development plans
 
 ## 🛠️ **Development**
@@ -504,11 +338,8 @@ npm install
 # Build project
 npm run build
 
-# Run code quality and security checks
+# Run code quality checks
 npm run quality
-
-# Run security checks only
-npm run security
 
 # Run tests
 npm run test

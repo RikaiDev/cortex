@@ -34,7 +34,7 @@ try {
 
 program
   .name("cortex")
-  .description("🧠 Cortex - AI Collaboration Brain")
+  .description(" Cortex - AI Collaboration Brain")
   .version(packageJson.version || "0.8.0")
   .option(
     "-p, --project-path <path>",
@@ -47,7 +47,7 @@ addMCPCommands(program);
 program
   .command("task <description>")
   .description(
-    "🧠 Execute a development task with full AI collaboration workflow"
+    " Execute a development task with full AI collaboration workflow"
   )
   .option("--draft-pr", "Create PR as draft")
   .option(
@@ -70,7 +70,7 @@ program
         await executeTask(description, projectPath, options);
       } catch (error) {
         console.log(
-          chalk.yellow("⚠️  Attempting to initialize workspace due to error...")
+          chalk.yellow("  Attempting to initialize workspace due to error...")
         );
         const projectPath = options.projectPath || process.cwd();
         const { ensureCortexWorkspace, executeTask } = await import(

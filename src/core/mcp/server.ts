@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Cortex MCP Server - Simplified implementation
+ * Cortex MCP Server - Refactored Architecture
  */
 
 import { readFileSync } from "fs";
@@ -13,33 +13,52 @@ import {
   CallToolRequestSchema,
   InitializeRequestSchema,
   ListToolsRequestSchema,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
 import { CortexAI } from "../index.js";
+import { ToolHandler } from "./handlers/tool-handler.js";
+import { ResourceHandler } from "./handlers/resource-handler.js";
 
 /**
  * Get version from package.json
  */
 function getPackageVersion(): string {
   try {
-    const packagePath = path.join(process.cwd(), "package.json");
-    const packageJson = JSON.parse(readFileSync(packagePath, "utf-8"));
-    return packageJson.version;
+    const currentDir = __dirname;
+    const possiblePaths = [
+      path.join(currentDir, "..", "..", "package.json"),
+      path.join(currentDir, "..", "..", "..", "package.json"),
+      path.join(process.cwd(), "package.json"),
+    ];
+
+    for (const packagePath of possiblePaths) {
+      if (fs.existsSync(packagePath)) {
+        const packageJson = JSON.parse(readFileSync(packagePath, "utf-8"));
+        return packageJson.version;
+      }
+    }
+
+    return "0.0.0";
   } catch (error) {
-    console.error("Failed to read package.json version:", error);
     return "0.0.0";
   }
 }
 
 /**
- * Cortex MCP Server - Balanced approach
+ * Cortex MCP Server - Refactored Architecture
  */
 export class CortexMCPServer {
   private server: Server;
   private cortex: CortexAI;
   private projectRoot: string;
+  private toolHandler: ToolHandler;
+  private resourceHandler: ResourceHandler;
 
-  constructor(projectRoot?: string) {
+  constructor() {
     this.server = new Server(
       {
         name: "cortex-mcp",
@@ -48,640 +67,698 @@ export class CortexMCPServer {
       {
         capabilities: {
           tools: {},
+          resources: {},
+          prompts: {},
         },
       }
     );
 
-    this.projectRoot = projectRoot || process.cwd();
+    this.projectRoot = this.detectProjectRoot();
     this.cortex = new CortexAI(this.projectRoot);
+    this.toolHandler = new ToolHandler(this.projectRoot, this.cortex);
+    this.resourceHandler = new ResourceHandler(this.projectRoot);
     this.setupHandlers();
+    this.initializeCortexWorkspace();
   }
 
-  private async executeTool(name: string, args: unknown): Promise<unknown> {
-    try {
-      switch (name) {
-        case "task":
-          return await this.handleTask(
-            args as {
-              description: string;
-              draftPr?: boolean;
-              baseBranch?: string;
-            }
-          );
+  /**
+   * Detect project root directory
+   */
+  private detectProjectRoot(): string {
+    // Priority 1: Environment variables (VS Code/Cursor specific)
+    if (process.env.VSCODE_CWD) {
+      return process.env.VSCODE_CWD;
+    }
+    if (process.env.CURSOR_CWD) {
+      return process.env.CURSOR_CWD;
+    }
 
-        case "enhance-context":
-          return await this.handleEnhanceContext(
-            args as {
-              query: string;
-              maxItems?: number;
-              timeRange?: number;
-            }
-          );
+    // Priority 2: Current working directory if it contains package.json
+    if (fs.existsSync(path.join(process.cwd(), "package.json"))) {
+      return process.cwd();
+    }
 
-        case "record-experience":
-          return await this.handleRecordExperience(
-            args as {
-              input: string;
-              output: string;
-              category?: string;
-              tags?: string[];
-            }
-          );
-
-        case "create-workflow":
-          return await this.handleCreateWorkflow(
-            args as {
-              issueId?: string;
-              title: string;
-              description: string;
-            }
-          );
-
-        case "execute-workflow-role":
-          return await this.handleExecuteWorkflowRole(
-            args as {
-              workflowId: string;
-            }
-          );
-
-        case "create-pull-request":
-          return await this.handleCreatePullRequest(
-            args as {
-              workflowId: string;
-              baseBranch?: string;
-              draft?: boolean;
-            }
-          );
-
-        default:
-          return {
-            content: [
-              {
-                type: "text",
-                text: `Unknown tool: ${name}. Use 'list-tools' to see available tools.`,
-              },
-            ],
-            isError: true,
-          };
+    // Priority 3: Look for .cortex directory in current or parent directories
+    let currentDir = process.cwd();
+    while (currentDir !== path.dirname(currentDir)) {
+      if (fs.existsSync(path.join(currentDir, ".cortex"))) {
+        return currentDir;
       }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : String(error);
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Tool execution failed: ${errorMessage}`,
-          },
-        ],
-        isError: true,
-      };
+      currentDir = path.dirname(currentDir);
+    }
+
+    // Priority 4: Look for cortex.json in current or parent directories
+    currentDir = process.cwd();
+    while (currentDir !== path.dirname(currentDir)) {
+      if (fs.existsSync(path.join(currentDir, "cortex.json"))) {
+        return currentDir;
+      }
+      currentDir = path.dirname(currentDir);
+    }
+
+    // Priority 5: Relative to this file's location
+    const currentFileDir = __dirname;
+    const possiblePaths = [
+      path.join(currentFileDir, "..", "..", ".."), // dist/core/mcp -> project root
+      path.join(currentFileDir, "..", ".."), // dist/core -> project root
+    ];
+
+    for (const possiblePath of possiblePaths) {
+      if (fs.existsSync(path.join(possiblePath, "package.json"))) {
+        return possiblePath;
+      }
+    }
+
+    // Fallback to current working directory
+    return process.cwd();
+  }
+
+  /**
+   * Initialize Cortex workspace
+   */
+  private initializeCortexWorkspace(): void {
+    const cortexDir = path.join(this.projectRoot, ".cortex");
+    const rolesDir = path.join(cortexDir, "roles");
+    const workflowsDir = path.join(cortexDir, "workflows");
+    const workspacesDir = path.join(cortexDir, "workspaces");
+    const experiencesDir = path.join(cortexDir, "experiences");
+
+    // Create directories
+    fs.ensureDirSync(rolesDir);
+    fs.ensureDirSync(workflowsDir);
+    fs.ensureDirSync(workspacesDir);
+    fs.ensureDirSync(experiencesDir);
+
+    // Copy default role files if they don't exist
+    const defaultRolesDir = path.join(this.projectRoot, "templates", "roles");
+    if (fs.existsSync(defaultRolesDir)) {
+      const roleFiles = fs.readdirSync(defaultRolesDir);
+      for (const roleFile of roleFiles) {
+        const sourcePath = path.join(defaultRolesDir, roleFile);
+        const targetPath = path.join(rolesDir, roleFile);
+        if (!fs.existsSync(targetPath)) {
+          fs.copyFileSync(sourcePath, targetPath);
+        }
+      }
     }
   }
 
+  /**
+   * Setup MCP handlers
+   */
   private setupHandlers(): void {
     // Handle initialization
     this.server.setRequestHandler(InitializeRequestSchema, async () => {
-      return {
-        protocolVersion: "2024-11-05",
-        capabilities: {
-          tools: {},
-        },
-        serverInfo: {
-          name: "cortex-mcp",
-          version: getPackageVersion(),
-        },
-      };
-    });
-
-    // Handle list tools - Complete AI collaboration workflow
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
-      return {
-        tools: [
-          {
-            name: "task",
-            description:
-              "Execute a complete development task with AI collaboration workflow",
-            inputSchema: {
-              type: "object",
-              properties: {
-                description: {
-                  type: "string",
-                  description: "Task description",
-                },
-                draftPr: {
-                  type: "boolean",
-                  description: "Create PR as draft",
-                  default: false,
-                },
-                baseBranch: {
-                  type: "string",
-                  description: "Base branch for PR",
-                  default: "main",
-                },
-              },
-              required: ["description"],
-            },
-          },
-          {
-            name: "enhance-context",
-            description:
-              "Enhance current context with relevant past experiences",
-            inputSchema: {
-              type: "object",
-              properties: {
-                query: {
-                  type: "string",
-                  description: "Query to enhance context for",
-                },
-                maxItems: {
-                  type: "number",
-                  description: "Maximum items to return",
-                  default: 5,
-                },
-                timeRange: {
-                  type: "number",
-                  description: "Days to look back",
-                  default: 30,
-                },
-              },
-              required: ["query"],
-            },
-          },
-          {
-            name: "record-experience",
-            description: "Record a new experience for future reference",
-            inputSchema: {
-              type: "object",
-              properties: {
-                input: {
-                  type: "string",
-                  description: "Original question or task",
-                },
-                output: {
-                  type: "string",
-                  description: "Solution or response provided",
-                },
-                category: {
-                  type: "string",
-                  description: "Category for this experience",
-                },
-                tags: {
-                  type: "array",
-                  items: { type: "string" },
-                  description: "Tags for organization",
-                },
-              },
-              required: ["input", "output"],
-            },
-          },
-          {
-            name: "create-workflow",
-            description: "Create a new Multi-Role Pattern workflow",
-            inputSchema: {
-              type: "object",
-              properties: {
-                issueId: { type: "string", description: "Issue identifier" },
-                title: { type: "string", description: "Task title" },
-                description: {
-                  type: "string",
-                  description: "Detailed task description",
-                },
-              },
-              required: ["title", "description"],
-            },
-          },
-          {
-            name: "execute-workflow-role",
-            description: "Execute the next role in an existing workflow",
-            inputSchema: {
-              type: "object",
-              properties: {
-                workflowId: {
-                  type: "string",
-                  description: "Workflow identifier",
-                },
-              },
-              required: ["workflowId"],
-            },
-          },
-          {
-            name: "create-pull-request",
-            description:
-              "Create a GitHub pull request using generated pr.md file",
-            inputSchema: {
-              type: "object",
-              properties: {
-                workflowId: {
-                  type: "string",
-                  description: "Workflow ID to create PR for",
-                },
-                baseBranch: {
-                  type: "string",
-                  description: "Base branch",
-                  default: "main",
-                },
-                draft: {
-                  type: "boolean",
-                  description: "Create as draft PR",
-                  default: false,
-                },
-              },
-              required: ["workflowId"],
-            },
-          },
-        ],
-      };
-    });
-
-    // Handle tool execution
-    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
-
-      if (!name || typeof name !== "string") {
+      try {
         return {
-          content: [{ type: "text", text: "Invalid tool name provided" }],
-          isError: true,
+          protocolVersion: "2024-11-05",
+          capabilities: {
+            tools: {},
+            resources: {},
+            prompts: {},
+          },
+          serverInfo: {
+            name: "cortex-mcp",
+            version: getPackageVersion(),
+          },
         };
+      } catch (error) {
+        console.error("Error in InitializeRequestSchema handler:", error);
+        throw error;
       }
+    });
 
-      const result = await this.executeTool(name, args);
-      return result as {
-        content: Array<{ type: string; text: string }>;
-        isError?: boolean;
-      };
+    // Handle list tools
+    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+      try {
+        return {
+          tools: [
+            {
+              name: "cortex-task",
+              description:
+                "Create and execute a complete AI collaboration workflow",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  description: {
+                    type: "string",
+                    description: "Task description for AI collaboration",
+                  },
+                },
+                required: ["description"],
+              },
+            },
+            {
+              name: "execute-workflow-role",
+              description: "Execute the next role in a workflow",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow ID",
+                  },
+                },
+                required: ["workflowId"],
+              },
+            },
+            {
+              name: "submit-role-result",
+              description:
+                "Submit AI-processed result for a role back to the workflow",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow identifier",
+                  },
+                  roleId: {
+                    type: "string",
+                    description: "Role identifier",
+                  },
+                  result: {
+                    type: "string",
+                    description: "AI-processed result content",
+                  },
+                },
+                required: ["workflowId", "roleId", "result"],
+              },
+            },
+            {
+              name: "get-workflow-status",
+              description: "Get status and progress of a workflow",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow identifier",
+                  },
+                },
+                required: ["workflowId"],
+              },
+            },
+            {
+              name: "list-workflows",
+              description: "List all available workflows",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  limit: {
+                    type: "number",
+                    description: "Maximum number of workflows to return",
+                    default: 10,
+                  },
+                },
+              },
+            },
+            {
+              name: "create-pull-request",
+              description: "Create a pull request for workflow results",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow identifier",
+                  },
+                  baseBranch: {
+                    type: "string",
+                    description: "Base branch for the pull request",
+                    default: "main",
+                  },
+                  draft: {
+                    type: "boolean",
+                    description: "Create as draft pull request",
+                    default: false,
+                  },
+                },
+                required: ["workflowId"],
+              },
+            },
+          ],
+        };
+      } catch (error) {
+        console.error("Error in ListToolsRequestSchema handler:", error);
+        throw error;
+      }
+    });
+
+    // Handle call tool
+    this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+      try {
+        const { name, arguments: args } = request.params;
+
+        let result;
+        switch (name) {
+          case "cortex-task":
+            result = await this.toolHandler.handleTask(
+              args as { description: string }
+            );
+            break;
+          case "execute-workflow-role":
+            result = await this.toolHandler.handleExecuteWorkflowRole(
+              args as { workflowId: string }
+            );
+            break;
+          case "submit-role-result":
+            result = await this.toolHandler.handleSubmitRoleResult(
+              args as { workflowId: string; roleId: string; result: string }
+            );
+            break;
+          case "create-pull-request":
+            result = await this.toolHandler.handleCreatePullRequest(
+              args as {
+                workflowId: string;
+                baseBranch?: string;
+                draft?: boolean;
+              }
+            );
+            break;
+          case "get-workflow-status":
+            result = await this.toolHandler.handleGetWorkflowStatus(
+              args as { workflowId: string }
+            );
+            break;
+          case "list-workflows":
+            result = await this.toolHandler.handleListWorkflows(
+              args as { limit?: number }
+            );
+            break;
+          default:
+            throw new Error(`Unknown tool: ${name}`);
+        }
+
+        return {
+          content: result.content,
+          isError: result.isError,
+        };
+      } catch (error) {
+        console.error("Error in CallToolRequestSchema handler:", error);
+        throw error;
+      }
+    });
+
+    // Handle list resources
+    this.server.setRequestHandler(ListResourcesRequestSchema, async () => {
+      try {
+        return {
+          resources: [
+            {
+              uri: "cortex://workflows",
+              name: "Cortex Workflows",
+              description: "List of all Cortex AI workflows",
+              mimeType: "application/json",
+            },
+            {
+              uri: "cortex://workflows/{workflowId}/handoff",
+              name: "Workflow Handoff",
+              description: "Handoff document for a specific workflow",
+              mimeType: "text/markdown",
+            },
+            {
+              uri: "cortex://workflows/{workflowId}/pr",
+              name: "Workflow PR",
+              description: "Pull request document for a specific workflow",
+              mimeType: "text/markdown",
+            },
+            {
+              uri: "cortex://snapshots/project",
+              name: "Project Snapshot",
+              description:
+                "Current project structure and architecture snapshot",
+              mimeType: "application/json",
+            },
+            {
+              uri: "cortex://snapshots/{workflowId}",
+              name: "Workflow Snapshot",
+              description: "Snapshot of workflow execution and decisions",
+              mimeType: "application/json",
+            },
+            {
+              uri: "cortex://project/tasks",
+              name: "Project Tasks",
+              description:
+                "Available development tasks from .vscode/tasks.json",
+              mimeType: "application/json",
+            },
+            {
+              uri: "cortex://ide/integration-guide",
+              name: "IDE Integration Guide",
+              description:
+                "Guide for setting up IDE integration with Cortex AI",
+              mimeType: "text/markdown",
+            },
+          ],
+        };
+      } catch (error) {
+        console.error("Error listing resources:", error);
+        throw error;
+      }
+    });
+
+    // Handle read resource
+    this.server.setRequestHandler(
+      ReadResourceRequestSchema,
+      async (request) => {
+        try {
+          const { uri } = request.params;
+          const result = await this.resourceHandler.handleResourceRequest(uri);
+          return {
+            contents: result.contents,
+          };
+        } catch (error) {
+          console.error("Error reading resource:", error);
+          throw error;
+        }
+      }
+    );
+
+    // Handle list prompts
+    this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
+      try {
+        return {
+          prompts: [
+            {
+              name: "workflow-role-analysis",
+              description:
+                "Generate structured analysis for a role in the current workflow",
+              arguments: [
+                {
+                  name: "roleId",
+                  description:
+                    "The role ID to analyze (e.g., architecture-designer, code-assistant)",
+                  required: true,
+                },
+                {
+                  name: "workflowId",
+                  description: "The workflow ID containing the role",
+                  required: true,
+                },
+              ],
+            },
+            {
+              name: "technical-code-review",
+              description: "Generate technical code review and assessment",
+              arguments: [
+                {
+                  name: "codebase",
+                  description: "The codebase or technical context to review",
+                  required: true,
+                },
+                {
+                  name: "requirements",
+                  description: "The requirements and technical specifications",
+                  required: true,
+                },
+                {
+                  name: "role",
+                  description:
+                    "The role performing the review (e.g., code-assistant)",
+                  required: true,
+                },
+              ],
+            },
+            {
+              name: "workflow-progress-summary",
+              description:
+                "Generate executive summary of workflow progress and decisions",
+              arguments: [
+                {
+                  name: "workflowId",
+                  description: "The workflow ID to summarize",
+                  required: true,
+                },
+                {
+                  name: "includeTechnicalDetails",
+                  description:
+                    "Whether to include technical implementation details",
+                  required: false,
+                },
+              ],
+            },
+          ],
+        };
+      } catch (error) {
+        console.error("Error listing prompts:", error);
+        throw error;
+      }
+    });
+
+    // Handle get prompt
+    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+      try {
+        const { name, arguments: args } = request.params;
+
+        switch (name) {
+          case "workflow-role-analysis":
+            return await this.generateWorkflowRoleAnalysisPrompt(
+              args as {
+                roleId: string;
+                workflowId: string;
+              }
+            );
+          case "technical-code-review":
+            return await this.generateTechnicalCodeReviewPrompt(
+              args as {
+                codebase: string;
+                requirements: string;
+                role: string;
+              }
+            );
+          case "workflow-progress-summary":
+            return await this.generateWorkflowProgressSummaryPrompt(
+              args as unknown as {
+                workflowId: string;
+                includeTechnicalDetails?: boolean;
+              }
+            );
+          default:
+            throw new Error(`Unknown prompt: ${name}`);
+        }
+      } catch (error) {
+        console.error("Error getting prompt:", error);
+        throw error;
+      }
     });
   }
 
-  async start(): Promise<void> {
+  /**
+   * Generate workflow role analysis prompt
+   */
+  private async generateWorkflowRoleAnalysisPrompt(args: {
+    roleId: string;
+    workflowId: string;
+  }): Promise<{
+    description: string;
+    messages: Array<{
+      role: string;
+      content: {
+        type: string;
+        text: string;
+      };
+    }>;
+  }> {
+    const role = await this.cortex.getRole(args.roleId);
+    const workflowState = await this.cortex.getWorkflowState(args.workflowId);
+
+    // Read handoff.md content
+    const handoffFile = path.join(
+      this.projectRoot,
+      ".cortex",
+      "workspaces",
+      args.workflowId,
+      "handoff.md"
+    );
+    let handoffContent = "";
+    if (fs.existsSync(handoffFile)) {
+      handoffContent = fs.readFileSync(handoffFile, "utf-8");
+    }
+
+    return {
+      description: `Generate structured analysis for ${role?.name || args.roleId} role in workflow`,
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `# Workflow Role Analysis Prompt
+
+## Role Information
+- **Role ID:** ${args.roleId}
+- **Role Name:** ${role?.name || "Unknown"}
+- **Role Description:** ${role?.description || "No description available"}
+- **System Prompt:** ${role?.systemPrompt || role?.description || "No system prompt"}
+
+## Workflow Context
+- **Workflow ID:** ${args.workflowId}
+- **Workflow Title:** ${workflowState?.title || "Unknown"}
+- **Workflow Status:** ${workflowState?.status || "Unknown"}
+
+## Previous Context
+${handoffContent || "No previous context available"}
+
+## Instructions
+Please analyze this task according to your role's expertise and provide:
+
+1. **Task Understanding:** Clear understanding of requirements
+2. **Analysis:** Detailed analysis from your role's perspective
+3. **Recommendations:** Specific, actionable recommendations
+4. **Implementation:** If applicable, implementation details
+5. **Handoff:** Clear information for the next role
+
+## Expected Output Format
+- Structured analysis with clear sections
+- Specific recommendations with rationale
+- Implementation details where applicable
+- Clear handoff information for workflow continuation
+
+**Important:** Provide genuine analysis based on your role's expertise, not template content.`,
+          },
+        },
+      ],
+    };
+  }
+
+  /**
+   * Generate technical code review prompt
+   */
+  private async generateTechnicalCodeReviewPrompt(args: {
+    codebase: string;
+    requirements: string;
+    role: string;
+  }): Promise<{
+    description: string;
+    messages: Array<{
+      role: string;
+      content: {
+        type: string;
+        text: string;
+      };
+    }>;
+  }> {
+    return {
+      description: `Generate technical code review for ${args.role}`,
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `# Technical Code Review Prompt
+
+## Review Context
+- **Role:** ${args.role}
+- **Codebase:** ${args.codebase}
+- **Requirements:** ${args.requirements}
+
+## Instructions
+Provide a comprehensive technical code review including:
+
+1. **Code Quality Analysis:** Review of code structure and quality
+2. **Architecture Assessment:** Evaluation of system architecture
+3. **Performance Considerations:** Performance implications and recommendations
+4. **Security Review:** Security considerations and recommendations
+5. **Best Practices:** Adherence to best practices and improvements
+6. **Recommendations:** Specific actionable recommendations
+
+## Expected Output Format
+- Structured assessment with clear sections
+- Specific technical recommendations
+- Implementation guidance where applicable
+- Clear rationale for recommendations
+
+**Important:** Provide detailed technical analysis based on your role's expertise.`,
+          },
+        },
+      ],
+    };
+  }
+
+  /**
+   * Generate workflow progress summary prompt
+   */
+  private async generateWorkflowProgressSummaryPrompt(args: {
+    workflowId: string;
+    includeTechnicalDetails?: boolean;
+  }): Promise<{
+    description: string;
+    messages: Array<{
+      role: string;
+      content: {
+        type: string;
+        text: string;
+      };
+    }>;
+  }> {
+    const workflowState = await this.cortex.getWorkflowState(args.workflowId);
+
+    return {
+      description: `Generate workflow progress summary for ${args.workflowId}`,
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: `# Workflow Progress Summary Prompt
+
+## Workflow Information
+- **Workflow ID:** ${args.workflowId}
+- **Title:** ${workflowState?.title || "Unknown"}
+- **Status:** ${workflowState?.status || "Unknown"}
+- **Include Technical Details:** ${args.includeTechnicalDetails ? "Yes" : "No"}
+
+## Instructions
+Generate an executive summary including:
+
+1. **Workflow Overview:** Brief description of the workflow
+2. **Progress Summary:** Current status and progress made
+3. **Key Achievements:** Major accomplishments and deliverables
+4. **Challenges:** Any obstacles or issues encountered
+5. **Next Steps:** Recommended next actions
+${args.includeTechnicalDetails ? "6. **Technical Details:** Implementation specifics and technical decisions" : ""}
+
+## Expected Output Format
+- Executive-level summary
+- Clear progress indicators
+- Actionable next steps
+- Concise but comprehensive overview
+
+**Important:** Focus on providing a clear, executive-level summary suitable for stakeholders.`,
+          },
+        },
+      ],
+    };
+  }
+
+  /**
+   * Start the MCP server
+   */
+  public async start(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.log("✅ Cortex MCP Server started successfully!");
   }
 
-  async stop(): Promise<void> {
-    // Simple cleanup
-    console.log("✅ Cortex MCP Server stopped");
-  }
-
-  public async handleTask(args: {
-    description: string;
-    draftPr?: boolean;
-    baseBranch?: string;
-  }): Promise<{
-    content: Array<{ type: string; text: string }>;
-    isError?: boolean;
-  }> {
-    try {
-      // Import executeTask function from CLI commands
-      const { executeTask } = await import("../../cli/mcp-commands.js");
-
-      // Execute the task workflow
-      await executeTask(args.description, this.projectRoot, {
-        draftPr: args.draftPr || false,
-        baseBranch: args.baseBranch || "main",
-      });
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Task "${args.description}" executed successfully!`,
-          },
-        ],
-        isError: false,
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `❌ Task execution failed: ${error instanceof Error ? error.message : String(error)}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  }
-
-  public async handleEnhanceContext(args: {
-    query: string;
-    maxItems?: number;
-    timeRange?: number;
-  }): Promise<{
-    content: Array<{ type: string; text: string }>;
-    isError?: boolean;
-  }> {
-    try {
-      const { query } = args;
-
-      if (!query.trim()) {
-        return {
-          content: [{ type: "text", text: "Please provide a query." }],
-          isError: true,
-        };
-      }
-
-      // Use Cortex core to enhance context
-      const context = await this.cortex.enhanceContext(query);
-
-      let response = `## 📚 Enhanced Context for: ${query}\n\n`;
-
-      if (
-        context === "No relevant experiences found." ||
-        context === "Error loading experiences."
-      ) {
-        response += context;
-      } else {
-        response += context;
-      }
-
-      return {
-        content: [{ type: "text", text: response }],
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Failed to enhance context: ${error instanceof Error ? error.message : String(error)}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  }
-
-  public async handleRecordExperience(args: {
-    input: string;
-    output: string;
-    category?: string;
-    tags?: string[];
-  }): Promise<{
-    content: Array<{ type: string; text: string }>;
-    isError?: boolean;
-  }> {
-    try {
-      const { input, output, category = "general" } = args;
-
-      if (!input.trim() || !output.trim()) {
-        return {
-          content: [
-            { type: "text", text: "Both input and output are required." },
-          ],
-          isError: true,
-        };
-      }
-
-      // Use Cortex core to record the experience
-      await this.cortex.recordExperience(input, output, category);
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Experience recorded successfully in category: ${category}`,
-          },
-        ],
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Failed to record experience: ${error instanceof Error ? error.message : String(error)}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  }
-
-  public async handleCreateWorkflow(args: {
-    issueId?: string;
-    title: string;
-    description: string;
-  }): Promise<{
-    content: Array<{ type: string; text: string }>;
-    isError?: boolean;
-  }> {
-    try {
-      const { issueId, title, description } = args;
-
-      if (!title.trim() || !description.trim()) {
-        return {
-          content: [
-            { type: "text", text: "Both title and description are required." },
-          ],
-          isError: true,
-        };
-      }
-
-      // Create workflow using integrated CortexCore
-      const workflow = await this.cortex.createWorkflow(
-        issueId || `workflow-${Date.now()}`,
-        title,
-        description
-      );
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Workflow created successfully! ID: ${workflow.id}`,
-          },
-        ],
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Failed to create workflow: ${error instanceof Error ? error.message : String(error)}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  }
-
-  public async handleExecuteWorkflowRole(args: {
-    workflowId: string;
-  }): Promise<{
-    content: Array<{ type: string; text: string }>;
-    isError?: boolean;
-  }> {
-    try {
-      const { workflowId } = args;
-
-      if (!workflowId.trim()) {
-        return {
-          content: [{ type: "text", text: "Workflow ID is required." }],
-          isError: true,
-        };
-      }
-
-      // Execute next role using integrated CortexCore
-      const execution = await this.cortex.executeNextRole(workflowId);
-
-      return {
-        content: [
-          {
-            type: "text",
-            text: `✅ Role executed successfully! Role: ${execution.roleId}`,
-          },
-        ],
-      };
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Failed to execute workflow role: ${error instanceof Error ? error.message : String(error)}`,
-          },
-        ],
-        isError: true,
-      };
-    }
-  }
-
-  public async handleCreatePullRequest(args: {
-    workflowId: string;
-    baseBranch?: string;
-    draft?: boolean;
-  }): Promise<{
-    content: Array<{ type: string; text: string }>;
-    isError?: boolean;
-  }> {
-    try {
-      const { workflowId, baseBranch = "main", draft = false } = args;
-
-      // Get workflow state to find the workspace
-      const workflowState = await this.cortex.getWorkflowState(workflowId);
-      if (!workflowState) {
-        return {
-          content: [
-            { type: "text", text: `Workflow ${workflowId} not found.` },
-          ],
-          isError: true,
-        };
-      }
-
-      if (workflowState.status !== "completed") {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Workflow ${workflowId} is not completed yet. Status: ${workflowState.status}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      // Find the workspace directory
-      const workspaceId = workflowState.handoffData.context
-        .workspaceId as string;
-      if (!workspaceId) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: "Workspace ID not found in workflow context.",
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      const workspaceDir = path.join(
-        this.projectRoot,
-        ".cortex",
-        "workspaces",
-        workspaceId
-      );
-      const prFile = path.join(workspaceDir, "pr.md");
-
-      // Check if pr.md exists
-      if (!(await fs.pathExists(prFile))) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: `PR documentation file not found: ${prFile}`,
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      // Get current branch
-      const { execSync } = await import("child_process");
-      let currentBranch: string;
-      try {
-        currentBranch = execSync("git branch --show-current", {
-          cwd: this.projectRoot,
-          encoding: "utf8",
-        }).trim();
-      } catch (error) {
-        return {
-          content: [
-            {
-              type: "text",
-              text: "Failed to get current git branch. Make sure you're in a git repository.",
-            },
-          ],
-          isError: true,
-        };
-      }
-
-      // Create PR using GitHub CLI
-      const prCommand = `gh pr create --base ${baseBranch} --head ${currentBranch} --title "${workflowState.issueTitle}" --body-file "${prFile}"${draft ? " --draft" : ""}`;
-
-      try {
-        const prUrl = execSync(prCommand, {
-          cwd: this.projectRoot,
-          encoding: "utf8",
-        }).trim();
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: `✅ Pull request created successfully!\n\n**PR URL:** ${prUrl}`,
-            },
-          ],
-        };
-      } catch (error) {
-        // If GitHub CLI fails, provide manual instructions
-        const prContent = await fs.readFile(prFile, "utf8");
-
-        return {
-          content: [
-            {
-              type: "text",
-              text: `⚠️  GitHub CLI not available. Please create the PR manually:\n\n**Title:** ${workflowState.issueTitle}\n**Base branch:** ${baseBranch}\n**Head branch:** ${currentBranch}\n\n**PR Description:**\n${prContent}`,
-            },
-          ],
-        };
-      }
-    } catch (error) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `Failed to create pull request: ${error instanceof Error ? error.message : String(error)}`,
-          },
-        ],
-        isError: true,
-      };
-    }
+  /**
+   * Stop the MCP server
+   */
+  public async stop(): Promise<void> {
+    // Server cleanup if needed
   }
 }
 
 /**
- * Create Cortex MCP server
+ * Create and start MCP server
  */
-export function createCortexMCPServer(projectRoot?: string): CortexMCPServer {
-  return new CortexMCPServer(projectRoot);
+export async function createCortexMCPServer(): Promise<void> {
+  const server = new CortexMCPServer();
+  await server.start();
+}
+
+// Start server if this file is run directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  createCortexMCPServer().catch((error) => {
+    console.error("Failed to start Cortex MCP server:", error);
+    process.exit(1);
+  });
 }

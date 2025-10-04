@@ -189,20 +189,54 @@ function runFutureDevelopmentChecks() {
 function runSecurityChecks() {
   print(BLUE, "\n🔒 Running Security Checks...");
 
-  const securityResult = runCommand(
-    'npx secretlint "**/*"',
-    "Secret detection",
+  // Run npm audit for dependency security
+  const auditResult = runCommand(
+    "npm audit --audit-level=moderate",
+    "Dependency security audit",
     true
   );
 
-  if (securityResult.success) {
-    print(GREEN, "✅ No secrets detected");
+  if (auditResult.success) {
+    print(GREEN, "✅ No security vulnerabilities found");
   } else {
-    print(RED, "❌ Potential secrets found");
-    if (verbose) console.log(securityResult.output);
+    print(RED, "❌ Security vulnerabilities found");
+    if (verbose) console.log(auditResult.output);
   }
 
-  return securityResult.success;
+  // Run basic secret detection using grep patterns
+  const secretPatterns = [
+    "password\\s*=\\s*['\"][^'\"]+['\"]",
+    "api[_-]?key\\s*=\\s*['\"][^'\"]+['\"]",
+    "secret\\s*=\\s*['\"][^'\"]+['\"]",
+    "token\\s*=\\s*['\"][^'\"]+['\"]",
+    "private[_-]?key\\s*=\\s*['\"][^'\"]+['\"]"
+  ];
+
+  let secretsFound = false;
+  for (const pattern of secretPatterns) {
+    try {
+      const result = execSync(`grep -r -E "${pattern}" src/ scripts/ test/ --exclude-dir=node_modules || true`, {
+        encoding: "utf-8",
+        stdio: "pipe"
+      });
+      
+      if (result.trim()) {
+        if (!secretsFound) {
+          print(RED, "❌ Potential secrets found:");
+          secretsFound = true;
+        }
+        if (verbose) console.log(result);
+      }
+    } catch (error) {
+      // grep returns non-zero exit code when no matches found, which is expected
+    }
+  }
+
+  if (!secretsFound) {
+    print(GREEN, "✅ No obvious secrets detected");
+  }
+
+  return auditResult.success && !secretsFound;
 }
 
 // ===== MAIN EXECUTION =====

@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.1] - 2025-10-04
+
+### 🚀 Features - @rikaidev/cortex
+
+- **Fix markdownlint errors: MD013 line length and MD047 missing newline**
+  Technical improvement that enhances overall system quality.
+
+- **Fix MCP configuration in README - add 'start' parameter**
+  Enables users to access clearer documentation and usage instructions.
+
+
+
 ## [0.11.0] - 2025-10-03
 
 ### 🚀 **Major Release - Cortex AI v0.11.0**

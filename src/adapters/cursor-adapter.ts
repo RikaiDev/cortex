@@ -332,69 +332,82 @@ alwaysApply: true
 
 ### Available MCP Tools
 
-#### Tool: enhance-context
-**Purpose**: Get relevant past experiences and successful interaction patterns
+#### Tool: cortex-task
+**Purpose**: Create and execute a complete AI collaboration workflow
 **When to use**:
-- When solving problems that may have been encountered before
-- When user mentions "like before" or "similar to"
-- When I need to recall successful approaches from past interactions
-- When building on previous solutions or patterns
+- When user wants to start a structured AI collaboration workflow
+- When breaking down complex tasks into manageable steps
+- When organizing multi-role AI collaboration
+- When planning systematic problem-solving approaches
 
-#### Tool: record-experience
-**Purpose**: Record successful solutions for future learning
+#### Tool: execute-workflow-role
+**Purpose**: Execute the next role in a workflow
 **When to use**:
-- After successfully solving a problem
-- When discovering a new effective approach
-- When user confirms a solution works well
-- When identifying new user preferences or patterns
+- When continuing an existing workflow
+- When transitioning between different AI roles
+- When implementing structured collaboration steps
+- When advancing through workflow phases
 
-#### Tool: external-knowledge-integration
-**Purpose**: Integrate external knowledge sources and best practices for enhanced decision making
+#### Tool: submit-role-result
+**Purpose**: Submit AI-processed result for a role back to the workflow
 **When to use**:
-- When researching how to integrate external libraries or frameworks
-- When seeking guidance on architectural patterns and approaches
-- When exploring design pattern implementations
-- When validating technical decisions against best practices
-- When planning integration of external technologies
+- After completing a role's analysis or implementation
+- When providing structured feedback to the workflow
+- When documenting role-specific outcomes
+- When advancing workflow to next phase
 
-#### Tool: unified-knowledge-search
-**Purpose**: Search across all internal knowledge sources for comprehensive context
+#### Tool: get-workflow-status
+**Purpose**: Get status and progress of a workflow
 **When to use**:
-- When looking for existing documentation or patterns
-- When researching internal best practices
-- When seeking relevant past experiences
-- When exploring established role templates
-- When validating approaches against internal knowledge
+- When checking current workflow progress
+- When understanding workflow state
+- When planning next steps in collaboration
+- When monitoring workflow execution
+
+#### Tool: list-workflows
+**Purpose**: List all available workflows
+**When to use**:
+- When exploring existing workflows
+- When selecting appropriate workflow for task
+- When managing multiple concurrent workflows
+- When reviewing workflow history
+
+#### Tool: create-pull-request
+**Purpose**: Create a pull request for workflow results
+**When to use**:
+- When workflow is completed and ready for review
+- When implementing changes from AI collaboration
+- When preparing code changes for team review
+- When finalizing workflow outcomes
 
 ### Tool Usage Guidelines
 
 **I always consider using MCP tools in my thinking process:**
 
 #### Step 2: 📊 Problem Analysis
-- Use [enhance-context] when problem seems familiar or recurring
-- Check for similar past experiences that could inform the solution
+- Use [cortex-task] when problem requires structured collaboration
+- Check for existing workflows that might be relevant
+- Consider multi-role approach for complex problems
 
 #### Step 3: 📚 Knowledge Integration
-- Query [enhance-context] for relevant past approaches
-- Reference successful patterns from similar situations
+- Use [list-workflows] to find relevant past approaches
+- Reference successful patterns from similar workflows
 - Apply learned preferences from previous interactions
 
+#### Step 4: 💡 Solution Development
+- Use [execute-workflow-role] for structured problem-solving
+- Consider role-based expertise for different aspects
+- Plan systematic implementation approach
+
+#### Step 5: ⚡ Implementation Planning
+- Use [get-workflow-status] to track progress
+- Plan role transitions and handoffs
+- Ensure systematic execution of complex tasks
+
 #### Step 6: ✅ Quality Validation
-- Use [record-experience] when solution proves successful
-- Document new patterns or preferences discovered
-- Update knowledge base with validated approaches
-
-#### Step 7: 🌐 External Knowledge Integration
-- Use [external-knowledge-integration] to get integration guidance
-- Combine with Context7 MCP tool for specific library searches
-- Validate technical decisions against best practices
-- Document integration approaches for future reference
-
-#### Step 8: 🧠 Internal Knowledge Synthesis
-- Use [unified-knowledge-search] to access comprehensive internal knowledge
-- Reference existing documentation and past experiences
-- Apply established patterns from role templates
-- Ensure consistency with project standards and practices
+- Use [submit-role-result] to document outcomes
+- Use [create-pull-request] when workflow is complete
+- Document successful approaches for future reference
 
 ## 💡 My Behavior Guidelines
 

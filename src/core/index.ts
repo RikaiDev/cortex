@@ -36,6 +36,8 @@ export interface WorkflowContext {
   description: string;
   currentStep: number;
   totalSteps: number;
+  previousRole?: string;
+  currentRoleOutput?: string;
 }
 
 /**
@@ -83,18 +85,18 @@ export class CortexAI {
    * Load available roles from templates
    */
   async loadRoles(): Promise<Role[]> {
-    const templatesDir = path.join(this.projectRoot, "templates", "roles");
+    const rolesDir = path.join(this.projectRoot, ".cortex", "roles");
 
-    if (!(await fs.pathExists(templatesDir))) {
+    if (!(await fs.pathExists(rolesDir))) {
       return this.getDefaultRoles();
     }
 
-    const files = await fs.readdir(templatesDir);
+    const files = await fs.readdir(rolesDir);
     const roles: Role[] = [];
 
     for (const file of files) {
       if (file.endsWith(".md")) {
-        const filePath = path.join(templatesDir, file);
+        const filePath = path.join(rolesDir, file);
         const content = await fs.readFile(filePath, "utf-8");
 
         const role: Role = {
@@ -107,6 +109,26 @@ export class CortexAI {
         roles.push(role);
       }
     }
+
+    // Sort roles by priority/order
+    const roleOrder = [
+      "architecture-designer",
+      "code-assistant",
+      "testing-specialist",
+      "documentation-specialist",
+      "security-specialist",
+      "ui-ux-designer",
+      "react-expert",
+    ];
+
+    roles.sort((a, b) => {
+      const aIndex = roleOrder.indexOf(a.id);
+      const bIndex = roleOrder.indexOf(b.id);
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    });
 
     return roles.length > 0 ? roles : this.getDefaultRoles();
   }
@@ -246,16 +268,28 @@ export class CortexAI {
   private getDefaultRoles(): Role[] {
     return [
       {
+        id: "architecture-designer",
+        name: "Architecture Designer",
+        description: "System architecture and design specialist",
+        systemPrompt: "You are an architecture design specialist.",
+      },
+      {
         id: "code-assistant",
         name: "Code Assistant",
         description: "General purpose coding assistant",
         systemPrompt: "You are a helpful coding assistant.",
       },
       {
-        id: "architecture-designer",
-        name: "Architecture Designer",
-        description: "System architecture and design specialist",
-        systemPrompt: "You are an architecture design specialist.",
+        id: "testing-specialist",
+        name: "Testing Specialist",
+        description: "Quality assurance and testing expert",
+        systemPrompt: "You are a testing and quality assurance specialist.",
+      },
+      {
+        id: "documentation-specialist",
+        name: "Documentation Specialist",
+        description: "Technical documentation expert",
+        systemPrompt: "You are a documentation specialist.",
       },
     ];
   }
@@ -294,7 +328,14 @@ export class CortexAI {
     };
 
     // Save workflow state
-    await this.saveWorkflowState(workflowState);
+    try {
+      await this.saveWorkflowState(workflowState);
+      // Don't log to stdout as it breaks MCP JSON-RPC protocol
+      // console.log(`✅ Workflow state saved: ${workflowId}`);
+    } catch (error) {
+      console.error(`❌ Failed to save workflow state: ${error}`);
+      throw error;
+    }
 
     return workflowState;
   }
@@ -326,27 +367,151 @@ export class CortexAI {
     }
 
     const currentRoleId = roles[currentStep];
-    const role = await this.findRoleById(currentRoleId);
+    const role = await this.getRole(currentRoleId);
 
     if (!role) {
       throw new Error(`Role ${currentRoleId} not found`);
     }
 
-    // Execute role logic (simplified for now)
-    const output = `Executed ${role.name} for: ${workflowState.title}`;
+    // Read handoff.md content from previous role
+    const handoffContent = await this.readHandoffContent(workflowId);
+
+    // Execute role logic - this should be handled by Cursor's AI, not the MCP server
+    let output: string;
+
+    try {
+      // Don't log to stdout as it breaks MCP JSON-RPC protocol
+      // console.log(`🎭 Executing role: ${role.name} (${role.id})`);
+
+      // Prepare context for Cursor's AI to process
+      const systemPrompt = role.systemPrompt || role.description;
+      const previousContext = handoffContent || "No previous context available";
+
+      // Don't log to stdout as it breaks MCP JSON-RPC protocol
+      // console.log(`📝 Task description: ${taskDescription}`);
+      // console.log(`📋 Previous context length: ${previousContext.length} characters`);
+
+      // Create a structured context for Cursor's AI to work with
+      output = `## Role Context for Cursor AI Processing
+
+**Current Role:** ${role.name} (${role.id})
+**Role Description:** ${role.description}
+**System Prompt:** ${systemPrompt}
+
+**Task Details:**
+- **Title:** ${workflowState.title}
+- **Description:** ${workflowState.description}
+
+**Previous Context:**
+${previousContext}
+
+**Instructions for Cursor AI:**
+Please process this task according to the role's expertise and system prompt. The output should be structured and actionable for the next role in the workflow.
+
+**Expected Output Format:**
+- Analysis and recommendations
+- Specific actionable steps
+- Clear handoff information for the next role
+
+**Note:** This role execution should be completed by Cursor's AI capabilities, not by the MCP server.`;
+
+      // Don't log to stdout as it breaks MCP JSON-RPC protocol
+      // console.log(`📄 Context prepared for Cursor AI processing, length: ${output.length} characters`);
+    } catch (error) {
+      console.error("❌ Error preparing role context:", error);
+      output = `Error preparing context for ${role.name}: ${error instanceof Error ? error.message : String(error)}`;
+    }
 
     // Update workflow state
     workflowState.handoffData.context.currentStep = currentStep + 1;
     workflowState.currentRole = currentRoleId;
     workflowState.updatedAt = new Date().toISOString();
 
+    // Update handoff data with current role output
+    workflowState.handoffData.context.previousRole =
+      currentStep > 0 ? roles[currentStep - 1] : undefined;
+    workflowState.handoffData.context.currentRoleOutput = output;
+
     await this.saveWorkflowState(workflowState);
+
+    // Generate handoff.md file for next role
+    await this.generateHandoffFile(workflowState, currentRoleId, output);
 
     return {
       roleId: currentRoleId,
       status: "success",
       output,
     };
+  }
+
+  /**
+   * Read handoff content from previous role
+   */
+  private async readHandoffContent(workflowId: string): Promise<string | null> {
+    const handoffFile = path.join(
+      this.projectRoot,
+      ".cortex",
+      "workspaces",
+      workflowId,
+      "handoff.md"
+    );
+
+    if (!(await fs.pathExists(handoffFile))) {
+      return null;
+    }
+
+    try {
+      return await fs.readFile(handoffFile, "utf-8");
+    } catch (error) {
+      console.error(`Failed to read handoff file: ${error}`);
+      return null;
+    }
+  }
+
+  /**
+   * Generate handoff.md file for next role
+   */
+  private async generateHandoffFile(
+    workflowState: WorkflowState,
+    currentRoleId: string,
+    output: string
+  ): Promise<void> {
+    const workspaceDir = path.join(
+      this.projectRoot,
+      ".cortex",
+      "workspaces",
+      workflowState.id
+    );
+    await fs.ensureDir(workspaceDir);
+
+    const handoffFile = path.join(workspaceDir, "handoff.md");
+    const nextRoleId =
+      workflowState.roles[workflowState.handoffData.context.currentStep];
+
+    const handoffContent = `# Workflow Handoff
+
+## Current Status
+- **Workflow ID**: ${workflowState.id}
+- **Completed Role**: ${currentRoleId}
+- **Next Role**: ${nextRoleId || "Workflow Complete"}
+- **Status**: ${workflowState.status}
+- **Last Updated**: ${workflowState.updatedAt}
+
+## Issue Details
+- **Title**: ${workflowState.title}
+- **Description**: ${workflowState.description}
+
+## Previous Role Output
+${output}
+
+## Context
+${JSON.stringify(workflowState.handoffData.context, null, 2)}
+
+## Next Steps
+${nextRoleId ? `The next role "${nextRoleId}" should continue from this point.` : "Workflow is complete."}
+`;
+
+    await fs.writeFile(handoffFile, handoffContent);
   }
 
   /**
@@ -383,7 +548,7 @@ export class CortexAI {
   /**
    * Find role by ID
    */
-  private async findRoleById(roleId: string): Promise<Role | null> {
+  public async getRole(roleId: string): Promise<Role | null> {
     const roles = await this.loadRoles();
     return roles.find((role) => role.id === roleId) || null;
   }
