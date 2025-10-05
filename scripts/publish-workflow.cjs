@@ -696,7 +696,15 @@ async function prepareReleaseCommit(newVersion) {
   }
 
   // Version bump (creates commit and tag)
-  run(`npm version ${newVersion}`, "Version bump and tag");
+  // Check if local version already matches target version
+  if (pkg.version === newVersion) {
+    // Local version already correct, just create tag
+    print(BLUE, `📦 Local version ${pkg.version} already matches target ${newVersion}`);
+    run(`git tag v${newVersion}`, "Create version tag");
+  } else {
+    // Version needs to be bumped
+    run(`npm version ${newVersion}`, "Version bump and tag");
+  }
 
   print(GREEN, "✅ Changelog and commit completed");
 }
