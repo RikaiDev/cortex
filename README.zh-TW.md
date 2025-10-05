@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/runtime-Node.js-green.svg)](https://nodejs.org/)
 
-[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Updates](docs/updates/) | [Changelog](CHANGELOG.md)
+[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Changelog](CHANGELOG.md)
 
 ## 🧠 AI 協作大腦
 
@@ -45,13 +45,13 @@
 
 **最終結果？** 簡單輸入變成全面的、個人化的 AI 體驗。「不要使用 async/await」變成一個普遍規則，塑造每個程式碼建議、每個重構、每個架構決定。
 
-### 🏗️ **架構概覽** - 建築學上的傑作
+### 🏗️ **架構概覽**
 
-這個圖表揭示了讓 Cortex AI 真正獨特的巧妙設計：
+Cortex AI 採用多層架構實現智慧 AI 協作：
 
 ```text
 🧠 大腦層 (AI 平台整合)
-├── MCP 伺服器 - 統一的協定介面
+├── MCP 伺服器 - 統一協定介面
 ├── 多角色工作流程 - 結構化任務執行
 ├── 即時學習系統 - 用戶偏好記憶
 └── 跨平台一致性 - 統一行為體驗
@@ -60,7 +60,6 @@
 ├── 隱形專案配置 - 自動專案適應
 ├── 用戶偏好學習 - 個人化記憶
 ├── 專案模式識別 - 自動慣例發現
-├── 慣例適應 - 專案特定規則
 └── 持續改進 - 經驗積累優化
 
 🛠️ 核心工具
@@ -70,10 +69,7 @@
 └── CLI 介面 - 簡化的操作入口
 ```
 
-**隱藏的精妙之處：**
-- **攔截點**：原始用戶輸入變成協調智慧的關鍵時刻
-- **轉換流程**：觀察「修復錯誤」如何成為多步驟的分析、規劃和執行交響樂
-- **保證結果**：每條路徑都通往同一目的地 - 您的偏好完美應用
+> **📖 [詳細架構指南](docs/architecture.md)** - 完整系統架構和技術詳情
 
 ## ✨ **核心功能**
 
@@ -297,9 +293,9 @@ AI：[學習] 不要重複同樣的錯誤
 ## 📚 **文檔**
 
 - **[快速開始](docs/getting-started.md)** - 快速設定指南
-- **[AI 協作](docs/ai-collaboration/)** - 系統架構和角色
-- **[經驗學習](docs/experiences/)** - 學習和改進系統
-- **[更新和通知](docs/updates/)** - 了解變更
+- **[系統架構](docs/architecture.md)** - 架構設計詳情
+- **[程式碼模式](docs/code-patterns.md)** - 程式碼風格指南
+- **[變更日誌](CHANGELOG.md)** - 完整變更歷史
 - **[路線圖](ROADMAP.md)** - 未來開發計畫
 
 ## 🛠️ **開發**

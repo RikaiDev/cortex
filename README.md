@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/runtime-Node.js-green.svg)](https://nodejs.org/)
 
-[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Updates](docs/updates/) | [Changelog](CHANGELOG.md)
+[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Changelog](CHANGELOG.md)
 
 ## 🧠 AI Collaboration Brain
 
@@ -35,27 +35,29 @@ eliminating the frustration of repetitive explanations and inconsistent AI behav
 
 ### 🏗️ **Architecture**
 
+Cortex AI uses a multi-layered architecture for intelligent AI collaboration:
+
 ```text
 🧠 Brain Layer (AI Platform Integration)
-├── MDC (Cursor) - Integrated editor rules
-├── CLAUDE - Anthropic Claude system prompts
-├── GEMINI - Google Gemini system prompts
-├── Structured thinking processes
-└── Cross-platform consistency
+├── MCP Server - Unified protocol interface
+├── Multi-Role Workflows - Structured task execution
+├── Real-time Learning - User preference memory
+└── Cross-platform Consistency - Unified behavior
 
 📚 Experience Layer (.cortex directory)
 ├── Invisible project configuration
 ├── User preference learning
 ├── Project pattern recognition
-├── Convention adaptation
 └── Continuous improvement
 
 🛠️ Essential Tools
-├── Prompt injection for AI enhancement
-├── User preference detection and application
-├── Cross-platform adapter system
-└── Simplified CLI for core operations
+├── MCP tools system - Rich feature set
+├── Resource management - Project snapshots
+├── Prompt templates - Structured thinking
+└── CLI interface - Simplified operations
 ```
+
+> **📖 [Detailed Architecture Guide](docs/architecture.md)** - Complete system architecture and technical details
 
 ### 🧠 **Core Principles** - The Ingenious Design Philosophy
 
@@ -315,7 +317,7 @@ Cortex creates isolated workspaces for each workflow:
 - **[Getting Started](docs/getting-started.md)** - Quick setup guide
 - **[Architecture](docs/architecture.md)** - System architecture details
 - **[Code Patterns](docs/code-patterns.md)** - Code style guidelines
-- **[Development](docs/development/)** - Development environment setup
+- **[Changelog](CHANGELOG.md)** - Complete change history
 - **[Roadmap](ROADMAP.md)** - Future development plans
 
 ## 🛠️ **Development**

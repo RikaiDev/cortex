@@ -111,3 +111,6 @@ cortex.mdc
 
 # Internal development
 internal/
+
+# Release process files
+.release-check-passed
