@@ -2,39 +2,6 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.11.3] - 2025-10-05
-
-### 🏗️ **Major Architecture Refactor**
-
-This release includes significant architectural improvements and code restructuring.
-
-### 🔧 **Technical Improvements**
-
-- Enhanced core functionality across 31 files
-- Improved code structure and maintainability
-- Optimized performance and reliability
-
-### 🧹 **Cleanup**
-
-- Removed 21 obsolete files
-- Streamlined project structure
-- Reduced codebase complexity
-
-### 📚 **Documentation**
-
-- Updated README files with latest information
-- Improved installation and usage instructions
-- Enhanced API documentation
-
-### 📊 **Change Summary**
-
-- **Files changed**: N/A
-- **Lines added**: N/A
-- **Lines removed**: N/A
-- **Net change**: N/A lines
-
-
-
 ## [0.11.0] - 2025-10-03
 
 ### 🚀 **Major Release - Cortex AI v0.11.0**

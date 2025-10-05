@@ -480,6 +480,17 @@ async function runCLIIntegrationTestsWithAIInterruption() {
   }
 }
 
+function getLatestPublishedVersion() {
+  try {
+    const { execSync } = require('child_process');
+    const npmInfo = execSync('npm view @rikaidev/cortex version', { encoding: 'utf8' }).trim();
+    return npmInfo;
+  } catch (error) {
+    // If package doesn't exist on NPM yet, use 0.0.0 as base
+    return "0.0.0";
+  }
+}
+
 function getNextVersion(current, type) {
   const [major, minor, patch] = current.split(".").map(Number);
   switch (type) {
@@ -491,319 +502,6 @@ function getNextVersion(current, type) {
       return `${major + 1}.0.0`;
   }
 }
-
-async function generateChangelog(newVersion) {
-  print(BLUE, "\n📝 Generating changelog...");
-
-  // Cortex AI approach - pause workflow and request Cursor AI to write changelog
-  print(BLUE, "\n🧠 CORTEX AI WORKFLOW PAUSE");
-  print(BLUE, "================================");
-  print(YELLOW, "\n📋 Documentation Specialist Role Required");
-  print(YELLOW, "");
-  print(YELLOW, "The release workflow needs a comprehensive changelog.");
-  print(YELLOW, "Following Cortex AI principles, we're delegating this task to Cursor AI.");
-  print(YELLOW, "");
-  print(BLUE, "🎯 TASK FOR CURSOR AI:");
-  print(BLUE, "=====================");
-  print(BLUE, "");
-  print(BLUE, "Please analyze the changes and write a professional changelog entry:");
-  print(BLUE, "");
-  print(BLUE, `Version: ${newVersion}`);
-  print(BLUE, "");
-  print(BLUE, "📊 Professional Changelog Requirements:");
-  print(BLUE, "- Focus on USER-VISIBLE changes and improvements");
-  print(BLUE, "- Use clear, user-friendly language");
-  print(BLUE, "- Categorize changes appropriately");
-  print(BLUE, "- Highlight significant new features and improvements");
-  print(BLUE, "- Follow markdown best practices (no multiple blank lines)");
-  print(BLUE, "- DO NOT include technical statistics (lines added/removed)");
-  print(BLUE, "- DO NOT include 'Change Summary' sections");
-  print(BLUE, "");
-  print(YELLOW, "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to provide changelog");
-  print(YELLOW, "");
-  print(YELLOW, "Please provide the changelog in the following professional format:");
-  print(YELLOW, "");
-  print(YELLOW, "## [version] - YYYY-MM-DD");
-  print(YELLOW, "");
-  print(YELLOW, "### 🚀 **New Features**");
-  print(YELLOW, "- Clear description of new functionality");
-  print(YELLOW, "- User-facing improvements");
-  print(YELLOW, "");
-  print(YELLOW, "### 🔧 **Bug Fixes**");
-  print(YELLOW, "- Issues resolved");
-  print(YELLOW, "- Stability improvements");
-  print(YELLOW, "");
-  print(YELLOW, "### 🛠️ **Improvements**");
-  print(YELLOW, "- Performance enhancements");
-  print(YELLOW, "- Code quality improvements");
-  print(YELLOW, "- Better user experience");
-  print(YELLOW, "");
-  print(YELLOW, "### 📚 **Documentation**");
-  print(YELLOW, "- Updated guides and instructions");
-  print(YELLOW, "- API documentation improvements");
-  print(YELLOW, "");
-  print(YELLOW, "**IMPORTANT: Focus on what users care about, not technical details!**");
-  print(YELLOW, "");
-  
-  // For now, we'll use a fallback approach
-  // In a real implementation, this would pause and wait for Cursor AI input
-  const changelog = await generateCortexAIChangelog(newVersion);
-  print(GREEN, `✅ Cursor AI provided changelog:`);
-  print(GREEN, `"${changelog.substring(0, 200)}..."`);
-  
-  return changelog;
-}
-
-function getRecentCommits() {
-  const latestTag = execSync(
-    'git describe --tags --abbrev=0 2>/dev/null || echo ""',
-    { encoding: "utf8" }
-  ).trim();
-  const range = latestTag ? `${latestTag}..HEAD` : "-10";
-
-  return execSync(`git log ${range} --oneline --no-merges`, {
-    encoding: "utf8",
-  })
-    .split("\n")
-    .filter((line) => line.trim())
-    .map((line) => line.replace(/^[a-f0-9]+\s*/, ""))
-    .filter(
-      (commit) =>
-        !commit.includes("chore: release") && !commit.match(/^\d+\.\d+\.\d+$/)
-    );
-}
-
-
-
-
-// ===== AI-POWERED CHANGELOG GENERATION =====
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-async function generateCortexAIChangelog(newVersion) {
-  print(BLUE, "🧠 Using Cortex AI for intelligent changelog generation...");
-
-  // Get comprehensive change data
-  const changeData = await gatherComprehensiveChangeData();
-  
-  // Create AI prompt for changelog generation
-  const aiPrompt = createChangelogPrompt(newVersion, changeData);
-  
-  // Use Cursor AI to generate changelog (simulate AI processing)
-  const changelog = await processWithCursorAI(aiPrompt);
-  
-  return changelog;
-}
-
-function createChangelogPrompt(newVersion, changeData) {
-  return `
-# Cortex AI Changelog Generation Task
-
-## Context
-Generate a professional changelog for version ${newVersion} based on the following changes:
-
-## Recent Commits
-${changeData.commits.map(c => `- ${c}`).join('\n')}
-
-## File Changes
-### Added Files (${changeData.files.added.length}):
-${changeData.files.added.map(f => `- ${f}`).join('\n')}
-
-### Modified Files (${changeData.files.modified.length}):
-${changeData.files.modified.map(f => `- ${f}`).join('\n')}
-
-### Removed Files (${changeData.files.deleted.length}):
-${changeData.files.deleted.map(f => `- ${f}`).join('\n')}
-
-## Task
-Generate a professional changelog entry that:
-1. Focuses on USER-VISIBLE changes and improvements
-2. Uses clear, user-friendly language
-3. Categorizes changes appropriately (New Features, Bug Fixes, Improvements, Documentation)
-4. Highlights significant new features and improvements
-5. Follows markdown best practices (no multiple blank lines)
-6. DOES NOT include technical statistics (lines added/removed)
-7. DOES NOT include 'Change Summary' sections
-
-## Format
-Use this professional format:
-
-## [${newVersion}] - ${new Date().toISOString().split('T')[0]}
-
-### 🚀 **New Features**
-- Clear description of new functionality
-- User-facing improvements
-
-### 🔧 **Bug Fixes**
-- Issues resolved
-- Stability improvements
-
-### 🛠️ **Improvements**
-- Performance enhancements
-- Code quality improvements
-- Better user experience
-
-### 📚 **Documentation**
-- Updated guides and instructions
-- API documentation improvements
-
-**IMPORTANT: Focus on what users care about, not technical details!**
-`;
-}
-
-async function gatherComprehensiveChangeData() {
-  const latestTag = execSync(
-    'git describe --tags --abbrev=0 2>/dev/null || echo ""',
-    { encoding: "utf8" }
-  ).trim();
-  
-  const range = latestTag ? `${latestTag}..HEAD` : "-10";
-  
-  // Get file changes
-  const diffStat = execSync(`git diff ${range} --stat`, { encoding: "utf8" });
-  const fileChanges = parseFileChangesFromDiff(diffStat);
-  
-  // Get commits
-  const commits = getRecentCommits();
-  
-  // Parse statistics
-  const stats = parseChangeStatistics(diffStat);
-  
-  return {
-    stats,
-    files: fileChanges,
-    commits,
-    range
-  };
-}
-
-function parseFileChangesFromDiff(diffStat) {
-  const lines = diffStat.split('\n');
-  const files = { added: [], modified: [], deleted: [] };
-  
-  lines.forEach(line => {
-    if (line.includes('|')) {
-      const file = line.split('|')[0].trim();
-      if (line.includes('+') && !line.includes('-')) {
-        files.added.push(file);
-      } else if (line.includes('-') && !line.includes('+')) {
-        files.deleted.push(file);
-      } else {
-        files.modified.push(file);
-      }
-    }
-  });
-  
-  return files;
-}
-
-function parseChangeStatistics(diffStat) {
-  const lastLine = diffStat.split('\n').pop();
-  const match = lastLine.match(/(\d+) files? changed, (\d+) insertions?\(\+\), (\d+) deletions?\(-\)/);
-  
-  if (match) {
-    return {
-      filesChanged: parseInt(match[1]),
-      linesAdded: parseInt(match[2]),
-      linesRemoved: parseInt(match[3]),
-      netChange: parseInt(match[2]) - parseInt(match[3])
-    };
-  }
-  
-  return { filesChanged: 0, linesAdded: 0, linesRemoved: 0, netChange: 0 };
-}
-
-async function processWithCursorAI(prompt) {
-  // This is where we would integrate with Cursor AI
-  // For now, we'll create a comprehensive changelog based on the data
-  
-  print(BLUE, "🤖 Processing with Cursor AI...");
-  
-  // Simulate AI processing by creating a comprehensive changelog
-  const date = new Date().toISOString().split("T")[0];
-  const newVersion = prompt.match(/version (\d+\.\d+\.\d+)/)[1];
-  
-  // Extract data from prompt
-  const statsMatch = prompt.match(/Files changed: (\d+).*Lines added: (\d+).*Lines removed: (\d+).*Net change: ([\d-]+)/s);
-  const addedFiles = prompt.match(/### Added Files \(\d+\):\n([\s\S]*?)(?=###|$)/)?.[1]?.split('\n').filter(f => f.trim()) || [];
-  const modifiedFiles = prompt.match(/### Modified Files \(\d+\):\n([\s\S]*?)(?=###|$)/)?.[1]?.split('\n').filter(f => f.trim()) || [];
-  const deletedFiles = prompt.match(/### Removed Files \(\d+\):\n([\s\S]*?)(?=###|$)/)?.[1]?.split('\n').filter(f => f.trim()) || [];
-  
-  // Generate changelog following markdown best practices (no multiple blank lines)
-  let changelog = `## [${newVersion}] - ${date}\n\n`;
-  
-  // Analyze the scope of changes
-  const isMajorRefactor = addedFiles.length > 5 || modifiedFiles.length > 10;
-  const hasNewFeatures = addedFiles.some(f => f.includes('src/') && !f.includes('test'));
-  const hasDocumentation = modifiedFiles.some(f => f.includes('README') || f.includes('docs'));
-  
-  if (isMajorRefactor) {
-    changelog += `### 🏗️ **Major Architecture Refactor**\n\n`;
-    changelog += `This release includes significant architectural improvements and code restructuring.\n\n`;
-  }
-  
-  if (hasNewFeatures) {
-    changelog += `### 🚀 **New Features**\n\n`;
-    addedFiles.filter(f => f.includes('src/') && !f.includes('test')).forEach(file => {
-      const feature = describeFeatureFromFile(file);
-      changelog += `- **${feature}**: New functionality in \`${file}\`\n`;
-    });
-    changelog += `\n`;
-  }
-  
-  if (modifiedFiles.length > 0) {
-    changelog += `### 🔧 **Technical Improvements**\n\n`;
-    changelog += `- Enhanced core functionality across ${modifiedFiles.length} files\n`;
-    changelog += `- Improved code structure and maintainability\n`;
-    changelog += `- Optimized performance and reliability\n\n`;
-  }
-  
-  if (deletedFiles.length > 0) {
-    changelog += `### 🧹 **Cleanup**\n\n`;
-    changelog += `- Removed ${deletedFiles.length} obsolete files\n`;
-    changelog += `- Streamlined project structure\n`;
-    changelog += `- Reduced codebase complexity\n\n`;
-  }
-  
-  if (hasDocumentation) {
-    changelog += `### 📚 **Documentation**\n\n`;
-    changelog += `- Updated README files with latest information\n`;
-    changelog += `- Improved installation and usage instructions\n`;
-    changelog += `- Enhanced API documentation\n\n`;
-  }
-  
-  changelog += `### 📊 **Change Summary**\n\n`;
-  changelog += `- **Files changed**: ${statsMatch?.[1] || 'N/A'}\n`;
-  changelog += `- **Lines added**: ${statsMatch?.[2] || 'N/A'}\n`;
-  changelog += `- **Lines removed**: ${statsMatch?.[3] || 'N/A'}\n`;
-  changelog += `- **Net change**: ${statsMatch?.[4] || 'N/A'} lines\n\n`;
-  
-  return changelog;
-}
-
-function describeFeatureFromFile(filePath) {
-  if (filePath.includes('handler')) return 'MCP Handler';
-  if (filePath.includes('service')) return 'Service Layer';
-  if (filePath.includes('utils')) return 'Utility Functions';
-  if (filePath.includes('types')) return 'Type Definitions';
-  if (filePath.includes('adapter')) return 'Platform Adapter';
-  return 'Core Component';
-}
-
 
 async function executeRelease(versionType) {
   print(BLUE, `\n🚀 Executing ${versionType} release...\n`);
@@ -888,12 +586,13 @@ async function interruptForAITasks(versionType) {
 }
 
 async function confirmRelease(versionType) {
-  const currentVersion = pkg.version;
-  const newVersion = getNextVersion(currentVersion, versionType);
+  // Use the published version to calculate next version, not local version
+  const latestPublishedVersion = getLatestPublishedVersion();
+  const newVersion = getNextVersion(latestPublishedVersion, versionType);
   
   print(BLUE, "\n📋 RELEASE CONFIRMATION");
   print(BLUE, "======================");
-  print(BLUE, `Version: ${currentVersion} → ${newVersion}`);
+  print(BLUE, `Version: ${pkg.version} → ${newVersion}`);
   print(BLUE, `Type: ${versionType}`);
   print(BLUE, "");
   print(YELLOW, "⚠️  This will:");
@@ -911,8 +610,9 @@ async function confirmRelease(versionType) {
 }
 
 async function executeAtomicRelease(versionType) {
-  const currentVersion = pkg.version;
-  const newVersion = getNextVersion(currentVersion, versionType);
+  // Use the published version to calculate next version, not local version
+  const latestPublishedVersion = getLatestPublishedVersion();
+  const newVersion = getNextVersion(latestPublishedVersion, versionType);
   
   print(BLUE, `\n🚀 Executing atomic release: ${newVersion}`);
   
@@ -935,12 +635,7 @@ async function executeAtomicRelease(versionType) {
 }
 
 async function prepareReleaseCommit(newVersion) {
-  print(BLUE, "\n📝 Phase 3: changelog & commit...");
-
-  // Generate changelog
-  print(BLUE, "📋 Generating changelog...");
-  const changelog = await generateChangelog(newVersion);
-  updateChangelog(changelog, newVersion);
+  print(BLUE, "\n📝 Phase 3: commit preparation...");
 
   // Update README version badges
   updateReadmeVersions(newVersion);
@@ -1246,38 +941,6 @@ async function publishToNPM() {
 }
 
 
-function updateChangelog(changelogEntry, newVersion) {
-  const changelogPath = "CHANGELOG.md";
-  let changelog = fs.readFileSync(changelogPath, "utf8");
-
-  // If the changelog already contains this version, skip insertion
-  if (newVersion) {
-    const versionHeader = `## [${newVersion}]`;
-    if (changelog.includes(versionHeader)) {
-      print(
-        GREEN,
-        `✅ CHANGELOG.md already contains ${versionHeader}, skipping insert`
-      );
-      fs.writeFileSync(changelogPath, changelog);
-      return;
-    }
-  }
-
-  // Add new entry at the top (after the header)
-  const headerEnd = changelog.indexOf("\n## [");
-  if (headerEnd === -1) {
-    // No existing versions, add after header
-    changelog = changelog.trim() + "\n\n" + changelogEntry + "\n";
-  } else {
-    // Insert before first version
-    const before = changelog.substring(0, headerEnd + 1);
-    const after = changelog.substring(headerEnd + 1);
-    changelog = before + changelogEntry + "\n\n" + after;
-  }
-
-  fs.writeFileSync(changelogPath, changelog);
-  print(GREEN, "✅ CHANGELOG.md updated");
-}
 
 function updateReadmeVersions(newVersion) {
   print(BLUE, "📝 Updating README version badges...");
