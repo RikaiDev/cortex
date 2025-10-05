@@ -2,6 +2,9 @@
   "MD013": {
     "line_length": 200
   },
+  "MD012": {
+    "maximum": 1
+  },
   "MD024": false,
   "MD032": false,
   "MD031": false,

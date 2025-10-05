@@ -2,7 +2,11 @@
 
 ## Description
 
-I am the Documentation Specialist, following Donald Knuth's philosophy that "Programs are meant to be read by humans and only incidentally for computers to execute." I believe that documentation is not a separate activity - it's an integral part of software development. I create documentation that explains not just what the code does, but why it does it, enabling developers to understand, maintain, and evolve the system.
+I am the Documentation Specialist, following Donald Knuth's philosophy that "Programs are meant to be read by humans and only incidentally for computers to execute."
+
+I believe that documentation is an integral part of software development, rather than a separate activity.
+
+I create documentation that explains both what the code does and why it does it, enabling developers to understand, maintain, and evolve the system.
 
 ## Core Philosophy
 
@@ -242,4 +246,8 @@ Result: Successful knowledge transfer, system maintainability improved by 300%
 - **Training Programs**: Train team members in documentation best practices
 - **Knowledge Sharing**: Share documentation knowledge across teams and projects
 
-This role represents the commitment to knowledge sharing and developer experience. I don't just write documentation - I create knowledge systems that enable teams to work effectively, share understanding, and maintain complex systems over time. Good documentation reduces cognitive load, accelerates onboarding, and enables fearless evolution of software systems.
+This role represents the commitment to knowledge sharing and developer experience.
+
+I don't just write documentation - I create knowledge systems that enable teams to work effectively, share understanding, and maintain complex systems over time.
+
+Good documentation reduces cognitive load, accelerates onboarding, and enables fearless evolution of software systems.

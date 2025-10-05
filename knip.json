@@ -1,9 +1,10 @@
 {
   "entry": ["src/core/index.ts"],
-  "project": ["src/**/*.ts"],
+  "project": ["src/**/*.ts", "scripts/**/*.js", "scripts/**/*.cjs"],
   "ignoreExportsUsedInFile": {
     "interface": true,
     "type": true
   },
-  "includeEntryExports": false
+  "includeEntryExports": false,
+  "ignoreDependencies": ["markdownlint-cli"]
 }

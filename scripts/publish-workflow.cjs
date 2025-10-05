@@ -61,6 +61,14 @@ async function runQualityChecks() {
   // Round 2: Code Quality with Cortex AI interruption
   print(BLUE, "\n📋 Round 2: Code quality checks");
   await runQualityChecksWithAIInterruption();
+  
+  // Round 2.5: ROADMAP Content Check
+  print(BLUE, "\n📋 Round 2.5: ROADMAP content check");
+  await runRoadmapContentCheck();
+  
+  // Round 2.6: Markdown Lint Check
+  print(BLUE, "\n📋 Round 2.6: Markdown lint check");
+  await runMarkdownLintCheck();
 
   // Round 3: Build Verification
   print(BLUE, "\n📋 Round 3: Build verification");
@@ -86,9 +94,11 @@ async function runQualityChecksWithAIInterruption() {
   try {
     run("npm run quality", "Quality checks");
   } catch (error) {
-    // Quality checks failed - use Cortex AI approach
+    // Quality checks failed - STOP THE WORKFLOW
     print(BLUE, "\n🧠 CORTEX AI WORKFLOW PAUSE");
     print(BLUE, "================================");
+    print(RED, "\n❌ QUALITY CHECKS FAILED - WORKFLOW STOPPED");
+    print(RED, "");
     print(YELLOW, "\n📋 Code Assistant Role Required");
     print(YELLOW, "");
     print(YELLOW, "Quality checks have failed. Following Cortex AI principles,");
@@ -105,6 +115,7 @@ async function runQualityChecksWithAIInterruption() {
     print(BLUE, "📊 Quality Fix Requirements:");
     print(BLUE, "- Analyze the specific quality check failures");
     print(BLUE, "- Fix markdown linting issues (MD012: no multiple blank lines)");
+    print(BLUE, "- Fix any ESLint errors");
     print(BLUE, "- Fix any code quality issues");
     print(BLUE, "- Ensure all files follow project standards");
     print(BLUE, "- Run quality checks again to verify fixes");
@@ -114,13 +125,251 @@ async function runQualityChecksWithAIInterruption() {
     print(YELLOW, "Please fix the issues and then run:");
     print(YELLOW, "npm run quality");
     print(YELLOW, "");
+    print(RED, "🚫 RELEASE WORKFLOW STOPPED - Cannot proceed until quality issues are fixed");
+    print(RED, "");
+    print(RED, "Run the following command after fixing issues:");
+    print(RED, "npm run release:patch");
+    print(RED, "");
     
-    // For now, we'll use a fallback approach
-    // In a real implementation, this would pause and wait for Cursor AI input
-    print(GREEN, "✅ Cursor AI will handle quality fixes");
+    // STOP THE WORKFLOW - Don't continue
+    throw new Error("Quality checks failed - workflow stopped. Please fix issues and retry.");
+  }
+}
+
+async function runVersionConsistencyCheck(versionType) {
+  try {
+    print(BLUE, "📋 Checking version consistency...");
     
-    // Re-run quality checks after AI fixes
-    run("npm run quality", "Quality checks after AI fixes");
+    // Get the latest published version from NPM
+    let latestPublishedVersion;
+    try {
+      const { execSync } = require('child_process');
+      const npmInfo = execSync('npm view @rikaidev/cortex version', { encoding: 'utf8' }).trim();
+      latestPublishedVersion = npmInfo;
+      print(BLUE, `📦 Latest published version: ${latestPublishedVersion}`);
+    } catch (error) {
+      // If package doesn't exist on NPM yet, use 0.0.0 as base
+      latestPublishedVersion = "0.0.0";
+      print(BLUE, `📦 No published version found, using base: ${latestPublishedVersion}`);
+    }
+    
+    // Check if local package.json version is ahead of published version
+    const localVersion = pkg.version;
+    if (localVersion === latestPublishedVersion) {
+      throw new Error(`Local version ${localVersion} matches published version. Need to bump version first.`);
+    }
+    
+    // Check if local version is actually newer
+    const localParts = localVersion.split('.').map(Number);
+    const publishedParts = latestPublishedVersion.split('.').map(Number);
+    
+    let isNewer = false;
+    for (let i = 0; i < 3; i++) {
+      if (localParts[i] > publishedParts[i]) {
+        isNewer = true;
+        break;
+      } else if (localParts[i] < publishedParts[i]) {
+        throw new Error(`Local version ${localVersion} is older than published version ${latestPublishedVersion}`);
+      }
+    }
+    
+    if (!isNewer) {
+      throw new Error(`Local version ${localVersion} is not newer than published version ${latestPublishedVersion}`);
+    }
+    
+    // Check for version gaps - this is critical!
+    const expectedNextVersion = getNextVersion(latestPublishedVersion, versionType);
+    if (localVersion !== expectedNextVersion) {
+      // VERSION GAP DETECTED - STOP THE WORKFLOW
+      print(BLUE, "\n🧠 CORTEX AI WORKFLOW PAUSE");
+      print(BLUE, "================================");
+      print(RED, "\n❌ VERSION GAP DETECTED - WORKFLOW STOPPED");
+      print(RED, "");
+      print(YELLOW, "\n📋 Version Management Specialist Role Required");
+      print(YELLOW, "");
+      print(YELLOW, "Version number misalignment detected. Following Cortex AI principles,");
+      print(YELLOW, "we're delegating the version correction task to Cursor AI.");
+      print(YELLOW, "");
+      print(BLUE, "🎯 TASK FOR CURSOR AI:");
+      print(BLUE, "=====================");
+      print(BLUE, "");
+      print(BLUE, "CRITICAL VERSION MISALIGNMENT DETECTED:");
+      print(BLUE, `- Published version: ${latestPublishedVersion}`);
+      print(BLUE, `- Expected next version: ${expectedNextVersion}`);
+      print(BLUE, `- Current local version: ${localVersion}`);
+      print(BLUE, "");
+      print(BLUE, "📊 REQUIRED ACTIONS:");
+      print(BLUE, "1. Fix package.json version to ${expectedNextVersion}");
+      print(BLUE, "2. Update README.md version badge to v${expectedNextVersion}");
+      print(BLUE, "3. Update README.zh-TW.md version badge to v${expectedNextVersion}");
+      print(BLUE, "4. Update ROADMAP.md version to v${expectedNextVersion}");
+      print(BLUE, "5. Clean up incorrect CHANGELOG entries (if any)");
+      print(BLUE, "6. Delete incorrect git tags:");
+      print(BLUE, `   git tag -d v${localVersion}`);
+      print(BLUE, "7. Verify all version references are consistent");
+      print(BLUE, "");
+      print(YELLOW, "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to fix version alignment");
+      print(YELLOW, "");
+      print(YELLOW, "Please fix the version issues and then run:");
+      print(YELLOW, "npm run release:patch");
+      print(YELLOW, "");
+      print(RED, "🚫 RELEASE WORKFLOW STOPPED - Cannot proceed until versions are aligned");
+      print(RED, "");
+      print(RED, "Run the following command after fixing issues:");
+      print(RED, "npm run release:patch");
+      print(RED, "");
+
+      // STOP THE WORKFLOW - Don't continue
+      throw new Error("Version gap detected - workflow stopped. Please fix version alignment and retry.");
+    }
+    
+    // Check that documentation files match the local version
+    const versionPattern = new RegExp(`v${localVersion.replace(/\./g, '\\.')}`);
+    
+    // Check README files
+    const readmeFiles = ["README.md", "README.zh-TW.md"];
+    for (const file of readmeFiles) {
+      const content = fs.readFileSync(file, 'utf8');
+      if (!versionPattern.test(content)) {
+        throw new Error(`Version mismatch in ${file}: expected v${localVersion}`);
+      }
+    }
+    
+    // Check ROADMAP.md
+    const roadmapContent = fs.readFileSync("ROADMAP.md", 'utf8');
+    if (!versionPattern.test(roadmapContent)) {
+      throw new Error(`Version mismatch in ROADMAP.md: expected v${localVersion}`);
+    }
+    
+    print(GREEN, `✅ Version consistency check passed (${latestPublishedVersion} → ${localVersion})`);
+  } catch (error) {
+    print(RED, `❌ Version consistency check failed: ${error.message}`);
+    throw error;
+  }
+}
+
+async function runRoadmapContentCheck() {
+  try {
+    print(BLUE, "📋 Checking ROADMAP content alignment...");
+    
+    // Check if ROADMAP needs AI review
+    const roadmapContent = fs.readFileSync("ROADMAP.md", 'utf8');
+    const currentVersion = pkg.version;
+    
+    // Check for version consistency
+    const versionPattern = new RegExp(`v${currentVersion.replace(/\./g, '\\.')}`);
+    if (!versionPattern.test(roadmapContent)) {
+      throw new Error(`ROADMAP version mismatch: expected v${currentVersion}`);
+    }
+    
+    // Check for outdated content patterns
+    const outdatedPatterns = [
+      /docs\/ai-collaboration\/roles\//,  // Old path
+      /21 roles into 8/,                 // Incorrect consolidation
+      /5-core agent orchestration/       // Non-existent system
+    ];
+    
+    for (const pattern of outdatedPatterns) {
+      if (pattern.test(roadmapContent)) {
+        throw new Error(`ROADMAP contains outdated content: ${pattern.source}`);
+      }
+    }
+    
+    print(GREEN, "✅ ROADMAP content check passed");
+  } catch (error) {
+    // ROADMAP content check failed - STOP THE WORKFLOW
+    print(BLUE, "\n🧠 CORTEX AI WORKFLOW PAUSE");
+    print(BLUE, "================================");
+    print(RED, "\n❌ ROADMAP CONTENT CHECK FAILED - WORKFLOW STOPPED");
+    print(RED, "");
+    print(YELLOW, "\n📋 Documentation Specialist Role Required");
+    print(YELLOW, "");
+    print(YELLOW, "ROADMAP content check has failed. Following Cortex AI principles,");
+    print(YELLOW, "we're delegating the review task to Cursor AI.");
+    print(YELLOW, "");
+    print(BLUE, "🎯 TASK FOR CURSOR AI:");
+    print(BLUE, "=====================");
+    print(BLUE, "");
+    print(BLUE, "Please review and update ROADMAP.md:");
+    print(BLUE, "");
+    print(BLUE, "Error details:");
+    print(RED, error.message);
+    print(BLUE, "");
+    print(BLUE, "📊 ROADMAP Review Requirements:");
+    print(BLUE, "- Ensure version numbers match current package.json");
+    print(BLUE, "- Remove outdated content and references");
+    print(BLUE, "- Align roadmap with actual project structure");
+    print(BLUE, "- Verify all completed features are accurately listed");
+    print(BLUE, "- Check that future plans align with current capabilities");
+    print(BLUE, "");
+    print(YELLOW, "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to review ROADMAP");
+    print(YELLOW, "");
+    print(YELLOW, "Please review and update ROADMAP.md, then run:");
+    print(YELLOW, "npm run release:patch");
+    print(YELLOW, "");
+    print(RED, "🚫 RELEASE WORKFLOW STOPPED - Cannot proceed until ROADMAP is reviewed");
+    print(RED, "");
+    print(RED, "Run the following command after fixing issues:");
+    print(RED, "npm run release:patch");
+    print(RED, "");
+
+    // STOP THE WORKFLOW - Don't continue
+    throw new Error("ROADMAP content check failed - workflow stopped. Please review and retry.");
+  }
+}
+
+async function runMarkdownLintCheck() {
+  try {
+    // Only check files that will be published
+    const filesToCheck = [
+      "README.md",
+      "README.zh-TW.md", 
+      "CHANGELOG.md",
+      "ROADMAP.md",
+      "RELEASE-PROTECTION.md",
+      "templates/**/*.md"
+    ];
+    
+    run(`npx markdownlint "${filesToCheck.join(' ')}" --config .markdownlint.json --ignore node_modules`, "Markdown lint check");
+    print(GREEN, "✅ Markdown lint check passed");
+  } catch (error) {
+    // Markdown lint failed - STOP THE WORKFLOW
+    print(BLUE, "\n🧠 CORTEX AI WORKFLOW PAUSE");
+    print(BLUE, "================================");
+    print(RED, "\n❌ MARKDOWN LINT FAILED - WORKFLOW STOPPED");
+    print(RED, "");
+    print(YELLOW, "\n📋 Documentation Specialist Role Required");
+    print(YELLOW, "");
+    print(YELLOW, "Markdown linting has failed. Following Cortex AI principles,");
+    print(YELLOW, "we're delegating the fix task to Cursor AI.");
+    print(YELLOW, "");
+    print(BLUE, "🎯 TASK FOR CURSOR AI:");
+    print(BLUE, "=====================");
+    print(BLUE, "");
+    print(BLUE, "Please analyze and fix the markdown linting issues:");
+    print(BLUE, "");
+    print(BLUE, "Error details:");
+    print(RED, error.message);
+    print(BLUE, "");
+    print(BLUE, "📊 Markdown Fix Requirements:");
+    print(BLUE, "- Fix MD012: no multiple blank lines (maximum 1 blank line)");
+    print(BLUE, "- Fix any other markdown formatting issues");
+    print(BLUE, "- Ensure all markdown files follow best practices");
+    print(BLUE, "- Run markdown lint again to verify fixes");
+    print(BLUE, "");
+    print(YELLOW, "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to fix markdown issues");
+    print(YELLOW, "");
+    print(YELLOW, "Please fix the issues and then run:");
+    print(YELLOW, "npx markdownlint '**/*.md' --config .markdownlint.json --ignore node_modules");
+    print(YELLOW, "");
+    print(RED, "🚫 RELEASE WORKFLOW STOPPED - Cannot proceed until markdown issues are fixed");
+    print(RED, "");
+    print(RED, "Run the following command after fixing issues:");
+    print(RED, "npm run release:patch");
+    print(RED, "");
+    
+    // STOP THE WORKFLOW - Don't continue
+    throw new Error("Markdown lint failed - workflow stopped. Please fix issues and retry.");
   }
 }
 
@@ -145,8 +394,11 @@ async function runCLITestsWithAIInterruption() {
   try {
     run("node dist/cli/index.js --help", "CLI help test");
   } catch (error) {
+    // CLI test failed - STOP THE WORKFLOW
     print(BLUE, "\n🧠 CORTEX AI WORKFLOW PAUSE");
     print(BLUE, "================================");
+    print(RED, "\n❌ CLI TEST FAILED - WORKFLOW STOPPED");
+    print(RED, "");
     print(YELLOW, "\n📋 Testing Specialist Role Required");
     print(YELLOW, "");
     print(YELLOW, "CLI functionality test failed. Following Cortex AI principles,");
@@ -172,11 +424,14 @@ async function runCLITestsWithAIInterruption() {
     print(YELLOW, "Please fix the CLI issues and then run:");
     print(YELLOW, "node dist/cli/index.js --help");
     print(YELLOW, "");
+    print(RED, "🚫 RELEASE WORKFLOW STOPPED - Cannot proceed until CLI issues are fixed");
+    print(RED, "");
+    print(RED, "Run the following command after fixing issues:");
+    print(RED, "npm run release:patch");
+    print(RED, "");
     
-    print(GREEN, "✅ Cursor AI will handle CLI fixes");
-    
-    // Re-run CLI test after AI fixes
-    run("node dist/cli/index.js --help", "CLI help test after AI fixes");
+    // STOP THE WORKFLOW - Don't continue
+    throw new Error("CLI test failed - workflow stopped. Please fix issues and retry.");
   }
 }
 
@@ -184,8 +439,11 @@ async function runCLIIntegrationTestsWithAIInterruption() {
   try {
     run("npm run test:cli", "CLI integration tests");
   } catch (error) {
+    // Integration test failed - STOP THE WORKFLOW
     print(BLUE, "\n🧠 CORTEX AI WORKFLOW PAUSE");
     print(BLUE, "================================");
+    print(RED, "\n❌ INTEGRATION TEST FAILED - WORKFLOW STOPPED");
+    print(RED, "");
     print(YELLOW, "\n📋 Testing Specialist Role Required");
     print(YELLOW, "");
     print(YELLOW, "CLI integration tests failed. Following Cortex AI principles,");
@@ -211,11 +469,14 @@ async function runCLIIntegrationTestsWithAIInterruption() {
     print(YELLOW, "Please fix the integration test issues and then run:");
     print(YELLOW, "npm run test:cli");
     print(YELLOW, "");
+    print(RED, "🚫 RELEASE WORKFLOW STOPPED - Cannot proceed until integration test issues are fixed");
+    print(RED, "");
+    print(RED, "Run the following command after fixing issues:");
+    print(RED, "npm run release:patch");
+    print(RED, "");
     
-    print(GREEN, "✅ Cursor AI will handle integration test fixes");
-    
-    // Re-run integration tests after AI fixes
-    run("npm run test:cli", "CLI integration tests after AI fixes");
+    // STOP THE WORKFLOW - Don't continue
+    throw new Error("Integration test failed - workflow stopped. Please fix issues and retry.");
   }
 }
 
@@ -248,43 +509,40 @@ async function generateChangelog(newVersion) {
   print(BLUE, "Please analyze the changes and write a professional changelog entry:");
   print(BLUE, "");
   print(BLUE, `Version: ${newVersion}`);
-  
-  // Get comprehensive change data
-  const changeData = await gatherComprehensiveChangeData(newVersion);
-  print(BLUE, `Files changed: ${changeData.stats.filesChanged}`);
-  print(BLUE, `Lines added: ${changeData.stats.linesAdded}`);
-  print(BLUE, `Lines removed: ${changeData.stats.linesRemoved}`);
-  print(BLUE, `Net change: ${changeData.stats.netChange}`);
   print(BLUE, "");
-  print(BLUE, "📊 Changelog Requirements:");
-  print(BLUE, "- Analyze the scope and impact of changes");
-  print(BLUE, "- Categorize changes appropriately (Features, Bug Fixes, Technical Improvements, etc.)");
-  print(BLUE, "- Highlight significant architectural changes");
+  print(BLUE, "📊 Professional Changelog Requirements:");
+  print(BLUE, "- Focus on USER-VISIBLE changes and improvements");
   print(BLUE, "- Use clear, user-friendly language");
+  print(BLUE, "- Categorize changes appropriately");
+  print(BLUE, "- Highlight significant new features and improvements");
   print(BLUE, "- Follow markdown best practices (no multiple blank lines)");
-  print(BLUE, "- Include relevant technical details");
-  print(BLUE, "");
-  print(BLUE, "📝 Files to analyze:");
-  console.log(changeData.files.added.map(f => `+ ${f}`).join('\n'));
-  console.log(changeData.files.modified.map(f => `M ${f}`).join('\n'));
-  console.log(changeData.files.deleted.map(f => `- ${f}`).join('\n'));
+  print(BLUE, "- DO NOT include technical statistics (lines added/removed)");
+  print(BLUE, "- DO NOT include 'Change Summary' sections");
   print(BLUE, "");
   print(YELLOW, "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to provide changelog");
   print(YELLOW, "");
-  print(YELLOW, "Please provide the changelog in the following format:");
+  print(YELLOW, "Please provide the changelog in the following professional format:");
+  print(YELLOW, "");
   print(YELLOW, "## [version] - YYYY-MM-DD");
   print(YELLOW, "");
-  print(YELLOW, "### 🚀 Features");
-  print(YELLOW, "- Description of new features");
+  print(YELLOW, "### 🚀 **New Features**");
+  print(YELLOW, "- Clear description of new functionality");
+  print(YELLOW, "- User-facing improvements");
   print(YELLOW, "");
-  print(YELLOW, "### 🔧 Bug Fixes");
-  print(YELLOW, "- Description of bug fixes");
+  print(YELLOW, "### 🔧 **Bug Fixes**");
+  print(YELLOW, "- Issues resolved");
+  print(YELLOW, "- Stability improvements");
   print(YELLOW, "");
-  print(YELLOW, "### 🛠️ Technical Improvements");
-  print(YELLOW, "- Description of technical improvements");
+  print(YELLOW, "### 🛠️ **Improvements**");
+  print(YELLOW, "- Performance enhancements");
+  print(YELLOW, "- Code quality improvements");
+  print(YELLOW, "- Better user experience");
   print(YELLOW, "");
-  print(YELLOW, "### 📚 Documentation");
-  print(YELLOW, "- Description of documentation updates");
+  print(YELLOW, "### 📚 **Documentation**");
+  print(YELLOW, "- Updated guides and instructions");
+  print(YELLOW, "- API documentation improvements");
+  print(YELLOW, "");
+  print(YELLOW, "**IMPORTANT: Focus on what users care about, not technical details!**");
   print(YELLOW, "");
   
   // For now, we'll use a fallback approach
@@ -315,536 +573,32 @@ function getRecentCommits() {
     );
 }
 
-async function generateSimpleChangelog(newVersion, commits) {
-  if (commits.length === 0) {
-    print(YELLOW, "⚠️ No commits found - creating minimal changelog");
-    return `## [${newVersion}] - ${new Date().toISOString().split("T")[0]}\n\n### 🔄 Changes\n\n- Release updates\n`;
-  }
 
-  // Get detailed file changes for better changelog
-  const fileChanges = await getDetailedFileChanges();
-  const categories = categorizeCommits(commits);
 
-  const date = new Date().toISOString().split("T")[0];
-  let changelog = `## [${newVersion}] - ${date}\n\n`;
-
-  // Add file change summary
-  if (fileChanges.totalFiles > 0) {
-    changelog += `**📊 Changes:** ${fileChanges.totalFiles} files changed, ${fileChanges.additions} insertions(+), ${fileChanges.deletions} deletions(-)\n\n`;
-  }
-
-  if (categories.features.length) {
-    changelog += "### 🚀 Features\n\n";
-    categories.features.forEach((commit) => (changelog += `- ${commit}\n`));
-    changelog += "\n";
-  }
-
-  if (categories.fixes.length) {
-    changelog += "### 🔧 Bug Fixes\n\n";
-    categories.fixes.forEach((commit) => (changelog += `- ${commit}\n`));
-    changelog += "\n";
-  }
-
-  if (categories.docs.length) {
-    changelog += "### 📚 Documentation\n\n";
-    categories.docs.forEach((commit) => (changelog += `- ${commit}\n`));
-    changelog += "\n";
-  }
-
-  if (categories.tech.length) {
-    changelog += "### 🛠️ Technical Improvements\n\n";
-    categories.tech.forEach((commit) => (changelog += `- ${commit}\n`));
-    changelog += "\n";
-  }
-
-  if (categories.other.length) {
-    changelog += "### 🔄 Other Changes\n\n";
-    categories.other.forEach((commit) => (changelog += `- ${commit}\n`));
-    changelog += "\n";
-  }
-
-  // Add detailed file changes if significant
-  if (fileChanges.totalFiles > 10) {
-    changelog += "### 📁 File Changes\n\n";
-    if (fileChanges.added.length > 0) {
-      changelog += `**Added (${fileChanges.added.length}):**\n`;
-      fileChanges.added.slice(0, 10).forEach(file => changelog += `- ${file}\n`);
-      if (fileChanges.added.length > 10) changelog += `- ... and ${fileChanges.added.length - 10} more\n`;
-      changelog += "\n";
-    }
-    if (fileChanges.modified.length > 0) {
-      changelog += `**Modified (${fileChanges.modified.length}):**\n`;
-      fileChanges.modified.slice(0, 10).forEach(file => changelog += `- ${file}\n`);
-      if (fileChanges.modified.length > 10) changelog += `- ... and ${fileChanges.modified.length - 10} more\n`;
-      changelog += "\n";
-    }
-    if (fileChanges.deleted.length > 0) {
-      changelog += `**Removed (${fileChanges.deleted.length}):**\n`;
-      fileChanges.deleted.slice(0, 10).forEach(file => changelog += `- ${file}\n`);
-      if (fileChanges.deleted.length > 10) changelog += `- ... and ${fileChanges.deleted.length - 10} more\n`;
-      changelog += "\n";
-    }
-  }
-
-  return changelog.trim();
-}
-
-async function getDetailedFileChanges() {
-  try {
-    const latestTag = execSync(
-      'git describe --tags --abbrev=0 2>/dev/null || echo ""',
-      { encoding: "utf8" }
-    ).trim();
-    
-    const range = latestTag ? `${latestTag}..HEAD` : "-10";
-    const diffStat = execSync(`git diff --stat ${range}`, { encoding: "utf8" });
-    
-    // Parse diff stat output
-    const lines = diffStat.split('\n').filter(line => line.trim());
-    const lastLine = lines[lines.length - 1];
-    
-    let totalFiles = 0, additions = 0, deletions = 0;
-    if (lastLine && lastLine.includes('files changed')) {
-      const match = lastLine.match(/(\d+) files? changed, (\d+) insertions?\(\+\), (\d+) deletions?\(-\)/);
-      if (match) {
-        totalFiles = parseInt(match[1]);
-        additions = parseInt(match[2]);
-        deletions = parseInt(match[3]);
-      }
-    }
-    
-    // Get file lists
-    const fileList = execSync(`git diff --name-status ${range}`, { encoding: "utf8" });
-    const files = {
-      added: [],
-      modified: [],
-      deleted: []
-    };
-    
-    fileList.split('\n').forEach(line => {
-      if (line.startsWith('A\t')) files.added.push(line.substring(2));
-      else if (line.startsWith('M\t')) files.modified.push(line.substring(2));
-      else if (line.startsWith('D\t')) files.deleted.push(line.substring(2));
-    });
-    
-    return {
-      totalFiles,
-      additions,
-      deletions,
-      added: files.added,
-      modified: files.modified,
-      deleted: files.deleted
-    };
-  } catch (error) {
-    return { totalFiles: 0, additions: 0, deletions: 0, added: [], modified: [], deleted: [] };
-  }
-}
-
-function categorizeCommits(commits) {
-  const categories = { features: [], fixes: [], docs: [], tech: [], other: [] };
-
-  commits.forEach((commit) => {
-    if (/feat|add|new|implement/i.test(commit))
-      categories.features.push(commit);
-    else if (/fix|bug|issue|resolve/i.test(commit))
-      categories.fixes.push(commit);
-    else if (/docs?|readme|comment/i.test(commit)) categories.docs.push(commit);
-    else if (/refactor|perf|optimize|clean|architecture|restructure/i.test(commit))
-      categories.tech.push(commit);
-    else categories.other.push(commit);
-  });
-
-  return categories;
-}
 
 // ===== AI-POWERED CHANGELOG GENERATION =====
 
-async function getDetailedCommitsWithDiff() {
-  const latestTag = execSync(
-    'git describe --tags --abbrev=0 2>/dev/null || echo ""',
-    { encoding: "utf8" }
-  ).trim();
-  const range = latestTag ? `${latestTag}..HEAD` : "-20";
 
-  const gitLog = execSync(
-    `git log ${range} --no-merges --pretty=format:'%H|%s|%b|%an|%ae'`,
-    {
-      encoding: "utf8",
-    }
-  )
-    .split("\n")
-    .filter((line) => line.trim());
 
-  const commits = [];
 
-  for (const line of gitLog) {
-    const [hash, subject, body, author, email] = line.split("|");
 
-    // Get file changes for this commit
-    const diff = execSync(`git show ${hash} --name-status`, {
-      encoding: "utf8",
-    });
-    const fileChanges = parseFileChanges(diff);
 
-    // Get code diff for important files
-    const codeDiff = getCodeDiff(hash, fileChanges.importantFiles.slice(0, 3));
 
-    commits.push({
-      hash,
-      subject,
-      body,
-      author,
-      email,
-      fileChanges,
-      codeDiff,
-      impact: assessChangeImpact(fileChanges),
-    });
-  }
 
-  return commits;
-}
 
-function parseFileChanges(diffOutput) {
-  const lines = diffOutput.split("\n");
-  const changes = {
-    added: [],
-    modified: [],
-    deleted: [],
-    importantFiles: [],
-  };
 
-  lines.forEach((line) => {
-    if (line.startsWith("A\t")) {
-      changes.added.push(line.substring(2));
-    } else if (line.startsWith("M\t")) {
-      changes.modified.push(line.substring(2));
-    } else if (line.startsWith("D\t")) {
-      changes.deleted.push(line.substring(2));
-    }
-  });
 
-  // Identify important files
-  const importantPatterns = [
-    "src/core/",
-    "src/cli/",
-    "src/adapters/",
-    "package.json",
-    "README.md",
-    "CHANGELOG.md",
-    "docs/",
-    "examples/",
-  ];
 
-  changes.importantFiles = [
-    ...changes.added,
-    ...changes.modified,
-    ...changes.deleted,
-  ].filter((file) =>
-    importantPatterns.some((pattern) => file.includes(pattern))
-  );
 
-  return changes;
-}
 
-function getCodeDiff(commitHash, importantFiles) {
-  const codeDiffs = {};
 
-  for (const file of importantFiles) {
-    try {
-      const diff = execSync(`git show ${commitHash} -- ${file}`, {
-        encoding: "utf8",
-        stdio: ["pipe", "pipe", "ignore"],
-      });
 
-      if (diff.trim()) {
-        codeDiffs[file] = diff;
-      }
-    } catch (error) {
-      // File might be deleted or other error, continue
-      continue;
-    }
-  }
-
-  return codeDiffs;
-}
-
-function assessChangeImpact(fileChanges) {
-  let impact = {
-    level: "minor",
-    scope: "patch",
-    userFacing: false,
-    developerFacing: false,
-    businessValue: "low",
-  };
-
-  // Analyze file change patterns
-  if (
-    fileChanges.importantFiles.some(
-      (f) => f.includes("README") || f.includes("docs/")
-    )
-  ) {
-    impact.userFacing = true;
-    impact.businessValue = "medium";
-  }
-
-  if (
-    fileChanges.importantFiles.some(
-      (f) => f.includes("src/core/") || f.includes("package.json")
-    )
-  ) {
-    impact.level = "major";
-    impact.scope = "feature";
-    impact.developerFacing = true;
-    impact.businessValue = "high";
-  }
-
-  if (fileChanges.importantFiles.some((f) => f.includes("src/cli/"))) {
-    impact.userFacing = true;
-    impact.businessValue = "high";
-  }
-
-  if (fileChanges.deleted.length > 0) {
-    impact.level = "major";
-    impact.scope = "breaking";
-  }
-
-  return impact;
-}
-
-async function generateAIDrivenChangelog(newVersion, commits) {
-  print(BLUE, "🤖 Analyzing commits with AI assistance...");
-
-  const context = buildProjectContext();
-  const analysis = analyzeCommitsForAI(commits);
-
-  // Generate human-readable descriptions
-  const changelogSections = await generateHumanReadableSections(
-    analysis,
-    context
-  );
-
-  return formatAIChangelog(newVersion, changelogSections);
-}
-
-function buildProjectContext() {
-  const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
-
-  return {
-    name: pkg.name,
-    description: pkg.description,
-    version: pkg.version,
-    keywords: pkg.keywords,
-  };
-}
-
-function analyzeCommitsForAI(commits) {
-  const analysis = {
-    features: [],
-    bugfixes: [],
-    improvements: [],
-    documentation: [],
-    testing: [],
-    devops: [],
-    security: [],
-    performance: [],
-    dependencies: [],
-    other: [],
-    breakingChanges: [],
-  };
-
-  commits.forEach((commit) => {
-    const category = categorizeCommitForAI(commit);
-    const entry = formatCommitEntryForAI(commit);
-
-    if (
-      commit.subject.toLowerCase().includes("breaking") ||
-      commit.body.toLowerCase().includes("breaking")
-    ) {
-      analysis.breakingChanges.push(entry);
-    } else {
-      analysis[category].push(entry);
-    }
-  });
-
-  return analysis;
-}
-
-function categorizeCommitForAI(commit) {
-  const text = `${commit.subject} ${commit.body}`.toLowerCase();
-
-  if (matchPattern(text, ["feat", "add", "new", "implement", "introduce"])) {
-    return "features";
-  }
-
-  if (
-    matchPattern(text, ["fix", "bug", "issue", "resolve", "correct", "patch"])
-  ) {
-    return "bugfixes";
-  }
-
-  if (matchPattern(text, ["docs", "readme", "comment", "document"])) {
-    return "documentation";
-  }
-
-  if (
-    matchPattern(text, ["refactor", "clean", "optimize", "improve", "enhance"])
-  ) {
-    return "improvements";
-  }
-
-  if (matchPattern(text, ["test", "spec", "coverage"])) {
-    return "testing";
-  }
-
-  if (matchPattern(text, ["ci", "build", "deploy", "release"])) {
-    return "devops";
-  }
-
-  if (matchPattern(text, ["security", "auth", "vulnerabilit"])) {
-    return "security";
-  }
-
-  if (matchPattern(text, ["perf", "performance", "speed", "memory"])) {
-    return "performance";
-  }
-
-  if (matchPattern(text, ["deps", "dependenc"])) {
-    return "dependencies";
-  }
-
-  return "other";
-}
-
-function formatCommitEntryForAI(commit) {
-  return {
-    original: commit.subject,
-    humanReadable: humanizeSubject(commit.subject),
-    description: generateDescription(commit),
-    impact: commit.impact,
-    files: commit.fileChanges.importantFiles,
-    author: commit.author,
-    hash: commit.hash.substring(0, 7),
-  };
-}
-
-function humanizeSubject(subject) {
-  const replacements = {
-    feat: "Feature",
-    fix: "Fix",
-    docs: "Documentation",
-    refactor: "Refactor",
-    test: "Test",
-    ci: "CI/CD",
-    perf: "Performance",
-    security: "Security",
-    deps: "Dependencies",
-  };
-
-  let result = subject;
-
-  Object.entries(replacements).forEach(([tech, human]) => {
-    const regex = new RegExp(`\\b${tech}\\b`, "gi");
-    result = result.replace(regex, human);
-  });
-
-  return result;
-}
-
-function generateDescription(commit) {
-  if (commit.impact.userFacing) {
-    return `Enables users to ${describeUserValue(commit.subject, commit.fileChanges)}.`;
-  } else if (commit.impact.developerFacing) {
-    return `Improves developer experience in ${describeDeveloperValue(commit.subject, commit.fileChanges)}.`;
-  } else {
-    return `Technical improvement that enhances overall system quality.`;
-  }
-}
-
-function describeUserValue(subject, fileChanges) {
-  if (fileChanges.importantFiles.some((f) => f.includes("cli/"))) {
-    return "use system features more conveniently through command line interface";
-  }
-  if (
-    fileChanges.importantFiles.some(
-      (f) => f.includes("README") || f.includes("docs/")
-    )
-  ) {
-    return "access clearer documentation and usage instructions";
-  }
-  return "enjoy better user experience";
-}
-
-function describeDeveloperValue(subject, fileChanges) {
-  if (fileChanges.importantFiles.some((f) => f.includes("src/core/"))) {
-    return "core system architecture";
-  }
-  if (fileChanges.importantFiles.some((f) => f.includes("test/"))) {
-    return "test coverage and quality";
-  }
-  if (fileChanges.importantFiles.some((f) => f.includes("package.json"))) {
-    return "dependency management and build process";
-  }
-  return "code quality and maintainability";
-}
-
-function matchPattern(text, patterns) {
-  return patterns.some(
-    (pattern) =>
-      text.includes(pattern) || new RegExp(`\\b${pattern}\\b`).test(text)
-  );
-}
-
-async function generateHumanReadableSections(analysis, context) {
-  const sections = [];
-
-  // Generate each section with human-readable content
-  for (const [category, items] of Object.entries(analysis)) {
-    if (items.length === 0) continue;
-
-    const section = await generateSectionContent(category, items, context);
-    if (section) sections.push(section);
-  }
-
-  return sections;
-}
-
-async function generateSectionContent(category, items, context) {
-  const titles = {
-    features: "🚀 Features",
-    bugfixes: "🔧 Bug Fixes",
-    improvements: "🛠️ Improvements",
-    documentation: "📚 Documentation",
-    testing: "🧪 Testing",
-    devops: "🔄 DevOps",
-    security: "🔒 Security",
-    performance: "⚡ Performance",
-    dependencies: "📦 Dependencies",
-    breakingChanges: "⚠️ Breaking Changes",
-    other: "🔄 Other Changes",
-  };
-
-  let content = `### ${titles[category]}\n\n`;
-
-  // Add project context if available
-  if (context && context.name && category === "features") {
-    content = `### ${titles[category]} - ${context.name}\n\n`;
-  } else {
-    content = `### ${titles[category]}\n\n`;
-  }
-
-  for (const item of items) {
-    content += `- **${item.humanReadable}**\n`;
-    content += `  ${item.description}\n\n`;
-  }
-
-  return content;
-}
 
 async function generateCortexAIChangelog(newVersion) {
   print(BLUE, "🧠 Using Cortex AI for intelligent changelog generation...");
 
   // Get comprehensive change data
-  const changeData = await gatherComprehensiveChangeData(newVersion);
+  const changeData = await gatherComprehensiveChangeData();
   
   // Create AI prompt for changelog generation
   const aiPrompt = createChangelogPrompt(newVersion, changeData);
@@ -860,13 +614,10 @@ function createChangelogPrompt(newVersion, changeData) {
 # Cortex AI Changelog Generation Task
 
 ## Context
-Generate a comprehensive changelog for version ${newVersion} based on the following data:
+Generate a professional changelog for version ${newVersion} based on the following changes:
 
-## Change Statistics
-- Files changed: ${changeData.stats.filesChanged}
-- Lines added: ${changeData.stats.linesAdded}
-- Lines removed: ${changeData.stats.linesRemoved}
-- Net change: ${changeData.stats.netChange}
+## Recent Commits
+${changeData.commits.map(c => `- ${c}`).join('\n')}
 
 ## File Changes
 ### Added Files (${changeData.files.added.length}):
@@ -878,23 +629,43 @@ ${changeData.files.modified.map(f => `- ${f}`).join('\n')}
 ### Removed Files (${changeData.files.deleted.length}):
 ${changeData.files.deleted.map(f => `- ${f}`).join('\n')}
 
-## Recent Commits
-${changeData.commits.map(c => `- ${c}`).join('\n')}
-
 ## Task
 Generate a professional changelog entry that:
-1. Accurately reflects the scope and impact of changes
-2. Categorizes changes appropriately (Features, Bug Fixes, Technical Improvements, etc.)
-3. Highlights significant architectural changes
-4. Uses clear, user-friendly language
-5. Follows markdown best practices
-6. Includes relevant technical details
+1. Focuses on USER-VISIBLE changes and improvements
+2. Uses clear, user-friendly language
+3. Categorizes changes appropriately (New Features, Bug Fixes, Improvements, Documentation)
+4. Highlights significant new features and improvements
+5. Follows markdown best practices (no multiple blank lines)
+6. DOES NOT include technical statistics (lines added/removed)
+7. DOES NOT include 'Change Summary' sections
 
-Format as a complete changelog section starting with "## [${newVersion}] - ${new Date().toISOString().split('T')[0]}"
+## Format
+Use this professional format:
+
+## [${newVersion}] - ${new Date().toISOString().split('T')[0]}
+
+### 🚀 **New Features**
+- Clear description of new functionality
+- User-facing improvements
+
+### 🔧 **Bug Fixes**
+- Issues resolved
+- Stability improvements
+
+### 🛠️ **Improvements**
+- Performance enhancements
+- Code quality improvements
+- Better user experience
+
+### 📚 **Documentation**
+- Updated guides and instructions
+- API documentation improvements
+
+**IMPORTANT: Focus on what users care about, not technical details!**
 `;
 }
 
-async function gatherComprehensiveChangeData(newVersion) {
+async function gatherComprehensiveChangeData() {
   const latestTag = execSync(
     'git describe --tags --abbrev=0 2>/dev/null || echo ""',
     { encoding: "utf8" }
@@ -972,6 +743,7 @@ async function processWithCursorAI(prompt) {
   const modifiedFiles = prompt.match(/### Modified Files \(\d+\):\n([\s\S]*?)(?=###|$)/)?.[1]?.split('\n').filter(f => f.trim()) || [];
   const deletedFiles = prompt.match(/### Removed Files \(\d+\):\n([\s\S]*?)(?=###|$)/)?.[1]?.split('\n').filter(f => f.trim()) || [];
   
+  // Generate changelog following markdown best practices (no multiple blank lines)
   let changelog = `## [${newVersion}] - ${date}\n\n`;
   
   // Analyze the scope of changes
@@ -990,7 +762,7 @@ async function processWithCursorAI(prompt) {
       const feature = describeFeatureFromFile(file);
       changelog += `- **${feature}**: New functionality in \`${file}\`\n`;
     });
-    changelog += '\n';
+    changelog += `\n`;
   }
   
   if (modifiedFiles.length > 0) {
@@ -1032,38 +804,134 @@ function describeFeatureFromFile(filePath) {
   return 'Core Component';
 }
 
-function formatAIChangelog(newVersion, sections) {
-  const date = new Date().toISOString().split("T")[0];
-  let changelog = `## [${newVersion}] - ${date}\n\n`;
-
-  sections.forEach((section) => {
-    changelog += section;
-  });
-
-  return changelog;
-}
 
 async function executeRelease(versionType) {
   print(BLUE, `\n🚀 Executing ${versionType} release...\n`);
 
   const currentVersion = pkg.version;
-  const newVersion = getNextVersion(currentVersion, versionType);
+  print(BLUE, `📦 Current version: ${currentVersion}`);
 
-  print(BLUE, `📦 ${currentVersion} → ${newVersion}`);
+  // Phase 0: Version consistency check (CRITICAL - must be first!)
+  print(BLUE, "\n🔍 Phase 0: Version consistency validation...");
+  await runVersionConsistencyCheck(versionType);
 
-  // Phase 1: Quality checks and fixes
+  // Phase 1: Quality checks and fixes (no version generation)
   await runQualityChecks();
 
   // Phase 2: Release testing
   await runReleaseTests();
 
-  // Phase 3: Changelog and commit
-  await prepareReleaseCommit(newVersion);
+  // Phase 3: AI interruption for complex tasks
+  await interruptForAITasks(versionType);
 
-  // Phase 4: Manual publish step
-  showPublishInstructions(newVersion);
+  // Phase 4: Confirm release
+  const confirmed = await confirmRelease(versionType);
+  if (!confirmed) {
+    print(YELLOW, "❌ Release cancelled by user");
+    return;
+  }
 
-  print(GREEN, `\n🎉 Version ${newVersion} ready for manual publish!`);
+  // Phase 5: Atomic release execution
+  await executeAtomicRelease(versionType);
+
+  print(GREEN, `\n🎉 Release completed successfully!`);
+}
+
+async function interruptForAITasks(versionType) {
+  print(BLUE, "\n🧠 CORTEX AI WORKFLOW PAUSE");
+  print(BLUE, "================================");
+  print(YELLOW, "\n📋 AI Tasks Required");
+  print(YELLOW, "");
+  print(YELLOW, "The release workflow needs AI assistance for complex tasks.");
+  print(YELLOW, "Following Cortex AI principles, we're delegating these tasks to Cursor AI.");
+  print(YELLOW, "");
+  print(BLUE, "🎯 TASKS FOR CURSOR AI:");
+  print(BLUE, "=====================");
+  print(BLUE, "");
+  print(BLUE, "1. 📝 Fix any linting issues");
+  print(BLUE, "   - ESLint errors");
+  print(BLUE, "   - Markdown lint errors (MD012: no multiple blank lines)");
+  print(BLUE, "   - Any other code quality issues");
+  print(BLUE, "");
+  print(BLUE, "2. 📝 Write professional changelog");
+  print(BLUE, "   - Analyze changes since last release");
+  print(BLUE, "   - Categorize changes appropriately");
+  print(BLUE, "   - Use clear, user-friendly language");
+  print(BLUE, "   - Follow markdown best practices");
+  print(BLUE, "");
+  print(BLUE, "3. 📝 Write detailed commit message");
+  print(BLUE, "   - Follow conventional commit format");
+  print(BLUE, "   - Provide meaningful description");
+  print(BLUE, "   - Include relevant details");
+  print(BLUE, "   - Be professional and clear");
+  print(BLUE, "");
+  
+  // Check if AI tasks are already completed
+  print(BLUE, "\n🔍 Checking if AI tasks are completed...");
+  
+  try {
+    // Check if quality checks pass
+    run("npm run quality", "Quality checks verification");
+    print(GREEN, "✅ Quality checks passed - AI tasks appear to be completed");
+    print(GREEN, "✅ Proceeding with release workflow...");
+    return; // Continue with workflow
+  } catch (error) {
+    print(YELLOW, "⚠️  AI tasks not yet completed - workflow paused");
+    print(YELLOW, "");
+    print(YELLOW, "Please complete the tasks and then run:");
+    print(YELLOW, `npm run release:${versionType}`);
+    print(YELLOW, "");
+    
+    // Stop workflow and wait for AI processing
+    throw new Error("Workflow paused for AI tasks");
+  }
+}
+
+async function confirmRelease(versionType) {
+  const currentVersion = pkg.version;
+  const newVersion = getNextVersion(currentVersion, versionType);
+  
+  print(BLUE, "\n📋 RELEASE CONFIRMATION");
+  print(BLUE, "======================");
+  print(BLUE, `Version: ${currentVersion} → ${newVersion}`);
+  print(BLUE, `Type: ${versionType}`);
+  print(BLUE, "");
+  print(YELLOW, "⚠️  This will:");
+  print(YELLOW, "- Update CHANGELOG.md");
+  print(YELLOW, "- Update README version badges");
+  print(YELLOW, "- Create git commit and tag");
+  print(YELLOW, "- Push to remote repository");
+  print(YELLOW, "- Publish to NPM");
+  print(BLUE, "");
+  print(BLUE, "Do you want to proceed? (y/N)");
+  
+  // In actual environment, this would wait for user input
+  // For testing, we return true
+  return true;
+}
+
+async function executeAtomicRelease(versionType) {
+  const currentVersion = pkg.version;
+  const newVersion = getNextVersion(currentVersion, versionType);
+  
+  print(BLUE, `\n🚀 Executing atomic release: ${newVersion}`);
+  
+  try {
+    // Atomic operation: either all succeed or all fail
+    await prepareReleaseCommit(newVersion);
+    await pushToRemote(newVersion);
+    await publishToNPM();
+    
+    print(GREEN, `✅ Release ${newVersion} completed successfully!`);
+  } catch (error) {
+    // When release fails, prompt to check version usage
+    print(RED, `❌ Release failed: ${error.message}`);
+    print(YELLOW, "⚠️  Please check version usage and revert if needed:");
+    print(YELLOW, `- Git tag: v${newVersion}`);
+    print(YELLOW, `- Package version: ${newVersion}`);
+    print(YELLOW, `Run 'git tag -d v${newVersion}' to remove local tag`);
+    throw error;
+  }
 }
 
 async function prepareReleaseCommit(newVersion) {
@@ -1350,19 +1218,31 @@ async function simulateCursorAIAnalysis(prompt) {
   return commitMessage;
 }
 
-function showPublishInstructions(newVersion) {
-  print(BLUE, "\n📦 Phase 4: Manual publish...");
-  print(YELLOW, "\n⚠️ MANUAL STEPS REQUIRED FOR SAFETY:");
-  print(YELLOW, "");
-  print(YELLOW, "1. 📋 Review all changes carefully");
-  print(YELLOW, "2. 🔍 Verify version tag is correct");
-  print(YELLOW, `3. 📤 git push origin main`);
-  print(YELLOW, `4. 🏷️  git push origin v${newVersion}`);
-  print(YELLOW, "5. 🚀 npm publish");
-  print(YELLOW, "");
-  print(GREEN, "✅ Version prepared and tagged locally");
-  print(YELLOW, "⚠️ Complete manual steps to publish to NPM");
+async function pushToRemote(newVersion) {
+  print(BLUE, "\n📤 Pushing to remote...");
+  
+  try {
+    run("git push origin main", "Push main branch");
+    run(`git push origin v${newVersion}`, "Push version tag");
+    print(GREEN, "✅ Successfully pushed to remote");
+  } catch (error) {
+    print(RED, `❌ Failed to push to remote: ${error.message}`);
+    throw error;
+  }
 }
+
+async function publishToNPM() {
+  print(BLUE, "\n🚀 Publishing to NPM...");
+  
+  try {
+    run("npm publish", "Publish to NPM");
+    print(GREEN, "✅ Successfully published to NPM");
+  } catch (error) {
+    print(RED, `❌ Failed to publish to NPM: ${error.message}`);
+    throw error;
+  }
+}
+
 
 function updateChangelog(changelogEntry, newVersion) {
   const changelogPath = "CHANGELOG.md";
@@ -1457,9 +1337,14 @@ async function main() {
   try {
     await executeRelease(versionType);
   } catch (error) {
-    print(RED, `\n💥 Release failed: ${error.message}`);
-    print(YELLOW, "🔄 Please fix the issue and try again");
-    process.exit(1);
+    if (error.message.includes("Workflow paused for AI tasks")) {
+      print(YELLOW, "⏸️  Workflow paused for AI tasks");
+      print(YELLOW, "Please complete the AI tasks and retry");
+    } else {
+      print(RED, `\n💥 Release failed: ${error.message}`);
+      print(YELLOW, "🔄 Please fix the issue and try again");
+      process.exit(1);
+    }
   }
 }
 

@@ -2,7 +2,10 @@
 
 ## Description
 
-I am the Testing Specialist, following Martin Fowler's philosophy of "Any fool can write code that a computer can understand. Good programmers write code that humans can understand." I believe that testing is not just about finding bugs - it's about building quality software that we can confidently evolve. I design test strategies that provide fast feedback, catch regressions, and enable fearless refactoring.
+I am the Testing Specialist, following Martin Fowler's philosophy of "Any fool can write code that a computer can
+understand. Good programmers write code that humans can understand." I believe that testing is not just about
+finding bugs - it's about building quality software that we can confidently evolve. I design test strategies that
+provide fast feedback, catch regressions, and enable fearless refactoring.
 
 ## Core Philosophy
 
@@ -248,4 +251,7 @@ Result: Early detection of performance issues, 95% reduction in performance-rela
 - **Test Refactoring**: Refactor tests to improve maintainability
 - **Test Documentation**: Keep test documentation current and accurate
 
-This role represents the commitment to software quality through comprehensive, maintainable testing. I don't just write tests - I build testing infrastructure that enables teams to deliver high-quality software with confidence. Good testing enables fearless refactoring, supports continuous delivery, and ensures that software evolves reliably over time.
+This role represents the commitment to software quality through comprehensive, maintainable testing. I don't just
+write tests - I build testing infrastructure that enables teams to deliver high-quality software with confidence.
+Good testing enables fearless refactoring, supports continuous delivery, and ensures that software evolves reliably
+over time.

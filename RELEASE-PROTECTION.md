@@ -41,56 +41,51 @@ npm run release:major    # ✅ Allowed
 ### 3. Publishing (Protected)
 
 ```bash
-npm publish             # ✅ Allowed (after release:check)
+npm run release:patch   # ✅ Allowed - Full workflow
+npm run release:minor   # ✅ Allowed - Full workflow  
+npm run release:major   # ✅ Allowed - Full workflow
 ```
 
 ## 🛡️ Protection Mechanisms
 
 ### 1. Pre-publish Hook
 
-- **File**: `scripts/prepublish-check.cjs`
+- **File**: `package.json` → `prepublishOnly` script
 - **Function**: Runs before every `npm publish`
-- **Checks**:
-  - Git status is clean
-  - All commits are pushed
-  - CHANGELOG matches package.json version
-  - Release check was completed recently
+- **Behavior**:
+  - Blocks direct `npm publish` commands
+  - Shows clear error message with proper workflow instructions
+  - Forces use of `npm run release:patch/minor/major`
 
-### 2. Version Protection
+### 2. Release Workflow Scripts
 
-- **File**: `scripts/protect-release.cjs`
-- **Function**: Blocks direct `npm version` commands
-- **Enforced In**: `release:patch`, `release:minor`, `release:major`
+- **File**: `scripts/publish-workflow.cjs`
+- **Function**: Comprehensive release process
+- **Features**:
+  - Version consistency validation
+  - Quality checks and fixes
+  - Automated changelog generation
+  - Atomic release execution
 
-### 3. Workflow Enforcer
-
-- **File**: `scripts/enforce-release-workflow.cjs`
-- **Function**: Global protection for version/publish operations
-- **Checks**: Release check completion and recency
-
-### 4. NPM Configuration
+### 3. NPM Configuration
 
 - **File**: `.npmrc`
-- **Function**: NPM-level protection hooks
+- **Function**: NPM-level configuration
+- **Settings**: Audit and fund warnings disabled
 
-## 🔍 Release Check Process
+## 🔍 Release Workflow Process
 
-When you run `npm run release:check`, the system:
+When you run `npm run release:patch/minor/major`, the system:
 
-1. ✅ Validates environment setup
-2. ✅ Checks git status and remote sync
-3. ✅ Verifies runtime dependencies
-4. ✅ Runs TypeScript compilation
-5. ✅ Executes ESLint and Prettier
-6. ✅ Runs Knip for unused code detection
-7. ✅ Tests CLI integration
-8. ✅ Tests MCP server integration
-9. ✅ Validates package.json configuration
-10. ✅ Checks file structure and security
-11. ✅ Estimates bundle size
-12. ✅ Validates documentation
-13. ✅ Tests global installation
-14. ✅ **Creates `.release-check-passed` marker**
+1. ✅ Validates version consistency
+2. ✅ Runs comprehensive quality checks
+3. ✅ Executes build verification
+4. ✅ Runs release tests
+5. ✅ Generates changelog with AI assistance
+6. ✅ Updates documentation and version badges
+7. ✅ Creates git commit and tag
+8. ✅ Pushes to remote repository
+9. ✅ Publishes to NPM
 
 ## 🚨 Error Messages
 
@@ -98,8 +93,13 @@ When protection is triggered, you'll see:
 
 ```
 ❌ RELEASE WORKFLOW VIOLATION!
-You must run: npm run release:check
-This ensures the release follows the proper workflow.
+
+You must use the proper release workflow:
+  npm run release:patch    # for patch releases
+  npm run release:minor    # for minor releases
+  npm run release:major    # for major releases
+
+Direct npm publish is blocked to ensure quality and consistency.
 ```
 
 ## 🎯 Benefits
@@ -115,10 +115,9 @@ This ensures the release follows the proper workflow.
 To temporarily bypass protection (for maintenance):
 
 ```bash
-# Remove the marker file
-rm .release-check-passed
-
+# Temporarily remove the prepublishOnly script from package.json
 # Then run your maintenance commands
+# Remember to restore the protection afterward
 ```
 
 **⚠️ WARNING**: Only do this for legitimate maintenance, then restore proper workflow.
