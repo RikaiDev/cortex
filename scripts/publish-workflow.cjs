@@ -519,8 +519,14 @@ async function executeRelease(versionType) {
   // Phase 2: Release testing
   await runReleaseTests();
 
-  // Phase 3: AI interruption for complex tasks
-  await interruptForAITasks(versionType);
+  // Phase 3: AI interruption for complex tasks (only if there are uncommitted changes)
+  const gitStatus = execSync("git status --porcelain", { encoding: "utf8" }).trim();
+  if (gitStatus) {
+    print(BLUE, "\n📝 Found uncommitted changes - AI tasks required");
+    await interruptForAITasks(versionType);
+  } else {
+    print(GREEN, "\n✅ No uncommitted changes - skipping AI tasks");
+  }
 
   // Phase 4: Confirm release
   const confirmed = await confirmRelease(versionType);
