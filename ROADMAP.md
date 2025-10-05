@@ -1,6 +1,6 @@
 # Cortex Development Roadmap
 
-## Phase 1: Core Foundation (Current - v0.11.2)
+## Phase 1: Core Foundation (Current - v0.11.3)
 
 ### ✅ Completed
 

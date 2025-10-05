@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.11.3] - 2025-10-05
+
+### 🔧 **Release Workflow Improvements**
+
+**Enhanced AI Collaboration Workflow and Version Management**
+
+- **Fixed workflow pause mechanism**: Implemented proper AI task delegation with true workflow pausing
+- **Improved version handling logic**: Fixed npm version command usage and version state validation
+- **Enhanced error handling**: Better error messages and validation throughout the release process
+- **Cleaned up codebase**: Removed unused functions and fixed all ESLint warnings
+- **Updated documentation**: Synchronized version numbers across all documentation files
+
+### 🛠️ **Technical Improvements**
+
+- **Workflow reliability**: Release process now properly pauses for AI tasks instead of auto-continuing
+- **Version consistency**: Fixed version calculation logic to use published version as base
+- **Code quality**: Removed all unused commit message generation functions
+- **Error handling**: Improved error messages and recovery instructions
+
 ## [0.11.0] - 2025-10-03
 
 ### 🚀 **Major Release - Cortex AI v0.11.0**
