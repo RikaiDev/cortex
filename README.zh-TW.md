@@ -232,7 +232,7 @@ npx @rikaidev/cortex@latest init
 npx @rikaidev/cortex@latest start
 
 # 運行工作流程演示查看多角色模式運作
-node examples/integrated-multi-role-demo.js
+# 使用 task 命令執行完整的多角色工作流程
 ```
 
 新的 MCP 方法為每個工作流程建立隔離的工作區：
