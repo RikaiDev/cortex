@@ -708,6 +708,15 @@ async function prepareReleaseCommit(newVersion) {
 async function createVersionTag(newVersion) {
   print(BLUE, "\n🏷️  Creating version tag...");
   
+  // Check if tag already exists
+  try {
+    execSync(`git tag -l v${newVersion}`, { encoding: 'utf8', stdio: 'pipe' });
+    print(BLUE, `📦 Tag v${newVersion} already exists, skipping creation`);
+    return;
+  } catch (error) {
+    // Tag doesn't exist, proceed with creation
+  }
+  
   // Check if local version already matches target version
   if (pkg.version === newVersion) {
     // Local version already correct, just create tag
