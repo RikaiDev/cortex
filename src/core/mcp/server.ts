@@ -154,7 +154,12 @@ export class CortexMCPServer {
 
     // Fallback to current working directory, but ensure it's not empty or root
     const fallback = process.cwd();
-    if (fallback && fallback.trim() !== "" && fallback !== "/" && fallback.length > 1) {
+    if (
+      fallback &&
+      fallback.trim() !== "" &&
+      fallback !== "/" &&
+      fallback.length > 1
+    ) {
       return fallback;
     }
 

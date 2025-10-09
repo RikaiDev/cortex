@@ -509,17 +509,17 @@ async function executeRelease(versionType) {
   const currentVersion = pkg.version;
   print(BLUE, `📦 Current version: ${currentVersion}`);
 
-  // Phase 0: Version consistency check (CRITICAL - must be first!)
-  print(BLUE, "\n🔍 Phase 0: Version consistency validation...");
+  // Phase 1: Version consistency check (using current version)
+  print(BLUE, "\n🔍 Phase 1: Version consistency validation...");
   await runVersionConsistencyCheck(versionType);
 
-  // Phase 1: Quality checks and fixes (no version generation)
+  // Phase 2: Quality checks and fixes
   await runQualityChecks();
 
-  // Phase 2: Release testing
+  // Phase 3: Release testing
   await runReleaseTests();
 
-  // Phase 3: AI interruption for complex tasks (only if there are uncommitted changes)
+  // Phase 4: AI interruption for complex tasks (only if there are uncommitted changes)
   const gitStatus = execSync("git status --porcelain", { encoding: "utf8" }).trim();
   if (gitStatus) {
     print(BLUE, "\n📝 Found uncommitted changes - AI tasks required");
@@ -528,14 +528,21 @@ async function executeRelease(versionType) {
     print(GREEN, "\n✅ No uncommitted changes - skipping AI tasks");
   }
 
-  // Phase 4: Confirm release
+  // Phase 5: Confirm release
   const confirmed = await confirmRelease(versionType);
   if (!confirmed) {
     print(YELLOW, "❌ Release cancelled by user");
     return;
   }
 
-  // Phase 5: Atomic release execution
+  // Phase 6: Pre-update documentation versions (just before atomic release)
+  print(BLUE, "\n🔍 Phase 6: Updating documentation versions...");
+  const latestPublishedVersion = getLatestPublishedVersion();
+  const newVersion = getNextVersion(latestPublishedVersion, versionType);
+  updateReadmeVersions(newVersion);
+  print(GREEN, `✅ Documentation versions updated to v${newVersion}`);
+
+  // Phase 7: Atomic release execution
   await executeAtomicRelease(versionType);
 
   print(GREEN, `\n🎉 Release completed successfully!`);
@@ -638,8 +645,8 @@ async function executeAtomicRelease(versionType) {
 async function prepareReleaseCommit(newVersion) {
   print(BLUE, "\n📝 Phase 3: commit preparation...");
 
-  // Update README version badges
-  updateReadmeVersions(newVersion);
+  // Documentation versions already updated in Phase 0
+  print(BLUE, "📝 Documentation versions already updated");
 
   // Show what will be committed
   const gitStatus = execSync("git status --porcelain", {
