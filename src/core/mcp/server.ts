@@ -6,6 +6,7 @@
 
 import { readFileSync } from "fs";
 import * as path from "path";
+import * as os from "os";
 import fs from "fs-extra";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -86,21 +87,22 @@ export class CortexMCPServer {
    */
   private detectProjectRoot(): string {
     // Priority 1: Environment variables (VS Code/Cursor specific)
-    if (process.env.VSCODE_CWD) {
+    if (process.env.VSCODE_CWD && process.env.VSCODE_CWD.trim() !== '') {
       return process.env.VSCODE_CWD;
     }
-    if (process.env.CURSOR_CWD) {
+    if (process.env.CURSOR_CWD && process.env.CURSOR_CWD.trim() !== '') {
       return process.env.CURSOR_CWD;
     }
 
     // Priority 2: Current working directory if it contains package.json
-    if (fs.existsSync(path.join(process.cwd(), "package.json"))) {
-      return process.cwd();
+    const cwd = process.cwd();
+    if (cwd && cwd.trim() !== '' && fs.existsSync(path.join(cwd, "package.json"))) {
+      return cwd;
     }
 
     // Priority 3: Look for .cortex directory in current or parent directories
-    let currentDir = process.cwd();
-    while (currentDir !== path.dirname(currentDir)) {
+    let currentDir = cwd;
+    while (currentDir && currentDir !== path.dirname(currentDir) && currentDir !== '/') {
       if (fs.existsSync(path.join(currentDir, ".cortex"))) {
         return currentDir;
       }
@@ -108,8 +110,8 @@ export class CortexMCPServer {
     }
 
     // Priority 4: Look for cortex.json in current or parent directories
-    currentDir = process.cwd();
-    while (currentDir !== path.dirname(currentDir)) {
+    currentDir = cwd;
+    while (currentDir && currentDir !== path.dirname(currentDir) && currentDir !== '/') {
       if (fs.existsSync(path.join(currentDir, "cortex.json"))) {
         return currentDir;
       }
@@ -129,14 +131,25 @@ export class CortexMCPServer {
       }
     }
 
-    // Fallback to current working directory
-    return process.cwd();
+    // Fallback to current working directory, but ensure it's not empty or root
+    const fallback = process.cwd();
+    if (fallback && fallback.trim() !== '' && fallback !== '/') {
+      return fallback;
+    }
+
+    // Last resort: use home directory
+    return os.homedir();
   }
 
   /**
    * Initialize Cortex workspace
    */
   private initializeCortexWorkspace(): void {
+    // Safety check: ensure project root is valid and not root directory
+    if (!this.projectRoot || this.projectRoot.trim() === '' || this.projectRoot === '/') {
+      throw new Error(`Invalid project root: ${this.projectRoot}. Cannot initialize workspace in root directory.`);
+    }
+
     const cortexDir = path.join(this.projectRoot, ".cortex");
     const rolesDir = path.join(cortexDir, "roles");
     const workflowsDir = path.join(cortexDir, "workflows");
