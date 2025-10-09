@@ -710,9 +710,11 @@ async function createVersionTag(newVersion) {
   
   // Check if tag already exists
   try {
-    execSync(`git tag -l v${newVersion}`, { encoding: 'utf8', stdio: 'pipe' });
-    print(BLUE, `📦 Tag v${newVersion} already exists, skipping creation`);
-    return;
+    const existingTag = execSync(`git tag -l v${newVersion}`, { encoding: 'utf8', stdio: 'pipe' }).trim();
+    if (existingTag) {
+      print(BLUE, `📦 Tag v${newVersion} already exists, skipping creation`);
+      return;
+    }
   } catch (error) {
     // Tag doesn't exist, proceed with creation
   }
