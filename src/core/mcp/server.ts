@@ -88,10 +88,16 @@ export class CortexMCPServer {
   private detectProjectRoot(): string {
     // Priority 1: Environment variables (VS Code/Cursor specific)
     if (process.env.VSCODE_CWD && process.env.VSCODE_CWD.trim() !== "") {
-      return process.env.VSCODE_CWD;
+      const vsCodeCwd = process.env.VSCODE_CWD.trim();
+      if (vsCodeCwd !== "/" && fs.existsSync(vsCodeCwd)) {
+        return vsCodeCwd;
+      }
     }
     if (process.env.CURSOR_CWD && process.env.CURSOR_CWD.trim() !== "") {
-      return process.env.CURSOR_CWD;
+      const cursorCwd = process.env.CURSOR_CWD.trim();
+      if (cursorCwd !== "/" && fs.existsSync(cursorCwd)) {
+        return cursorCwd;
+      }
     }
 
     // Priority 2: Current working directory if it contains package.json
@@ -99,6 +105,7 @@ export class CortexMCPServer {
     if (
       cwd &&
       cwd.trim() !== "" &&
+      cwd !== "/" &&
       fs.existsSync(path.join(cwd, "package.json"))
     ) {
       return cwd;
@@ -109,7 +116,8 @@ export class CortexMCPServer {
     while (
       currentDir &&
       currentDir !== path.dirname(currentDir) &&
-      currentDir !== "/"
+      currentDir !== "/" &&
+      currentDir.length > 1
     ) {
       if (fs.existsSync(path.join(currentDir, ".cortex"))) {
         return currentDir;
@@ -122,7 +130,8 @@ export class CortexMCPServer {
     while (
       currentDir &&
       currentDir !== path.dirname(currentDir) &&
-      currentDir !== "/"
+      currentDir !== "/" &&
+      currentDir.length > 1
     ) {
       if (fs.existsSync(path.join(currentDir, "cortex.json"))) {
         return currentDir;
@@ -145,7 +154,7 @@ export class CortexMCPServer {
 
     // Fallback to current working directory, but ensure it's not empty or root
     const fallback = process.cwd();
-    if (fallback && fallback.trim() !== "" && fallback !== "/") {
+    if (fallback && fallback.trim() !== "" && fallback !== "/" && fallback.length > 1) {
       return fallback;
     }
 

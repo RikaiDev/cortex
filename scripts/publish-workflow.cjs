@@ -616,6 +616,10 @@ async function executeAtomicRelease(versionType) {
   try {
     // Atomic operation: either all succeed or all fail
     await prepareReleaseCommit(newVersion);
+    
+    // Create version tag after all checks are completed
+    await createVersionTag(newVersion);
+    
     await pushToRemote(newVersion);
     await publishToNPM();
     
@@ -685,7 +689,18 @@ async function prepareReleaseCommit(newVersion) {
     throw new Error("WORKFLOW PAUSED: Waiting for Cursor AI to provide commit message. Please analyze the changes and provide a professional commit message following the format above.");
   }
 
-  // Version bump (creates commit and tag)
+  // Note: Version bump and tag creation will be handled in executeAtomicRelease
+  // after all checks are completed
+  print(GREEN, "✅ Commit preparation completed");
+}
+
+
+
+
+
+async function createVersionTag(newVersion) {
+  print(BLUE, "\n🏷️  Creating version tag...");
+  
   // Check if local version already matches target version
   if (pkg.version === newVersion) {
     // Local version already correct, just create tag
@@ -695,13 +710,9 @@ async function prepareReleaseCommit(newVersion) {
     // Version needs to be bumped
     run(`npm version ${newVersion}`, "Version bump and tag");
   }
-
-  print(GREEN, "✅ Changelog and commit completed");
+  
+  print(GREEN, "✅ Version tag created");
 }
-
-
-
-
 
 async function pushToRemote(newVersion) {
   print(BLUE, "\n📤 Pushing to remote...");
