@@ -10,18 +10,12 @@
   "scripts": {
     "build": "npm run knip || exit 1; tsc || exit 1",
     "dev": "tsc --watch",
-    "clean": "rm -rf .cortex",
-    "test": "echo 'No specific unit tests configured'",
-    "test:cli": "tsx test/cli-integration.test.ts",
-    "test:all": "npm run test && npm run test:cli",
-    "lint": "npm run quality -- --fix",
     "quality": "node scripts/quality-check.js",
     "knip": "knip",
     "prepublishOnly": "node -e \"console.error('❌ RELEASE WORKFLOW VIOLATION!\\n\\nYou must use the proper release workflow:\\n  npm run release:patch    # for patch releases\\n  npm run release:minor    # for minor releases\\n  npm run release:major    # for major releases\\n\\nDirect npm publish is blocked to ensure quality and consistency.\\n'); process.exit(1);\"",
     "release:patch": "node scripts/publish-workflow.cjs patch",
     "release:minor": "node scripts/publish-workflow.cjs minor",
-    "release:major": "node scripts/publish-workflow.cjs major",
-    "unpublish": "npm unpublish"
+    "release:major": "node scripts/publish-workflow.cjs major"
   },
   "keywords": [
     "ai",
@@ -57,16 +51,11 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
-    "@types/chai": "^5.2.2",
     "@types/fs-extra": "^11.0.0",
-    "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "chai": "^5.2.1",
     "eslint": "^8.0.0",
-    "knip": "^5.64.1",
-    "mocha": "^11.7.1",
-    "tsx": "^4.20.3"
+    "knip": "^5.64.1"
   }
 }

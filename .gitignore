@@ -80,6 +80,10 @@ cortex-config.json
 cortex.json
 .cortex/
 
+# Spec-kit style development (for tool development)
+.specify/
+specs/
+
 # Generated AI files
 CLAUDE.md
 GEMINI.md

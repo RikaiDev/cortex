@@ -23,6 +23,7 @@ import {
 import { CortexAI } from "../index.js";
 import { ToolHandler } from "./handlers/tool-handler.js";
 import { ResourceHandler } from "./handlers/resource-handler.js";
+import { StableWorkflowHandler } from "./handlers/stable-workflow-handler.js";
 
 /**
  * Get version from package.json
@@ -58,6 +59,7 @@ export class CortexMCPServer {
   private projectRoot: string;
   private toolHandler: ToolHandler;
   private resourceHandler: ResourceHandler;
+  private stableWorkflowHandler: StableWorkflowHandler;
 
   constructor() {
     this.server = new Server(
@@ -78,6 +80,7 @@ export class CortexMCPServer {
     this.cortex = new CortexAI(this.projectRoot);
     this.toolHandler = new ToolHandler(this.projectRoot, this.cortex);
     this.resourceHandler = new ResourceHandler(this.projectRoot);
+    this.stableWorkflowHandler = new StableWorkflowHandler(this.projectRoot);
     this.setupHandlers();
     this.initializeCortexWorkspace();
   }
@@ -185,17 +188,60 @@ export class CortexMCPServer {
     const cortexDir = path.join(this.projectRoot, ".cortex");
     const rolesDir = path.join(cortexDir, "roles");
     const workflowsDir = path.join(cortexDir, "workflows");
-    const workspacesDir = path.join(cortexDir, "workspaces");
-    const experiencesDir = path.join(cortexDir, "experiences");
+    const memoryDir = path.join(cortexDir, "memory");
+    const templatesDir = path.join(cortexDir, "templates");
 
     // Create directories
     fs.ensureDirSync(rolesDir);
     fs.ensureDirSync(workflowsDir);
-    fs.ensureDirSync(workspacesDir);
-    fs.ensureDirSync(experiencesDir);
+    fs.ensureDirSync(memoryDir);
+    fs.ensureDirSync(templatesDir);
+
+    // Find cortex-ai tool's installation directory
+    const toolRoot = this.findToolRoot();
+
+    // Copy stable workflow templates from tool to user project
+    const toolTemplatesDir = path.join(toolRoot, "templates", "cortex");
+    if (fs.existsSync(toolTemplatesDir)) {
+      // Copy all template files
+      const templateFiles = [
+        "constitution.md",
+        "spec-template.md",
+        "clarify-template.md",
+        "plan-template.md",
+        "review-template.md",
+        "tasks-template.md",
+        "checklist-template.md",
+        "execution-template.md",
+        "memory-index.json",
+      ];
+
+      for (const templateFile of templateFiles) {
+        const sourcePath = path.join(toolTemplatesDir, templateFile);
+        const targetPath = path.join(templatesDir, templateFile);
+        if (fs.existsSync(sourcePath) && !fs.existsSync(targetPath)) {
+          fs.copyFileSync(sourcePath, targetPath);
+        }
+      }
+
+      // Copy commands directory
+      const commandsSourceDir = path.join(toolTemplatesDir, "commands");
+      const commandsTargetDir = path.join(templatesDir, "commands");
+      if (fs.existsSync(commandsSourceDir)) {
+        fs.ensureDirSync(commandsTargetDir);
+        const commandFiles = fs.readdirSync(commandsSourceDir);
+        for (const commandFile of commandFiles) {
+          const sourcePath = path.join(commandsSourceDir, commandFile);
+          const targetPath = path.join(commandsTargetDir, commandFile);
+          if (!fs.existsSync(targetPath)) {
+            fs.copyFileSync(sourcePath, targetPath);
+          }
+        }
+      }
+    }
 
     // Copy default role files if they don't exist
-    const defaultRolesDir = path.join(this.projectRoot, "templates", "roles");
+    const defaultRolesDir = path.join(toolRoot, "templates", "roles");
     if (fs.existsSync(defaultRolesDir)) {
       const roleFiles = fs.readdirSync(defaultRolesDir);
       for (const roleFile of roleFiles) {
@@ -206,6 +252,47 @@ export class CortexMCPServer {
         }
       }
     }
+
+    // Initialize empty memory index
+    const memoryIndexPath = path.join(memoryDir, "index.json");
+    if (!fs.existsSync(memoryIndexPath)) {
+      const emptyIndex = {
+        version: "1.0",
+        lastUpdated: new Date().toISOString(),
+        totalExperiences: 0,
+        categories: {
+          patterns: 0,
+          decisions: 0,
+          solutions: 0,
+          lessons: 0,
+        },
+        index: [],
+      };
+      fs.writeJsonSync(memoryIndexPath, emptyIndex, { spaces: 2 });
+    }
+  }
+
+  /**
+   * Find cortex-ai tool's root directory
+   */
+  private findToolRoot(): string {
+    // Try relative to current file location (works in development and production)
+    const currentFileDir = __dirname;
+    const possiblePaths = [
+      path.join(currentFileDir, "..", "..", ".."), // dist/core/mcp -> root
+      path.join(currentFileDir, "..", ".."), // dist/core -> root
+      path.join(currentFileDir, ".."), // dist -> root
+    ];
+
+    for (const possiblePath of possiblePaths) {
+      const templatesPath = path.join(possiblePath, "templates", "cortex");
+      if (fs.existsSync(templatesPath)) {
+        return possiblePath;
+      }
+    }
+
+    // Fallback to project root if in development
+    return this.projectRoot;
   }
 
   /**
@@ -319,6 +406,160 @@ export class CortexMCPServer {
               },
             },
             {
+              name: "cortex.spec",
+              description: "Create feature specification using template-driven approach",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  description: {
+                    type: "string",
+                    description: "Feature description",
+                  },
+                },
+                required: ["description"],
+              },
+            },
+            {
+              name: "cortex.clarify",
+              description: "Resolve specification ambiguities through systematic questioning (max 5 questions)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow ID to clarify",
+                  },
+                },
+                required: ["workflowId"],
+              },
+            },
+            {
+              name: "cortex.plan",
+              description: "Create implementation plan from specification",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow ID (e.g., 001-feature-name)",
+                  },
+                },
+                required: ["workflowId"],
+              },
+            },
+            {
+              name: "cortex.review",
+              description: "Conduct technical review of implementation plan (Architecture, Security, Performance, etc.)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow ID to review",
+                  },
+                },
+                required: ["workflowId"],
+              },
+            },
+            {
+              name: "cortex.tasks",
+              description: "Generate task breakdown from implementation plan",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow ID (e.g., 001-feature-name)",
+                  },
+                },
+                required: ["workflowId"],
+              },
+            },
+            {
+              name: "cortex.implement",
+              description: "Execute implementation phase with Multi-Role coordination",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow ID (e.g., 001-feature-name)",
+                  },
+                },
+                required: ["workflowId"],
+              },
+            },
+            {
+              name: "cortex.context",
+              description: "Enhance context from memory with relevant experiences",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  query: {
+                    type: "string",
+                    description: "Query to search for relevant experiences",
+                  },
+                },
+                required: ["query"],
+              },
+            },
+            {
+              name: "cortex.learn",
+              description: "Record experience to memory for future reference",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  title: {
+                    type: "string",
+                    description: "Experience title",
+                  },
+                  content: {
+                    type: "string",
+                    description: "Experience content (markdown)",
+                  },
+                  type: {
+                    type: "string",
+                    description: "Experience type",
+                    enum: ["pattern", "decision", "solution", "lesson"],
+                  },
+                  tags: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Tags for searchability",
+                  },
+                },
+                required: ["title", "content", "type"],
+              },
+            },
+            {
+              name: "cortex.status",
+              description: "Get workflow status and progress",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  workflowId: {
+                    type: "string",
+                    description: "Workflow ID (e.g., 001-feature-name)",
+                  },
+                },
+                required: ["workflowId"],
+              },
+            },
+            {
+              name: "cortex.list",
+              description: "List all workflows",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  limit: {
+                    type: "number",
+                    description: "Maximum number of workflows to return",
+                    default: 10,
+                  },
+                },
+              },
+            },
+            {
               name: "create-pull-request",
               description: "Create a pull request for workflow results",
               inputSchema: {
@@ -388,6 +629,61 @@ export class CortexMCPServer {
             break;
           case "list-workflows":
             result = await this.toolHandler.handleListWorkflows(
+              args as { limit?: number }
+            );
+            break;
+          case "cortex.spec":
+            result = await this.stableWorkflowHandler.handleSpec(
+              args as { description: string }
+            );
+            break;
+          case "cortex.clarify":
+            result = await this.stableWorkflowHandler.handleClarify(
+              args as { workflowId: string }
+            );
+            break;
+          case "cortex.plan":
+            result = await this.stableWorkflowHandler.handlePlan(
+              args as { workflowId: string }
+            );
+            break;
+          case "cortex.review":
+            result = await this.stableWorkflowHandler.handleReview(
+              args as { workflowId: string }
+            );
+            break;
+          case "cortex.tasks":
+            result = await this.stableWorkflowHandler.handleTasks(
+              args as { workflowId: string }
+            );
+            break;
+          case "cortex.implement":
+            result = await this.stableWorkflowHandler.handleImplement(
+              args as { workflowId: string }
+            );
+            break;
+          case "cortex.context":
+            result = await this.stableWorkflowHandler.handleContext(
+              args as { query: string }
+            );
+            break;
+          case "cortex.learn":
+            result = await this.stableWorkflowHandler.handleLearn(
+              args as {
+                title: string;
+                content: string;
+                type: string;
+                tags?: string[];
+              }
+            );
+            break;
+          case "cortex.status":
+            result = await this.stableWorkflowHandler.handleStatus(
+              args as { workflowId: string }
+            );
+            break;
+          case "cortex.list":
+            result = await this.stableWorkflowHandler.handleList(
               args as { limit?: number }
             );
             break;

@@ -4,458 +4,399 @@
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/runtime-Node.js-green.svg)](https://nodejs.org/)
 
-[English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Changelog](CHANGELOG.md)
+[English](README.md) | [繁體中文](README.zh-TW.md) | [文檔](docs/) | [更新日誌](CHANGELOG.md)
 
-## 🧠 AI 協作大腦
+## Cortex AI 是什麼？
 
-**Cortex AI** 是一個智慧 AI 協作系統，將 AI 模型轉化為可靠的學習夥伴。它透過 **MCP (Model Context Protocol)** 和 **結構化工作流程** 解決 AI 不一致和缺乏記憶的核心問題。
+**Cortex AI** 是一個穩定、結構化的開發工作流程系統，將 AI 輔助開發從不可預測的「憑感覺編碼」轉變為可靠、品質導向的功能交付。
 
-### 🎯 **為什麼選擇 Cortex？** - 設計哲學的精妙之處
+基於 **MCP (Model Context Protocol)**，Cortex 提供 **憲章驅動、模板化工作流程**，確保無論您使用哪個 AI 模型（Cursor、Claude、Copilot 或其他），都能獲得一致的輸出。
 
-**問題背景：**
+### 問題
 
-- AI 模型在不同平台間行為不一致
-- AI 忘記使用者偏好和程式碼模式
-- 重複解釋相同的專案慣例
-- AI 協作缺乏個人化
-- 沒有成功互動模式的記憶
+傳統的 AI 輔助開發面臨：
+- **輸出品質不可預測** - AI 每次生成不同結果
+- **沒有品質把關** - 功能建構缺乏驗證檢查點
+- **結構不一致** - 每個開發者得到不同的文件結構
+- **AI 失控** - AI 持續運作而不確認，產生不需要的變更
 
-**精妙解決方案：**
+### 解決方案
 
-- **🧠 一致 AI 行為** - 所有 AI 平台的標準化思考流程
-- **📚 學習記憶** - 記住使用者偏好和專案模式
-- **🔄 持續適應** - 基於成功互動進行演化
-- **🎯 情境意識** - 理解專案特定的慣例和工作流程
+Cortex AI 引入 **穩定工作流程系統**：
+- **模板 + 命令架構** - 結構化模板與 AI 執行指導
+- **憲章驅動驗證** - 每個階段根據專案原則檢查
+- **強制用戶檢查點** - 進入下一階段前明確確認
+- **自動品質驗證** - 內建檢查清單和技術棧檢測
 
-#### 🧠 **核心設計原則** - 建築學上的天才傑作
+---
 
-**Cortex AI** 實作了革命性的原則，將 AI 協作轉化為建築學上的傑作：
+## ⚡ 快速開始
 
-1. **🔮 少量範例到精細調整轉換** - **煉金術般的轉化**：我們不只是使用少量範例，而是*轉化*它們。一個簡單的用戶指令如「用英文寫註釋」變成一個全面的、生產就緒的提示系統，在所有未來互動中強制執行這個偏好。這是系統性的轉化，超越了傳統學習模式。
-
-2. **🪝 鉤子式攔截系統** - **隱形的指揮家**：每一個用戶輸入在到達 AI 模型之前就被攔截。我們不等待 AI 回應，而是*塑造*它們。這個建築學上的巧妙設計確保無論您使用哪個 AI 模型（Cursor、Claude、Gemini），它們都會表現一致，因為我們已經預先決定了結果。
-
-3. **⚙️ 決定論式展開而非隨機性** - **發條腦袋**：我們拒絕「湧現行為」的謬論。我們系統性地將最小輸入展開成完整、結構良好的指令，而非依賴 AI「會明白」。當您說「修復錯誤」時，我們直接*告訴*它確切該怎麼做、如何做、為什麼這麼做。
-
-4. **🔒 保證處理管線** - **牢不可破的鎖鏈**：每個輸入都通過我們完整的管線，執行率達 100%。沒有步驟會被跳過，沒有流程會被繞過。這是*建築學上的必然性*，超越了傳統可靠性概念。系統無法不應用您的偏好，因為失敗從字面上就不可能發生。
-
-5. **📋 明確推理與文件化** - **透明大腦**：每個轉化都被記錄，每個決定都被文件化，每個偏好變化都可以追溯。您可以親眼看到「使用 TypeScript」如何成為一個系統範圍的指令，影響每個程式碼建議、每個註釋、每個回應。
-
-這個哲學創造了一個智慧系統，不僅僅是回應，而是*與您共同進化*，透過系統性、決定論式的意圖轉化來學習您的模式和偏好，而不是透過試錯。
-
-**最終結果？** 簡單輸入變成全面的、個人化的 AI 體驗。「不要使用 async/await」變成一個普遍規則，塑造每個程式碼建議、每個重構、每個架構決定。
-
-### 🏗️ **架構概覽**
-
-Cortex AI 採用多層架構實現智慧 AI 協作：
-
-```text
-🧠 大腦層 (AI 平台整合)
-├── MCP 伺服器 - 統一協定介面
-├── 多角色工作流程 - 結構化任務執行
-├── 即時學習系統 - 用戶偏好記憶
-└── 跨平台一致性 - 統一行為體驗
-
-📚 經驗層 (.cortex 目錄)
-├── 隱形專案配置 - 自動專案適應
-├── 用戶偏好學習 - 個人化記憶
-├── 專案模式識別 - 自動慣例發現
-└── 持續改進 - 經驗積累優化
-
-🛠️ 核心工具
-├── MCP 工具系統 - 豐富的功能集合
-├── 資源管理 - 專案和流程快照
-├── 提示模板 - 結構化思考指南
-└── CLI 介面 - 簡化的操作入口
-```
-
-> **📖 [詳細架構指南](docs/architecture.md)** - 完整系統架構和技術詳情
-
-## ✨ **核心功能**
-
-### **🧠 MCP 協議支援**
-
-**Cortex AI** 完全支援 MCP (Model Context Protocol)，提供豐富的工具、資源和提示系統：
-
-#### **🛠️ MCP 工具 (Tools)**
-
-| 工具名稱 | 描述 | 用途 |
-|---------|------|------|
-| `cortex-task` | 建立並執行完整的 AI 協作工作流程 | 啟動複雜開發任務的多角色協作 |
-| `execute-workflow-role` | 執行工作流程中的下一個角色 | 繼續進行中的工作流程執行 |
-| `submit-role-result` | 將 AI 處理結果提交回工作流程 | 完成角色任務並傳遞結果 |
-| `get-workflow-status` | 取得工作流程狀態和進度 | 追蹤工作流程執行狀況 |
-| `list-workflows` | 列出所有可用工作流程 | 查看專案中的工作流程清單 |
-| `create-pull-request` | 為工作流程結果建立拉取請求 | 自動化 PR 創建流程 |
-
-#### **📚 MCP 資源 (Resources)**
-
-| 資源 URI | 名稱 | 描述 | 格式 |
-|---------|------|------|------|
-| `cortex://workflows` | Cortex 工作流程 | 所有 Cortex AI 工作流程清單 | JSON |
-| `cortex://workflows/{id}/handoff` | 工作流程交接 | 特定工作流程的交接文件 | Markdown |
-| `cortex://workflows/{id}/pr` | 工作流程 PR | 特定工作流程的拉取請求文件 | Markdown |
-| `cortex://snapshots/project` | 專案快照 | 當前專案結構和架構快照 | JSON |
-| `cortex://snapshots/{id}` | 工作流程快照 | 工作流程執行和決策快照 | JSON |
-| `cortex://project/tasks` | 專案任務 | 來自 .vscode/tasks.json 的開發任務 | JSON |
-| `cortex://ide/integration-guide` | IDE 整合指南 | Cortex AI IDE 整合設定指南 | Markdown |
-
-#### **💬 MCP 提示 (Prompts)**
-
-| 提示名稱 | 描述 | 參數 |
-|---------|------|------|
-| `workflow-role-analysis` | 為工作流程中的角色產生結構化分析 | `roleId`, `workflowId` |
-| `technical-code-review` | 產生技術程式碼審查和評估 | `codebase`, `requirements`, `role` |
-| `workflow-progress-summary` | 產生工作流程進度和決策的執行摘要 | `workflowId`, `includeTechnicalDetails` |
-
-### **🔄 多角色工作流程**
-
-**Cortex AI** 支援多角色協作模式，每個角色專注於特定領域：
-
-- **🏗️ Architecture Designer** - 系統架構設計和決策
-- **💻 Code Assistant** - 程式碼撰寫和品質保證
-- **📝 Documentation Specialist** - 文件撰寫和維護
-- **🔒 Security Specialist** - 安全性審查和最佳實務
-- **🧪 Testing Specialist** - 測試策略和實作
-- **🎨 UI/UX Designer** - 用戶體驗設計
-- **⚛️ React Expert** - React 生態系統專家
-
-每個角色都有專門的模板和指導原則，確保專業性和一致性。
-
-### **📚 即時學習系統**
-
-- **用戶偏好偵測**：從關鍵字學習，如「不對」、「我們用」、「不要」
-- **立即應用**：將學習的偏好應用到當前回應
-- **不重複錯誤**：絕不重複已修正的錯誤
-- **挫折偵測**：識別並從用戶挫折中學習
-
-## 🚀 **快速開始**
-
-### **簡易任務執行（推薦）**
-
-使用單一命令執行完整的開發任務與 AI 協作：
+### 1. 安裝 Cortex
 
 ```bash
-# 執行開發任務與完整 AI 工作流程
-npx @rikaidev/cortex@latest task "實作使用者驗證系統，包含註冊、登入和密碼重設"
-
-# 包含 PR 選項
-npx @rikaidev/cortex@latest task "為設定頁面新增深色模式切換" --draft-pr --base-branch develop
-```
-
-**自動執行流程：**
-
-1. 🧠 **情境增強**：使用 MCP 工具尋找相關過去經驗
-2. 📝 **工作流程建立**：建立結構化的多角色工作流程
-3. 🎭 **角色執行**：依序執行每個角色任務
-4. 📚 **經驗記錄**：記錄學習內容供未來任務使用
-5. 🚀 **PR 建立**：產生完整的 PR 文件並建立 GitHub PR
-
-### **安裝**
-
-```bash
-# 直接透過 npx 執行（推薦）
-npx @rikaidev/cortex@latest
-
-# 或全域安裝
+# 全域安裝
 npm install -g @rikaidev/cortex
+
+# 或使用 npx（無需安裝）
+npx @rikaidev/cortex init
 ```
 
-> **注意**：使用 `@rikaidev/cortex@latest` 確保您始終獲得最新版本，無需手動更新。
+### 2. 初始化專案
 
-### **MCP 客戶端配置**
+```bash
+cd your-project
+cortex init
+```
 
-將以下設定新增到您的 MCP 客戶端：
+這會建立 `.cortex/` 目錄，包含模板、憲章和工作流程結構。
 
+### 3. 設定 MCP 客戶端
+
+**Cursor:**
 ```json
 {
   "mcpServers": {
     "cortex-ai": {
       "command": "npx",
-      "args": ["-y", "@rikaidev/cortex@latest"]
+      "args": ["-y", "@rikaidev/cortex@latest", "start"]
     }
   }
 }
 ```
 
-#### **支援的 MCP 客戶端**
+**Claude Code:**
+```bash
+claude mcp add cortex npx -y @rikaidev/cortex@latest start
+```
 
-#### Claude Code
+### 4. 開始第一個功能
 
 ```bash
-claude mcp add cortex-ai npx @rikaidev/cortex@latest
+# 在您的 AI 助理中
+cortex spec "新增使用電子郵件和密碼的用戶驗證"
 ```
 
-#### Cursor
+輸出：工作流程 `001-add-user-auth` 已建立
 
-- 前往 `Cursor Settings` → `MCP` → `New MCP Server`
-- 使用上述設定
-
-#### VS Code
+### 5. 遵循工作流程
 
 ```bash
-code --add-mcp '{"name":"cortex-ai","command":"npx","args":["@rikaidev/cortex@latest"]}'
+# 可選：釐清模糊之處
+cortex clarify 001-add-user-auth
+
+# 生成實施計畫
+cortex plan 001-add-user-auth
+
+# 可選：技術審查
+cortex review 001-add-user-auth
+
+# 分解為任務
+cortex tasks 001-add-user-auth
+
+# 執行實施
+cortex implement 001-add-user-auth
 ```
-
-#### Copilot CLI
-
-```bash
-copilot
-/mcp add
-# Server name: cortex-ai
-# Command: npx
-# Arguments: -y, @rikaidev/cortex@latest
-```
-
-### **初始化專案**
-
-```bash
-# 初始化 Cortex 工作區結構和 IDE 整合
-npx @rikaidev/cortex@latest init
-
-# 或跳過 IDE 整合，僅設定工作區
-npx @rikaidev/cortex@latest init --skip-ide
-
-# 稍後重新產生 IDE 設定（如需要）
-npx @rikaidev/cortex@latest generate-rules
-```
-
-### **初始化 MCP 工作區**（推薦）
-
-針對最新的多角色模式工作流程：
-
-```bash
-# 初始化 Cortex 工作區結構
-npx @rikaidev/cortex@latest init
-
-# 啟動 MCP 伺服器進行工作流程管理
-npx @rikaidev/cortex@latest start
-
-# 運行工作流程演示查看多角色模式運作
-# 使用 task 命令執行完整的多角色工作流程
-```
-
-新的 MCP 方法為每個工作流程建立隔離的工作區：
-
-```text
-.cortex/
-├── .cortexrc              # 設定檔案
-├── workflows/             # 工作流程狀態檔案
-├── workspaces/            # 個別工作區資料夾（雜湊式）
-│   └── abc12345/          # 每個工作流程的獨特工作區
-│       ├── handoff.md     # 角色交接文件
-│       └── pr.md          # 拉取請求描述
-└── roles/                 # 角色定義
-```
-
-### **開始學習**
-
-```bash
-# 開始 AI 協作
-npx @rikaidev/cortex@latest start
-
-# 顯示版本
-npx @rikaidev/cortex@latest version
-```
-
-## 🎯 **如何運作**
-
-### **1. 從對話中學習**
-
-```text
-使用者：「註解又開始寫中文了？」
-AI：[學習] 所有註解用英文寫
-
-使用者：「我們用 uv run pytest」
-AI：[學習] Python 命令都用 uv run
-
-使用者：「又來了」
-AI：[學習] 不要重複同樣的錯誤
-```
-
-### **2. 結構化思考**
-
-```text
-🔍 分析階段：[問題理解]
-📚 知識整合：[應用學習的偏好]
-💡 解決方案開發：[考慮使用者模式]
-⚡ 實施規劃：[尊重使用者偏好]
-✅ 品質驗證：[確保偏好合規]
-```
-
-### **3. 跨平台一致性**
-
-- **相同學習** 在 Cursor、Claude 和 Gemini 之間
-- **相同思考** 流程在所有平台
-- **相同偏好** 應用到各處
-- **相同演化** 通過對話
-
-## 📚 **文檔**
-
-- **[快速開始](docs/getting-started.md)** - 快速設定指南
-- **[系統架構](docs/architecture.md)** - 架構設計詳情
-- **[程式碼模式](docs/code-patterns.md)** - 程式碼風格指南
-- **[變更日誌](CHANGELOG.md)** - 完整變更歷史
-- **[路線圖](ROADMAP.md)** - 未來開發計畫
-
-## 🛠️ **開發**
-
-### **先決條件**
-
-- Node.js 18+
-- TypeScript 知識
-
-### **設定**
-
-```bash
-# 複製儲存庫
-git clone https://github.com/RikaiDev/cortex.git
-cd cortex
-
-# 安裝依賴
-npm install
-
-# 建置專案
-npm run build
-
-# 執行程式碼品質和安全檢查
-npm run quality
-
-# 僅執行安全檢查
-npm run security
-
-# 執行測試
-npm run test
-
-# 開始開發
-npm run dev
-```
-
-### **📋 專案任務配置 (.vscode/tasks.json)**
-
-**Cortex AI** 會自動讀取您專案的 `.vscode/tasks.json` 來理解可用的開發工具和命令。
-這樣可以實現智能任務執行，並確保 AI 使用正確的專案特定命令。
-
-#### **為什麼使用 tasks.json？**
-
-1. **🎯 標準化開發工具** - 在一個地方定義所有專案的建置、測試和品質檢查命令
-2. **🤖 AI 任務發現** - Cortex AI 自動發現並理解您專案的開發工作流程
-3. **🔄 一致性執行** - 確保 AI 使用正確的專案特定命令
-4. **📚 專案特定工作流程** - 每個專案都可以有自己的開發慣例和工具鏈
-
-#### **建議的 tasks.json 結構**
-
-```json
-{
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Build Project",
-      "type": "shell",
-      "command": "npm run build",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      },
-      "problemMatcher": ["$tsc"]
-    },
-    {
-      "label": "Run Tests",
-      "type": "shell",
-      "command": "npm test",
-      "group": "test",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Lint Code",
-      "type": "shell",
-      "command": "npm run lint",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Quality Check",
-      "type": "shell",
-      "command": "npm run quality-check",
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    },
-    {
-      "label": "Start MCP Server",
-      "type": "shell",
-      "command": "node dist/cli/index.js start",
-      "isBackground": true,
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "shared"
-      }
-    }
-  ]
-}
-```
-
-#### **AI 任務整合優勢**
-
-- **🧠 智能任務選擇** - AI 自動選擇正確的任務
-- **📊 任務目的推斷** - AI 理解每個任務的用途（建置、測試、程式碼檢查等）
-- **🎯 預設任務識別** - AI 知道哪個任務是預設建置任務
-- **🔄 工作流程整合** - 任務與 Cortex AI 工作流程無縫整合
-
-#### **Cortex AI 如何使用 tasks.json**
-
-1. **任務發現** - 自動讀取和解析您的 tasks.json 配置
-2. **目的分析** - 推斷每個任務的目的（建置、測試、程式碼檢查、啟動等）
-3. **命令產生** - 產生正確的命令與參數
-4. **工作流程整合** - 在開發工作流程中使用適當的任務
-5. **品質保證** - 確保一致使用專案特定命令
-
-**AI 任務使用範例：**
-```text
-AI：「我將執行建置任務來編譯專案」
-→ 執行：npm run build（來自 tasks.json）
-
-AI：「讓我先執行品質檢查再繼續」
-→ 執行：npm run quality-check（來自 tasks.json）
-```
-
-### **貢獻**
-
-- [貢獻指南](CONTRIBUTING.md)
-- [行為準則](CODE_OF_CONDUCT.md)
-- [開發設定](docs/development/)
-
-## 🎯 **為什麼取名 "Cortex"？**
-
-**Cortex（大腦皮質）** 代表大腦的高級認知功能：
-
-- **🧠 思考** - 結構化推理和問題解決
-- **📚 記憶** - 學習和儲存經驗
-- **🔄 進化** - 透過經驗持續改進
-- **🎯 決策** - 基於學習做出判斷
-
-就像人類大腦皮質一樣，**Cortex AI** 是 AI 的「大腦」- 負責思考、記憶、學習和決策。
 
 ---
 
-**將您的 AI 互動從令人挫折的重複轉化為智慧學習夥伴關係！**
+## 📊 工作流程視覺化
+
+```mermaid
+flowchart LR
+    Start([用戶請求]) --> Constitution
+    
+    Constitution[憲章<br/>設定原則] -->|自動套用| Spec
+    
+    Spec[規格<br/>定義需求] -->|審查與確認| Decision1{用戶<br/>滿意？}
+    
+    Decision1 -->|否| Clarify[釐清<br/>解決模糊]
+    Clarify -->|更新規格| Spec
+    Decision1 -->|是| Plan
+    
+    Plan[計畫<br/>技術設計] -->|審查與確認| Decision2{用戶<br/>滿意？}
+    
+    Decision2 -->|否| Review[審查<br/>技術分析]
+    Review -->|反饋| Plan
+    Decision2 -->|是| Tasks
+    
+    Tasks[任務<br/>分解工作] -->|審查與確認| Decision3{用戶<br/>準備好？}
+    
+    Decision3 -->|否| Tasks
+    Decision3 -->|是| Implement
+    
+    Implement[實施<br/>執行任務] --> Done([功能完成])
+    
+    style Constitution fill:#e1f5ff
+    style Spec fill:#e1f5ff
+    style Clarify fill:#fff4e1
+    style Plan fill:#e1f5ff
+    style Review fill:#fff4e1
+    style Tasks fill:#e1f5ff
+    style Implement fill:#e1f5ff
+    style Decision1 fill:#2b2b2b,color:#fff
+    style Decision2 fill:#2b2b2b,color:#fff
+    style Decision3 fill:#2b2b2b,color:#fff
+```
+
+**圖例：**
+- 🔵 **藍色方框** - AI 執行階段
+- 🟡 **黃色方框** - 可選用戶互動階段
+- ⚫ **黑色菱形** - 用戶決策檢查點
+
+---
+
+## 🔧 可用命令
+
+| 命令 | 描述 | 自動動作 | 用戶確認 |
+|------|------|----------|---------|
+| `cortex.constitution` | 建立/更新專案原則 | 自動套用到所有階段 | 否 |
+| `cortex.spec` | 定義功能需求 | 生成需求檢查清單 | 是 - 計畫前 |
+| `cortex.clarify` | 解決規格模糊 | 更新 spec.md，儲存 clarifications.md | 是 - 迭代問答 |
+| `cortex.plan` | 建立技術實施計畫 | 更新 CONTEXT.md，生成設計檢查清單 | 是 - 任務前 |
+| `cortex.review` | 執行計畫技術審查 | 儲存 review.md 與行動項目 | 是 - 批准/修改 |
+| `cortex.tasks` | 將計畫分解為可執行任務 | 生成任務檢查清單 | 是 - 實施前 |
+| `cortex.implement` | 執行角色協調實施 | 驗證 gitignore，生成實施檢查清單，執行任務 | 進度監控 |
+| `cortex.status` | 檢查工作流程狀態和進度 | - | 否 |
+| `cortex.list` | 列出所有工作流程 | - | 否 |
+| `cortex.learn` | 提取經驗教訓到記憶 | 更新記憶索引 | 否 |
+| `cortex.context` | 從記憶增強上下文 | - | 否 |
+
+---
+
+## 🤖 內建自動化
+
+| 階段 | 自動動作 | 觸發時機 | 輸出文件 |
+|------|---------|---------|---------|
+| **規格** | 需求檢查清單生成 | spec.md 建立後 | `checklists/requirements.md` |
+| **計畫** | 上下文記憶更新, 設計檢查清單生成 | plan.md 建立後 | `CONTEXT.md`, `checklists/design.md` |
+| **任務** | 任務檢查清單生成 | tasks.md 建立後 | `checklists/tasks.md` |
+| **實施** | Gitignore 驗證, 實施檢查清單, 技術棧檢測 | 執行開始前 | `.gitignore`（更新）, `checklists/implementation.md` |
+
+**無需手動工具呼叫** - 這些驗證和檢查會在正確的工作流程點自動執行。
+
+---
+
+## 📚 核心理念
+
+| 原則 | 描述 | 好處 |
+|------|------|------|
+| **模板 + 命令 = 穩定輸出** | 模板提供結構（佔位符），命令指導 AI 執行 | 所有 AI 模型都能獲得一致、可預測的結果 |
+| **憲章驅動開發** | 每個階段根據專案原則驗證 | 在整個開發過程中維持品質和一致性 |
+| **用戶確認檢查點** | 規格、計畫和任務後強制暫停 | 防止 AI 失控，確保與意圖一致 |
+| **漸進式品質驗證** | 每個階段自動生成檢查清單 | 及早發現問題，維持品質把關 |
+
+---
+
+## 🏗️ 架構
+
+Cortex AI 使用 **基於 MCP 的多層架構**：
+
+```
+AI 平台 (Cursor/Claude/Copilot)
+         ↓
+    MCP 協定
+         ↓
+  穩定工作流程處理器 ← 憲章驗證器
+         ↓                ← 模板生成器
+    服務層：              ← 工作流程服務
+    ├─ GitignoreValidator
+    ├─ ContextManager
+    └─ ChecklistGenerator
+         ↓
+  .cortex/ 文件結構
+```
+
+**關鍵元件：**
+- **StableWorkflowHandler** - 協調所有工作流程階段
+- **模板系統** - 結構化模板 + 執行命令
+- **服務層** - 自動化驗證和品質檢查
+- **憲章** - 專案特定原則和規則
+
+詳細架構和技術規格，請參見 [架構文檔](docs/architecture.md)。
+
+---
+
+## 📖 了解更多
+
+- **[架構](docs/architecture.md)** - 系統元件技術深入探討
+- **[快速入門](docs/getting-started.md)** - 完整教學與範例
+- **[程式碼模式](docs/code-patterns.md)** - 開發指南和最佳實務
+
+---
+
+## 🎯 範例工作流程
+
+```bash
+# 步驟 1：初始化
+cortex init
+
+# 步驟 2：建立規格（AI 生成結構化規格）
+cortex spec "建立具有看板的任務管理系統"
+# → 輸出：001-task-management 已建立
+
+# 步驟 3：釐清（可選 - AI 問有針對性的問題）
+cortex clarify 001-task-management
+# AI：「任務是否應支援子任務？」
+# 您：「是的，最多 2 層深度」
+# → spec.md 使用釐清內容更新
+
+# 步驟 4：生成計畫（AI 建立技術設計）
+cortex plan 001-task-management
+# → 自動：
+#   - CONTEXT.md 使用技術棧更新
+#   - checklists/design.md 生成
+
+# 步驟 5：審查（可選 - 技術分析）
+cortex review 001-task-management
+# → AI 執行 6 類別審查：
+#   架構、安全、效能等。
+
+# 步驟 6：分解任務
+cortex tasks 001-task-management
+# → 自動：
+#   - checklists/tasks.md 生成
+#   - 任務標記為可並行執行
+
+# 步驟 7：實施
+cortex implement 001-task-management
+# → 自動：
+#   - .gitignore 根據技術棧驗證
+#   - checklists/implementation.md 生成
+#   - 任務依正確順序執行
+```
+
+---
+
+## 🌟 主要功能
+
+### ✅ 品質優先
+
+- 每個階段都包含驗證檢查點
+- 憲章原則自動執行
+- 自動生成檢查清單確保完整性
+
+### ✅ 可預測輸出
+
+- 基於模板的結構保證一致性
+- 同一工作流程在不同 AI 模型產生相同品質
+- 沒有「憑感覺編碼」- 每一步都是有意的
+
+### ✅ 用戶控制
+
+- 重要階段轉換前強制確認
+- 可選的釐清和審查步驟
+- 完全可見 AI 生成的內容
+
+### ✅ 智能自動化
+
+- 技術棧檢測和 gitignore 驗證
+- 上下文記憶追蹤專案演化
+- 可能時並行執行任務
+
+### ✅ 學習系統
+
+- 從完成的工作流程提取經驗教訓
+- 記憶系統儲存成功模式
+- 憲章隨專案需求演化
+
+---
+
+## 🛠️ CLI 命令
+
+```bash
+# 階段命令（使用 cortex.spec 的工作流程 ID）
+cortex spec "<描述>"       # 建立規格
+cortex clarify <workflow-id>      # 釐清模糊
+cortex plan <workflow-id>         # 生成計畫
+cortex review <workflow-id>       # 技術審查
+cortex tasks <workflow-id>        # 分解任務
+cortex implement <workflow-id>    # 執行實施
+
+# 狀態命令
+cortex status <workflow-id>       # 檢查進度
+cortex list                       # 列出所有工作流程
+cortex list --limit 5             # 限制結果
+
+# 學習命令
+cortex learn <workflow-id>        # 提取教訓
+cortex context <查詢>            # 搜尋記憶
+
+# 實用命令
+cortex init                       # 初始化專案
+cortex init --skip-ide            # 跳過 IDE 整合
+```
+
+---
+
+## 📋 專案結構
+
+執行 `cortex init` 後，您的專案將有：
+
+```
+.cortex/
+├── constitution.md              # 專案原則
+├── memory/
+│   └── index.json              # 經驗索引
+├── templates/
+│   ├── constitution.md         # 憲章模板
+│   ├── spec-template.md        # 規格模板
+│   ├── clarify-template.md     # 釐清模板
+│   ├── plan-template.md        # 計畫模板
+│   ├── review-template.md      # 審查模板
+│   ├── tasks-template.md       # 任務模板
+│   └── commands/               # AI 執行指南
+│       ├── constitution.md
+│       ├── spec.md
+│       ├── clarify.md
+│       ├── plan.md
+│       ├── review.md
+│       ├── tasks.md
+│       └── implement.md
+└── workflows/
+    └── 001-feature-name/       # 個別工作流程
+        ├── spec.md
+        ├── clarifications.md   # 如使用 clarify
+        ├── plan.md
+        ├── CONTEXT.md          # 自動生成
+        ├── review.md           # 如使用 review
+        ├── tasks.md
+        ├── checklists/         # 自動生成
+        │   ├── requirements.md
+        │   ├── design.md
+        │   ├── tasks.md
+        │   └── implementation.md
+        └── execution/          # 實施日誌
+```
+
+---
+
+## 🤝 貢獻
+
+我們歡迎貢獻！請參見 [CONTRIBUTING.md](CONTRIBUTING.md) 了解指南。
+
+---
+
+## 📄 授權
+
+MIT License - 詳情請見 [LICENSE](LICENSE)。
+
+---
+
+## 🙏 致謝
+
+受 [spec-kit](https://github.com/github/spec-kit) 啟發 - GitHub 的 Spec-Driven Development 工具包。
+
+我們採用了 spec-kit 出色的 **模板 + 命令 = 穩定輸出** 方法，並整合到 Cortex AI 既有的：
+- MCP 協定整合以支援跨平台 AI
+- 多角色協調系統
+- 憲章驅動驗證
+- 學習記憶系統以持續改進
+
+---
+
+## 💬 支援
+
+- **文檔**：[docs/](docs/)
+- **問題**：[GitHub Issues](https://github.com/RikaiDev/cortex/issues)
+- **討論**：[GitHub Discussions](https://github.com/RikaiDev/cortex/discussions)

@@ -48,6 +48,104 @@ export async function ensureCortexWorkspace(
 export function addMCPCommands(program: Command): void {
   // Add individual commands directly to the main program
 
+  // Stable Workflow Commands
+  program
+    .command("spec <description>")
+    .description("Create feature specification")
+    .action(async (description: string) => {
+      try {
+        await executeMCPTool("cortex.spec", JSON.stringify({ description }));
+      } catch (error) {
+        console.log(chalk.red("Failed to create spec:"), error);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("clarify <workflowId>")
+    .description("Resolve specification ambiguities")
+    .action(async (workflowId: string) => {
+      try {
+        await executeMCPTool("cortex.clarify", JSON.stringify({ workflowId }));
+      } catch (error) {
+        console.log(chalk.red("Failed to clarify:"), error);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("plan <workflowId>")
+    .description("Create implementation plan")
+    .action(async (workflowId: string) => {
+      try {
+        await executeMCPTool("cortex.plan", JSON.stringify({ workflowId }));
+      } catch (error) {
+        console.log(chalk.red("Failed to create plan:"), error);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("review <workflowId>")
+    .description("Technical review of implementation plan")
+    .action(async (workflowId: string) => {
+      try {
+        await executeMCPTool("cortex.review", JSON.stringify({ workflowId }));
+      } catch (error) {
+        console.log(chalk.red("Failed to review:"), error);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("tasks <workflowId>")
+    .description("Generate task breakdown")
+    .action(async (workflowId: string) => {
+      try {
+        await executeMCPTool("cortex.tasks", JSON.stringify({ workflowId }));
+      } catch (error) {
+        console.log(chalk.red("Failed to create tasks:"), error);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("implement <workflowId>")
+    .description("Execute implementation")
+    .action(async (workflowId: string) => {
+      try {
+        await executeMCPTool("cortex.implement", JSON.stringify({ workflowId }));
+      } catch (error) {
+        console.log(chalk.red("Failed to implement:"), error);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("status <workflowId>")
+    .description("Check workflow status")
+    .action(async (workflowId: string) => {
+      try {
+        await executeMCPTool("cortex.status", JSON.stringify({ workflowId }));
+      } catch (error) {
+        console.log(chalk.red("Failed to get status:"), error);
+        process.exit(1);
+      }
+    });
+
+  program
+    .command("list")
+    .description("List all workflows")
+    .option("-l, --limit <number>", "Maximum number of workflows to return", "10")
+    .action(async (options) => {
+      try {
+        await executeMCPTool("cortex.list", JSON.stringify({ limit: parseInt(options.limit) }));
+      } catch (error) {
+        console.log(chalk.red("Failed to list workflows:"), error);
+        process.exit(1);
+      }
+    });
+
   // List tools command
   program
     .command("tools")
