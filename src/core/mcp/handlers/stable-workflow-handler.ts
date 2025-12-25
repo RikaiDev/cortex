@@ -32,6 +32,7 @@ import { EnvironmentHandler } from "./project/environment-handler.js";
 import { DependencyHandler } from "./project/dependency-handler.js";
 import { ImpactAnalysisHandler } from "./analysis/impact-analysis-handler.js";
 import { PerformanceAnalysisHandler } from "./analysis/performance-analysis-handler.js";
+import { TeamKnowledgeHandler } from "./collaboration/team-knowledge-handler.js";
 import type {
   MCPToolResult,
   WorkflowToolArgs,
@@ -58,6 +59,7 @@ export class StableWorkflowHandler {
   private dependencyHandler: DependencyHandler;
   private impactAnalysisHandler: ImpactAnalysisHandler;
   private performanceAnalysisHandler: PerformanceAnalysisHandler;
+  private teamKnowledgeHandler: TeamKnowledgeHandler;
 
   constructor(private projectRoot: string) {
     // Initialize delegated handlers
@@ -81,6 +83,7 @@ export class StableWorkflowHandler {
     this.performanceAnalysisHandler = new PerformanceAnalysisHandler(
       projectRoot
     );
+    this.teamKnowledgeHandler = new TeamKnowledgeHandler(projectRoot);
   }
 
   /**
@@ -559,5 +562,77 @@ export class StableWorkflowHandler {
     patternName: string;
   }): Promise<MCPToolResult> {
     return this.performanceAnalysisHandler.handleEnablePattern(args);
+  }
+
+  /**
+   * Handle team-share-insight - Share an insight with the team
+   * @deprecated Delegated to TeamKnowledgeHandler
+   */
+  async handleTeamShareInsight(args: {
+    title: string;
+    content: string;
+    type: "learning" | "pattern" | "decision" | "pr-review";
+    author: string;
+    tags?: string[];
+    scope?: string;
+  }): Promise<MCPToolResult> {
+    return this.teamKnowledgeHandler.handleShareInsight(args);
+  }
+
+  /**
+   * Handle team-view-insights - View team insights
+   * @deprecated Delegated to TeamKnowledgeHandler
+   */
+  async handleTeamViewInsights(args: {
+    author?: string;
+    type?: string;
+    tags?: string[];
+  }): Promise<MCPToolResult> {
+    return this.teamKnowledgeHandler.handleViewInsights(args);
+  }
+
+  /**
+   * Handle team-learn-pr - Learn from PR reviews
+   * @deprecated Delegated to TeamKnowledgeHandler
+   */
+  async handleTeamLearnPR(args: { prNumber: number }): Promise<MCPToolResult> {
+    return this.teamKnowledgeHandler.handleLearnFromPR(args);
+  }
+
+  /**
+   * Handle team-view-conflicts - View team conflicts
+   * @deprecated Delegated to TeamKnowledgeHandler
+   */
+  async handleTeamViewConflicts(): Promise<MCPToolResult> {
+    return this.teamKnowledgeHandler.handleViewConflicts();
+  }
+
+  /**
+   * Handle team-resolve-conflict - Resolve a conflict
+   * @deprecated Delegated to TeamKnowledgeHandler
+   */
+  async handleTeamResolveConflict(args: {
+    conflictId: string;
+    resolution: string;
+  }): Promise<MCPToolResult> {
+    return this.teamKnowledgeHandler.handleResolveConflict(args);
+  }
+
+  /**
+   * Handle team-sync - Sync team knowledge
+   * @deprecated Delegated to TeamKnowledgeHandler
+   */
+  async handleTeamSync(args: {
+    direction: "push" | "pull";
+  }): Promise<MCPToolResult> {
+    return this.teamKnowledgeHandler.handleSync(args);
+  }
+
+  /**
+   * Handle team-stats - Get team knowledge statistics
+   * @deprecated Delegated to TeamKnowledgeHandler
+   */
+  async handleTeamStats(): Promise<MCPToolResult> {
+    return this.teamKnowledgeHandler.handleGetStats();
   }
 }

@@ -1017,6 +1017,133 @@ export class CortexMCPServer {
                 required: ["patternName"],
               },
             },
+            {
+              name: "team-share-insight",
+              description:
+                "Share an insight, learning, or decision with the team",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  title: {
+                    type: "string",
+                    description: "Short title for the insight",
+                  },
+                  content: {
+                    type: "string",
+                    description: "Detailed content of the insight",
+                  },
+                  type: {
+                    type: "string",
+                    enum: ["learning", "pattern", "decision", "pr-review"],
+                    description: "Type of insight",
+                  },
+                  author: {
+                    type: "string",
+                    description: "Name of the developer sharing the insight",
+                  },
+                  tags: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Tags for categorization",
+                  },
+                  scope: {
+                    type: "string",
+                    description:
+                      "File pattern this applies to (e.g., 'src/api/**')",
+                  },
+                },
+                required: ["title", "content", "type", "author"],
+              },
+            },
+            {
+              name: "team-view-insights",
+              description: "View team insights with optional filtering",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  author: {
+                    type: "string",
+                    description: "Filter by author",
+                  },
+                  type: {
+                    type: "string",
+                    description: "Filter by type",
+                  },
+                  tags: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Filter by tags",
+                  },
+                },
+              },
+            },
+            {
+              name: "team-learn-pr",
+              description:
+                "Extract review patterns from a PR to learn team preferences",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  prNumber: {
+                    type: "number",
+                    description: "Pull request number",
+                  },
+                },
+                required: ["prNumber"],
+              },
+            },
+            {
+              name: "team-view-conflicts",
+              description:
+                "View conflicting insights between team members",
+              inputSchema: {
+                type: "object",
+                properties: {},
+              },
+            },
+            {
+              name: "team-resolve-conflict",
+              description:
+                "Resolve a conflict by marking team decision",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  conflictId: {
+                    type: "string",
+                    description: "ID of the conflict to resolve",
+                  },
+                  resolution: {
+                    type: "string",
+                    description: "Team decision/resolution",
+                  },
+                },
+                required: ["conflictId", "resolution"],
+              },
+            },
+            {
+              name: "team-sync",
+              description:
+                "Sync team knowledge (push to or pull from git repository)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  direction: {
+                    type: "string",
+                    enum: ["push", "pull"],
+                    description: "Sync direction",
+                  },
+                },
+                required: ["direction"],
+              },
+            },
+            {
+              name: "team-stats",
+              description: "Get team knowledge statistics",
+              inputSchema: {
+                type: "object",
+                properties: {},
+              },
+            },
           ],
         };
       } catch (error) {
@@ -1243,6 +1370,51 @@ export class CortexMCPServer {
               await this.stableWorkflowHandler.handlePerformanceEnablePattern(
                 args as { patternName: string }
               );
+            break;
+          case "team-share-insight":
+            result = await this.stableWorkflowHandler.handleTeamShareInsight(
+              args as {
+                title: string;
+                content: string;
+                type: "learning" | "pattern" | "decision" | "pr-review";
+                author: string;
+                tags?: string[];
+                scope?: string;
+              }
+            );
+            break;
+          case "team-view-insights":
+            result = await this.stableWorkflowHandler.handleTeamViewInsights(
+              args as {
+                author?: string;
+                type?: string;
+                tags?: string[];
+              }
+            );
+            break;
+          case "team-learn-pr":
+            result = await this.stableWorkflowHandler.handleTeamLearnPR(
+              args as { prNumber: number }
+            );
+            break;
+          case "team-view-conflicts":
+            result = await this.stableWorkflowHandler.handleTeamViewConflicts();
+            break;
+          case "team-resolve-conflict":
+            result = await this.stableWorkflowHandler.handleTeamResolveConflict(
+              args as {
+                conflictId: string;
+                resolution: string;
+              }
+            );
+            break;
+          case "team-sync":
+            result = await this.stableWorkflowHandler.handleTeamSync(
+              args as { direction: "push" | "pull" }
+            );
+            break;
+          case "team-stats":
+            result = await this.stableWorkflowHandler.handleTeamStats();
             break;
           default:
             throw new Error(`Unknown tool: ${name}`);
