@@ -4,9 +4,11 @@ import { execSync } from "child_process";
 import { DangerZoneService } from "./danger-zone-service.js";
 import { EnvironmentService } from "./environment-service.js";
 import { DependencyService } from "./dependency-service.js";
+import { PerformanceAnalyzer } from "./performance-analyzer.js";
 import type { DangerZone } from "../types/danger-zone.js";
 import type { EnvironmentWarning } from "../types/environment.js";
 import type { DeprecationWarning } from "../types/dependency.js";
+import type { PerformanceIssue } from "../types/performance.js";
 
 export interface ValidationResult {
   isComplete: boolean;
@@ -20,6 +22,8 @@ export interface ValidationResult {
   environmentWarnings: EnvironmentWarning[];
   dependencyIssuesDetected: boolean;
   deprecationWarnings: DeprecationWarning[];
+  performanceIssuesDetected: boolean;
+  performanceIssues: PerformanceIssue[];
 }
 
 export interface ValidationIssue {
@@ -34,11 +38,13 @@ export class ImplementationValidator {
   private dangerZoneService: DangerZoneService;
   private environmentService: EnvironmentService;
   private dependencyService: DependencyService;
+  private performanceAnalyzer: PerformanceAnalyzer;
 
   constructor(private projectRoot: string) {
     this.dangerZoneService = new DangerZoneService(projectRoot);
     this.environmentService = new EnvironmentService(projectRoot);
     this.dependencyService = new DependencyService(projectRoot);
+    this.performanceAnalyzer = new PerformanceAnalyzer(projectRoot);
   }
 
   /**
@@ -65,6 +71,13 @@ export class ImplementationValidator {
       (d) => d.removedIn
     ); // APIs that will be removed
 
+    // Check performance anti-patterns
+    const performanceCheck =
+      await this.performanceAnalyzer.analyzeFiles(files);
+    const criticalPerformanceIssues = performanceCheck.issues.filter(
+      (i) => i.severity === "error"
+    );
+
     // Scan for mocks/scaffolds
     const mockIssues = await this.scanForMocks(files);
     issues.push(...mockIssues);
@@ -79,7 +92,8 @@ export class ImplementationValidator {
         !dangerZoneCheck.hasDangerZones &&
         environmentErrors.length === 0 &&
         criticalDeprecations.length === 0 &&
-        dependencyCheck.conflicts.length === 0,
+        dependencyCheck.conflicts.length === 0 &&
+        criticalPerformanceIssues.length === 0,
       issues,
       mockDetected: mockIssues.some((i) => i.type === "mock"),
       scaffoldDetected: mockIssues.some((i) => i.type === "scaffold"),
@@ -92,6 +106,8 @@ export class ImplementationValidator {
         dependencyCheck.deprecations.length > 0 ||
         dependencyCheck.conflicts.length > 0,
       deprecationWarnings: dependencyCheck.deprecations,
+      performanceIssuesDetected: performanceCheck.hasIssues,
+      performanceIssues: performanceCheck.issues,
     };
 
     return result;

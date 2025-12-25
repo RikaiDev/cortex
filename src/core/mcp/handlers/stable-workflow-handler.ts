@@ -31,12 +31,14 @@ import { DangerZoneHandler } from "./project/danger-zone-handler.js";
 import { EnvironmentHandler } from "./project/environment-handler.js";
 import { DependencyHandler } from "./project/dependency-handler.js";
 import { ImpactAnalysisHandler } from "./analysis/impact-analysis-handler.js";
+import { PerformanceAnalysisHandler } from "./analysis/performance-analysis-handler.js";
 import type {
   MCPToolResult,
   WorkflowToolArgs,
   MemoryToolArgs,
 } from "../types/mcp-types.js";
 import type { CheckpointFile } from "../types/checkpoint.js";
+import type { PerformanceCategory } from "../types/performance.js";
 
 export class StableWorkflowHandler {
   // Delegated handlers (refactored architecture)
@@ -55,6 +57,7 @@ export class StableWorkflowHandler {
   private environmentHandler: EnvironmentHandler;
   private dependencyHandler: DependencyHandler;
   private impactAnalysisHandler: ImpactAnalysisHandler;
+  private performanceAnalysisHandler: PerformanceAnalysisHandler;
 
   constructor(private projectRoot: string) {
     // Initialize delegated handlers
@@ -75,6 +78,9 @@ export class StableWorkflowHandler {
     this.environmentHandler = new EnvironmentHandler(projectRoot);
     this.dependencyHandler = new DependencyHandler(projectRoot);
     this.impactAnalysisHandler = new ImpactAnalysisHandler(projectRoot);
+    this.performanceAnalysisHandler = new PerformanceAnalysisHandler(
+      projectRoot
+    );
   }
 
   /**
@@ -498,5 +504,60 @@ export class StableWorkflowHandler {
    */
   async handleImpactStats(): Promise<MCPToolResult> {
     return this.impactAnalysisHandler.handleGraphStats();
+  }
+
+  /**
+   * Handle performance-analyze - Analyze files for performance issues
+   * @deprecated Delegated to PerformanceAnalysisHandler
+   */
+  async handlePerformanceAnalyze(args: {
+    files: string[];
+  }): Promise<MCPToolResult> {
+    return this.performanceAnalysisHandler.handleAnalyzePerformance(args);
+  }
+
+  /**
+   * Handle performance-list-patterns - List all performance patterns
+   * @deprecated Delegated to PerformanceAnalysisHandler
+   */
+  async handlePerformanceListPatterns(): Promise<MCPToolResult> {
+    return this.performanceAnalysisHandler.handleListPatterns();
+  }
+
+  /**
+   * Handle performance-add-pattern - Add custom pattern
+   * @deprecated Delegated to PerformanceAnalysisHandler
+   */
+  async handlePerformanceAddPattern(args: {
+    name: string;
+    category: PerformanceCategory;
+    description: string;
+    regex: string;
+    contextRegex?: string;
+    severity: "info" | "warning" | "error";
+    suggestion: string;
+    filePatterns?: string[];
+  }): Promise<MCPToolResult> {
+    return this.performanceAnalysisHandler.handleAddPattern(args);
+  }
+
+  /**
+   * Handle performance-disable-pattern - Disable a pattern
+   * @deprecated Delegated to PerformanceAnalysisHandler
+   */
+  async handlePerformanceDisablePattern(args: {
+    patternName: string;
+  }): Promise<MCPToolResult> {
+    return this.performanceAnalysisHandler.handleDisablePattern(args);
+  }
+
+  /**
+   * Handle performance-enable-pattern - Enable a pattern
+   * @deprecated Delegated to PerformanceAnalysisHandler
+   */
+  async handlePerformanceEnablePattern(args: {
+    patternName: string;
+  }): Promise<MCPToolResult> {
+    return this.performanceAnalysisHandler.handleEnablePattern(args);
   }
 }

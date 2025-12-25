@@ -122,12 +122,61 @@ export class ImplementationValidatorHandler {
         };
       }
 
+      // Check for performance issues (fourth priority)
+      if (result.performanceIssuesDetected) {
+        const criticalIssues = result.performanceIssues.filter(
+          (i) => i.severity === "error"
+        );
+
+        const issuesByCategory: Record<string, typeof result.performanceIssues> =
+          {};
+        for (const issue of result.performanceIssues) {
+          if (!issuesByCategory[issue.category]) {
+            issuesByCategory[issue.category] = [];
+          }
+          issuesByCategory[issue.category].push(issue);
+        }
+
+        const categoryList = Object.entries(issuesByCategory)
+          .map(([category, issues]) => {
+            const severityIcon = issues.some((i) => i.severity === "error")
+              ? "🚨"
+              : issues.some((i) => i.severity === "warning")
+                ? "⚠️"
+                : "ℹ️";
+
+            const issuesList = issues
+              .slice(0, 3)
+              .map(
+                (i) =>
+                  `    ${i.severity === "error" ? "🚨" : i.severity === "warning" ? "⚠️" : "ℹ️"} ${i.file}:${i.line} - ${i.pattern}\n       ${i.description}\n       💡 ${i.suggestion}`
+              )
+              .join("\n");
+
+            const moreText =
+              issues.length > 3 ? `\n    ... and ${issues.length - 3} more` : "";
+
+            return `  ${severityIcon} **${category}** (${issues.length})\n${issuesList}${moreText}`;
+          })
+          .join("\n\n");
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `⚠️  **Performance Anti-patterns Detected**\n\n${categoryList}\n\n**Summary:**\n- Total issues: ${result.performanceIssues.length}\n- Critical: ${criticalIssues.length}\n- Warnings: ${result.performanceIssues.filter((i) => i.severity === "warning").length}\n- Info: ${result.performanceIssues.filter((i) => i.severity === "info").length}\n\n${criticalIssues.length > 0 ? "**REQUIRED ACTION**: Fix critical performance issues before proceeding." : "**Warnings found**: Review and optimize when possible."}`,
+            },
+          ],
+          isError: criticalIssues.length > 0,
+        };
+      }
+
       if (result.isComplete) {
         return {
           content: [
             {
               type: "text",
-              text: "✅ Implementation validation passed:\n- No TODO/FIXME comments\n- No mock data or placeholders\n- No unused code (Knip)\n- No scaffold patterns\n- No danger zones affected\n- No environment compatibility issues\n- No deprecated API usage\n\nReady to proceed.",
+              text: "✅ Implementation validation passed:\n- No TODO/FIXME comments\n- No mock data or placeholders\n- No unused code (Knip)\n- No scaffold patterns\n- No danger zones affected\n- No environment compatibility issues\n- No deprecated API usage\n- No performance anti-patterns\n\nReady to proceed.",
             },
           ],
         };

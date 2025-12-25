@@ -27,6 +27,7 @@ import { ToolHandler } from "./handlers/tool-handler.js";
 import { ResourceHandler } from "./handlers/resource-handler.js";
 import { StableWorkflowHandler } from "./handlers/stable-workflow-handler.js";
 import type { CheckpointFile } from "./types/checkpoint.js";
+import type { PerformanceCategory } from "./types/performance.js";
 
 // ES Module support for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -909,6 +910,113 @@ export class CortexMCPServer {
                 properties: {},
               },
             },
+            {
+              name: "performance-analyze",
+              description:
+                "Analyze files for performance anti-patterns (N+1 queries, missing cleanup, blocking operations)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  files: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Files to analyze for performance issues",
+                  },
+                },
+                required: ["files"],
+              },
+            },
+            {
+              name: "performance-list-patterns",
+              description:
+                "List all performance analysis patterns (built-in and custom)",
+              inputSchema: {
+                type: "object",
+                properties: {},
+              },
+            },
+            {
+              name: "performance-add-pattern",
+              description:
+                "Add a custom performance pattern for project-specific detection",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  name: {
+                    type: "string",
+                    description: "Unique pattern name",
+                  },
+                  category: {
+                    type: "string",
+                    description:
+                      "Category (database, async, memory, rendering, computation, io, resource-leak)",
+                  },
+                  description: {
+                    type: "string",
+                    description: "Description of the performance issue",
+                  },
+                  regex: {
+                    type: "string",
+                    description: "Regular expression pattern to match",
+                  },
+                  contextRegex: {
+                    type: "string",
+                    description:
+                      "Optional context pattern (e.g., must be in a loop)",
+                  },
+                  severity: {
+                    type: "string",
+                    enum: ["info", "warning", "error"],
+                    description: "Severity level",
+                  },
+                  suggestion: {
+                    type: "string",
+                    description: "Suggestion for fixing the issue",
+                  },
+                  filePatterns: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "File patterns to apply this rule to",
+                  },
+                },
+                required: [
+                  "name",
+                  "category",
+                  "description",
+                  "regex",
+                  "severity",
+                  "suggestion",
+                ],
+              },
+            },
+            {
+              name: "performance-disable-pattern",
+              description: "Disable a performance pattern by name",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  patternName: {
+                    type: "string",
+                    description: "Name of the pattern to disable",
+                  },
+                },
+                required: ["patternName"],
+              },
+            },
+            {
+              name: "performance-enable-pattern",
+              description: "Enable a previously disabled performance pattern",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  patternName: {
+                    type: "string",
+                    description: "Name of the pattern to enable",
+                  },
+                },
+                required: ["patternName"],
+              },
+            },
           ],
         };
       } catch (error) {
@@ -1096,6 +1204,45 @@ export class CortexMCPServer {
             break;
           case "impact-stats":
             result = await this.stableWorkflowHandler.handleImpactStats();
+            break;
+          case "performance-analyze":
+            result = await this.stableWorkflowHandler.handlePerformanceAnalyze(
+              args as { files: string[] }
+            );
+            break;
+          case "performance-list-patterns":
+            result =
+              await this.stableWorkflowHandler.handlePerformanceListPatterns();
+            break;
+          case "performance-add-pattern":
+            result = await this.stableWorkflowHandler.handlePerformanceAddPattern(
+              {
+                ...(args as {
+                  name: string;
+                  category: string;
+                  description: string;
+                  regex: string;
+                  contextRegex?: string;
+                  severity: "info" | "warning" | "error";
+                  suggestion: string;
+                  filePatterns?: string[];
+                }),
+                category: (args as { category: string })
+                  .category as PerformanceCategory,
+              }
+            );
+            break;
+          case "performance-disable-pattern":
+            result =
+              await this.stableWorkflowHandler.handlePerformanceDisablePattern(
+                args as { patternName: string }
+              );
+            break;
+          case "performance-enable-pattern":
+            result =
+              await this.stableWorkflowHandler.handlePerformanceEnablePattern(
+                args as { patternName: string }
+              );
             break;
           default:
             throw new Error(`Unknown tool: ${name}`);
