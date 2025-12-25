@@ -822,6 +822,93 @@ export class CortexMCPServer {
                 required: ["package"],
               },
             },
+            {
+              name: "impact-build-graph",
+              description:
+                "Build or refresh the dependency graph for impact analysis (caches for 5 minutes)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  forceRebuild: {
+                    type: "boolean",
+                    description:
+                      "Force rebuild even if cache is valid (default: false)",
+                  },
+                },
+              },
+            },
+            {
+              name: "impact-analyze",
+              description:
+                "Analyze what files will be affected by changes to target files (shows import dependencies)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  files: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Files to analyze impact for",
+                  },
+                  includeTests: {
+                    type: "boolean",
+                    description: "Include test files in analysis (default: true)",
+                  },
+                  maxDepth: {
+                    type: "number",
+                    description:
+                      "Maximum dependency depth to traverse (default: 10)",
+                  },
+                  excludePatterns: {
+                    type: "array",
+                    items: { type: "string" },
+                    description:
+                      "Glob patterns to exclude (e.g., '**/node_modules/**')",
+                  },
+                },
+                required: ["files"],
+              },
+            },
+            {
+              name: "impact-preview",
+              description:
+                "Quick preview of change impact before modifying files (lighter than full analysis)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  files: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Files to preview impact for",
+                  },
+                },
+                required: ["files"],
+              },
+            },
+            {
+              name: "impact-validate",
+              description:
+                "Validate that changes didn't break dependencies (run after making changes)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  files: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Files that were changed",
+                  },
+                },
+                required: ["files"],
+              },
+            },
+            {
+              name: "impact-stats",
+              description:
+                "Get statistics about the dependency graph (file count, imports, exports)",
+              inputSchema: {
+                type: "object",
+                properties: {},
+              },
+            },
           ],
         };
       } catch (error) {
@@ -981,6 +1068,34 @@ export class CortexMCPServer {
             result = await this.stableWorkflowHandler.handleDependencySuggest(
               args as { package: string; version?: string }
             );
+            break;
+          case "impact-build-graph":
+            result = await this.stableWorkflowHandler.handleImpactBuildGraph(
+              args as { forceRebuild?: boolean }
+            );
+            break;
+          case "impact-analyze":
+            result = await this.stableWorkflowHandler.handleImpactAnalyze(
+              args as {
+                files: string[];
+                includeTests?: boolean;
+                maxDepth?: number;
+                excludePatterns?: string[];
+              }
+            );
+            break;
+          case "impact-preview":
+            result = await this.stableWorkflowHandler.handleImpactPreview(
+              args as { files: string[] }
+            );
+            break;
+          case "impact-validate":
+            result = await this.stableWorkflowHandler.handleImpactValidate(
+              args as { files: string[] }
+            );
+            break;
+          case "impact-stats":
+            result = await this.stableWorkflowHandler.handleImpactStats();
             break;
           default:
             throw new Error(`Unknown tool: ${name}`);

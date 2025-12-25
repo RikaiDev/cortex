@@ -30,6 +30,7 @@ import { ConstitutionHandler } from "./project/constitution-handler.js";
 import { DangerZoneHandler } from "./project/danger-zone-handler.js";
 import { EnvironmentHandler } from "./project/environment-handler.js";
 import { DependencyHandler } from "./project/dependency-handler.js";
+import { ImpactAnalysisHandler } from "./analysis/impact-analysis-handler.js";
 import type {
   MCPToolResult,
   WorkflowToolArgs,
@@ -53,6 +54,7 @@ export class StableWorkflowHandler {
   private dangerZoneHandler: DangerZoneHandler;
   private environmentHandler: EnvironmentHandler;
   private dependencyHandler: DependencyHandler;
+  private impactAnalysisHandler: ImpactAnalysisHandler;
 
   constructor(private projectRoot: string) {
     // Initialize delegated handlers
@@ -72,6 +74,7 @@ export class StableWorkflowHandler {
     this.dangerZoneHandler = new DangerZoneHandler(projectRoot);
     this.environmentHandler = new EnvironmentHandler(projectRoot);
     this.dependencyHandler = new DependencyHandler(projectRoot);
+    this.impactAnalysisHandler = new ImpactAnalysisHandler(projectRoot);
   }
 
   /**
@@ -444,5 +447,56 @@ export class StableWorkflowHandler {
     checkpointId?: string;
   }): Promise<MCPToolResult> {
     return this.checkpointHandler.handleCheckpointClear(args);
+  }
+
+  /**
+   * Handle impact-build-graph - Build dependency graph
+   * @deprecated Delegated to ImpactAnalysisHandler
+   */
+  async handleImpactBuildGraph(args: {
+    forceRebuild?: boolean;
+  }): Promise<MCPToolResult> {
+    return this.impactAnalysisHandler.handleBuildGraph(args);
+  }
+
+  /**
+   * Handle impact-analyze - Analyze change impact
+   * @deprecated Delegated to ImpactAnalysisHandler
+   */
+  async handleImpactAnalyze(args: {
+    files: string[];
+    includeTests?: boolean;
+    maxDepth?: number;
+    excludePatterns?: string[];
+  }): Promise<MCPToolResult> {
+    return this.impactAnalysisHandler.handleAnalyzeImpact(args);
+  }
+
+  /**
+   * Handle impact-preview - Preview change impact
+   * @deprecated Delegated to ImpactAnalysisHandler
+   */
+  async handleImpactPreview(args: {
+    files: string[];
+  }): Promise<MCPToolResult> {
+    return this.impactAnalysisHandler.handlePreviewImpact(args);
+  }
+
+  /**
+   * Handle impact-validate - Validate changes
+   * @deprecated Delegated to ImpactAnalysisHandler
+   */
+  async handleImpactValidate(args: {
+    files: string[];
+  }): Promise<MCPToolResult> {
+    return this.impactAnalysisHandler.handleValidateChanges(args);
+  }
+
+  /**
+   * Handle impact-stats - Get graph statistics
+   * @deprecated Delegated to ImpactAnalysisHandler
+   */
+  async handleImpactStats(): Promise<MCPToolResult> {
+    return this.impactAnalysisHandler.handleGraphStats();
   }
 }
