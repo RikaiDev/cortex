@@ -10,7 +10,7 @@ import * as path from "node:path";
 import { MCPTool } from "../../decorators/index.js";
 import { TemplateGenerator } from "../../services/template-generator.js";
 import { WorkflowService } from "../../services/workflow-service.js";
-import { MemoryService } from "../../services/memory-service.js";
+import { MemoryService } from "../../services/memory/index.js";
 import { HandlerUtils } from "../utils/handler-utils.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 

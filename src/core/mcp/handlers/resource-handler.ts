@@ -6,7 +6,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import { SnapshotService } from "../services/snapshot-service.js";
 import { TasksReader } from "../utils/tasks-reader.js";
-import { MemoryService } from "../services/memory-service.js";
+import { MemoryService } from "../services/memory/index.js";
 import { MCPResourceResult } from "../types/mcp-types.js";
 
 export class ResourceHandler {

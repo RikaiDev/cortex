@@ -8,7 +8,7 @@
 import * as path from "node:path";
 import fs from "fs-extra";
 import type { TemplateVariables } from "../types/template.js";
-import type { MemoryService } from "./memory-service.js";
+import type { MemoryService } from "./memory/index.js";
 import { CorrectionService } from "./correction-service.js";
 
 export class TemplateGenerator {

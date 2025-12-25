@@ -5,7 +5,7 @@
  */
 
 import { MCPTool } from "../../decorators/index.js";
-import { MemoryService } from "../../services/memory-service.js";
+import { MemoryService } from "../../services/memory/index.js";
 import { CorrectionService } from "../../services/correction-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 

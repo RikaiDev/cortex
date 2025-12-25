@@ -5,7 +5,7 @@
  */
 
 import { MCPTool } from "../../decorators/index.js";
-import { ImpactAnalyzer } from "../../services/impact-analyzer.js";
+import { ImpactAnalyzer } from "../../services/impact-analysis/index.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { ImpactAnalysisOptions } from "../../types/change-impact.js";
 

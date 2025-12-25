@@ -130,7 +130,7 @@ export class WorkflowService {
     // Trigger learning extraction when workflow completes
     if (workflow.status === "completed") {
       try {
-        const { MemoryService } = await import("./memory-service.js");
+        const { MemoryService } = await import("./memory/index.js");
         const memoryService = new MemoryService(this.projectRoot);
         await memoryService.extractLearnings(workflowId);
       } catch (error) {

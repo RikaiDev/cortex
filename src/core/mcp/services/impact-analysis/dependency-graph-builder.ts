@@ -1,7 +1,7 @@
 /**
- * Impact Analyzer Service
+ * Dependency Graph Builder
  *
- * Analyzes code dependencies and impact of changes
+ * Builds and manages the dependency graph for code analysis
  */
 
 import * as path from "node:path";
@@ -11,17 +11,20 @@ import type {
   DependencyNode,
   ImportReference,
   ExportReference,
-  ChangeImpactResult,
-  ImpactDetail,
-  BreakingChange,
-  ImpactAnalysisOptions,
-} from "../types/change-impact.js";
+} from "../../types/change-impact.js";
 
-export class ImpactAnalyzer {
+export class DependencyGraphBuilder {
   private graph: DependencyGraph | null = null;
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
   constructor(private projectRoot: string) {}
+
+  /**
+   * Get the current graph (may be null if not built)
+   */
+  getGraph(): DependencyGraph | null {
+    return this.graph;
+  }
 
   /**
    * Build or refresh the dependency graph
@@ -70,212 +73,9 @@ export class ImpactAnalyzer {
   }
 
   /**
-   * Analyze impact of changing specific files
-   */
-  async analyzeImpact(
-    targetFiles: string[],
-    options: ImpactAnalysisOptions = {}
-  ): Promise<ChangeImpactResult> {
-    // Ensure graph is built
-    await this.buildGraph();
-
-    if (!this.graph) {
-      throw new Error("Failed to build dependency graph");
-    }
-
-    const affectedFiles = new Set<string>();
-    const details: ImpactDetail[] = [];
-    const breakingChanges: BreakingChange[] = [];
-
-    // Normalize target files to relative paths
-    const normalizedTargets = targetFiles.map((f) => this.normalizePath(f));
-
-    // Find all files that depend on the targets
-    const maxDepth = options.maxDepth || 10;
-    const visited = new Set<string>();
-
-    const traverse = (file: string, depth: number): void => {
-      if (depth > maxDepth || visited.has(file)) return;
-      visited.add(file);
-
-      const deps = this.graph!.dependents.get(file);
-      if (!deps) return;
-
-      for (const dependent of deps) {
-        // Skip if excluded
-        if (this.shouldExclude(dependent, options.excludePatterns)) {
-          continue;
-        }
-
-        // Skip test files if requested
-        if (
-          !options.includeTests &&
-          (dependent.includes(".test.") || dependent.includes(".spec."))
-        ) {
-          continue;
-        }
-
-        affectedFiles.add(dependent);
-
-        // Get import details
-        const node = this.graph!.nodes.get(dependent);
-        if (node) {
-          const relevantImports = node.imports.filter((imp) => {
-            const resolved = this.resolveImportPath(dependent, imp.source);
-            return normalizedTargets.includes(resolved);
-          });
-
-          if (relevantImports.length > 0) {
-            details.push({
-              file: dependent,
-              reason: `Imports from ${file}`,
-              importedSymbols: relevantImports.flatMap((i) => i.specifiers),
-              usageCount: relevantImports.length,
-              severity: "warning",
-            });
-          }
-        }
-
-        // Recursively find dependents
-        traverse(dependent, depth + 1);
-      }
-    };
-
-    // Traverse from each target file
-    for (const target of normalizedTargets) {
-      traverse(target, 0);
-    }
-
-    // Determine impact level
-    const impactLevel = this.calculateImpactLevel(affectedFiles.size);
-
-    // Generate suggestions
-    const suggestions = this.generateSuggestions(
-      normalizedTargets,
-      Array.from(affectedFiles)
-    );
-
-    return {
-      targetFiles: normalizedTargets,
-      affectedFiles: Array.from(affectedFiles).sort(),
-      impactLevel,
-      details,
-      suggestions,
-      breakingChanges,
-    };
-  }
-
-  /**
-   * Detect breaking changes between old and new versions
-   */
-  async detectBreakingChanges(
-    file: string,
-    oldContent: string,
-    newContent: string
-  ): Promise<BreakingChange[]> {
-    const breakingChanges: BreakingChange[] = [];
-
-    // Parse old and new exports
-    const oldExports = this.parseExports(oldContent);
-    const newExports = this.parseExports(newContent);
-
-    const newExportNames = new Set(newExports.map((e) => e.name));
-
-    // Find removed exports
-    for (const oldExport of oldExports) {
-      if (!newExportNames.has(oldExport.name)) {
-        // Get files that import this symbol
-        const affectedFiles = await this.findFilesImporting(
-          file,
-          oldExport.name
-        );
-
-        if (affectedFiles.length > 0) {
-          breakingChanges.push({
-            file,
-            symbol: oldExport.name,
-            changeType: "removed",
-            affectedFiles,
-            suggestion: `Export '${oldExport.name}' was removed. Consider deprecating instead or updating all imports.`,
-          });
-        }
-      }
-    }
-
-    // Detect signature changes (simplified - real implementation would use AST)
-    for (const newExport of newExports) {
-      const oldExport = oldExports.find((e) => e.name === newExport.name);
-      if (oldExport && oldExport.type === "function") {
-        // Very basic signature change detection
-        const oldLine = oldContent.split("\n")[oldExport.line - 1] || "";
-        const newLine = newContent.split("\n")[newExport.line - 1] || "";
-
-        // Check parameter count (rough heuristic)
-        const oldParamCount = (oldLine.match(/,/g) || []).length + 1;
-        const newParamCount = (newLine.match(/,/g) || []).length + 1;
-
-        if (oldParamCount !== newParamCount) {
-          const affectedFiles = await this.findFilesImporting(
-            file,
-            newExport.name
-          );
-
-          if (affectedFiles.length > 0) {
-            breakingChanges.push({
-              file,
-              symbol: newExport.name,
-              changeType: "signature-changed",
-              affectedFiles,
-              suggestion: `Function signature changed. Review all ${affectedFiles.length} call sites.`,
-            });
-          }
-        }
-      }
-    }
-
-    return breakingChanges;
-  }
-
-  /**
-   * Find all files that import a specific symbol from a file
-   */
-  private async findFilesImporting(
-    sourceFile: string,
-    symbol: string
-  ): Promise<string[]> {
-    await this.buildGraph();
-
-    if (!this.graph) return [];
-
-    const normalizedSource = this.normalizePath(sourceFile);
-    const importers: string[] = [];
-
-    const dependents = this.graph.dependents.get(normalizedSource);
-    if (!dependents) return [];
-
-    for (const dependent of dependents) {
-      const node = this.graph.nodes.get(dependent);
-      if (!node) continue;
-
-      for (const imp of node.imports) {
-        const resolved = this.resolveImportPath(dependent, imp.source);
-        if (
-          resolved === normalizedSource &&
-          (imp.specifiers.includes(symbol) || imp.importType === "namespace")
-        ) {
-          importers.push(dependent);
-          break;
-        }
-      }
-    }
-
-    return importers;
-  }
-
-  /**
    * Parse a file to extract imports and exports
    */
-  private async parseFile(file: string): Promise<DependencyNode | null> {
+  async parseFile(file: string): Promise<DependencyNode | null> {
     const fullPath = path.join(this.projectRoot, file);
 
     if (!(await fs.pathExists(fullPath))) return null;
@@ -299,7 +99,7 @@ export class ImpactAnalyzer {
   /**
    * Parse import statements from file content
    */
-  private parseImports(content: string): ImportReference[] {
+  parseImports(content: string): ImportReference[] {
     const imports: ImportReference[] = [];
     const lines = content.split("\n");
 
@@ -375,7 +175,7 @@ export class ImpactAnalyzer {
   /**
    * Parse export statements from file content
    */
-  private parseExports(content: string): ExportReference[] {
+  parseExports(content: string): ExportReference[] {
     const exports: ExportReference[] = [];
     const lines = content.split("\n");
 
@@ -546,7 +346,7 @@ export class ImpactAnalyzer {
   /**
    * Resolve import path relative to importing file
    */
-  private resolveImportPath(importerFile: string, importPath: string): string {
+  resolveImportPath(importerFile: string, importPath: string): string {
     // Skip node_modules imports
     if (!importPath.startsWith(".")) {
       return importPath;
@@ -579,80 +379,11 @@ export class ImpactAnalyzer {
   /**
    * Normalize file path to be relative to project root
    */
-  private normalizePath(file: string): string {
+  normalizePath(file: string): string {
     if (path.isAbsolute(file)) {
       return path.relative(this.projectRoot, file);
     }
     return file;
-  }
-
-  /**
-   * Calculate impact level based on affected files count
-   */
-  private calculateImpactLevel(
-    affectedCount: number
-  ): "low" | "medium" | "high" | "critical" {
-    if (affectedCount === 0) return "low";
-    if (affectedCount <= 3) return "low";
-    if (affectedCount <= 10) return "medium";
-    if (affectedCount <= 25) return "high";
-    return "critical";
-  }
-
-  /**
-   * Generate suggestions based on impact analysis
-   */
-  private generateSuggestions(
-    targetFiles: string[],
-    affectedFiles: string[]
-  ): string[] {
-    const suggestions: string[] = [];
-
-    if (affectedFiles.length === 0) {
-      suggestions.push("No files depend on the target files. Safe to modify.");
-      return suggestions;
-    }
-
-    suggestions.push(
-      `Review ${affectedFiles.length} affected file${affectedFiles.length > 1 ? "s" : ""} after making changes.`
-    );
-
-    // Check for test files
-    const testFiles = affectedFiles.filter(
-      (f) => f.includes(".test.") || f.includes(".spec.")
-    );
-    if (testFiles.length > 0) {
-      suggestions.push(
-        `Update ${testFiles.length} test file${testFiles.length > 1 ? "s" : ""} to match changes.`
-      );
-    }
-
-    // Check for high-impact files (many dependents)
-    if (affectedFiles.length > 10) {
-      suggestions.push(
-        "Consider making changes backward-compatible to minimize breaking changes."
-      );
-      suggestions.push(
-        "Consider adding deprecation warnings before removing functionality."
-      );
-    }
-
-    return suggestions;
-  }
-
-  /**
-   * Check if file should be excluded
-   */
-  private shouldExclude(file: string, patterns: string[] | undefined): boolean {
-    if (!patterns || patterns.length === 0) return false;
-
-    return patterns.some((pattern) => {
-      // Simple glob-like matching
-      const regex = new RegExp(
-        pattern.replace(/\*/g, ".*").replace(/\?/g, ".")
-      );
-      return regex.test(file);
-    });
   }
 
   /**
