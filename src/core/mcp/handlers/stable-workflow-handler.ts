@@ -27,6 +27,7 @@ import { ImplementationValidatorHandler } from "./validation/implementation-vali
 import { ReleaseHandler } from "./project/release-handler.js";
 import { OnboardHandler } from "./project/onboard-handler.js";
 import { ConstitutionHandler } from "./project/constitution-handler.js";
+import { DangerZoneHandler } from "./project/danger-zone-handler.js";
 import type {
   MCPToolResult,
   WorkflowToolArgs,
@@ -47,6 +48,7 @@ export class StableWorkflowHandler {
   private releaseHandler: ReleaseHandler;
   private onboardHandler: OnboardHandler;
   private constitutionHandler: ConstitutionHandler;
+  private dangerZoneHandler: DangerZoneHandler;
 
   constructor(private projectRoot: string) {
     // Initialize delegated handlers
@@ -63,6 +65,7 @@ export class StableWorkflowHandler {
     this.releaseHandler = new ReleaseHandler(projectRoot);
     this.onboardHandler = new OnboardHandler(projectRoot);
     this.constitutionHandler = new ConstitutionHandler(projectRoot);
+    this.dangerZoneHandler = new DangerZoneHandler(projectRoot);
   }
 
   /**
@@ -273,6 +276,38 @@ export class StableWorkflowHandler {
    */
   async handleConstitution(args: { updates?: string }): Promise<MCPToolResult> {
     return this.constitutionHandler.handleConstitution(args);
+  }
+
+  /**
+   * Handle mark-danger - Mark a code region as protected
+   * @deprecated Delegated to DangerZoneHandler
+   */
+  async handleMarkDanger(args: {
+    file: string;
+    startLine?: number;
+    endLine?: number;
+    reason: string;
+  }): Promise<MCPToolResult> {
+    return this.dangerZoneHandler.handleMarkDanger(args);
+  }
+
+  /**
+   * Handle unmark-danger - Remove protection from a code region
+   * @deprecated Delegated to DangerZoneHandler
+   */
+  async handleUnmarkDanger(args: {
+    file: string;
+    line?: number;
+  }): Promise<MCPToolResult> {
+    return this.dangerZoneHandler.handleUnmarkDanger(args);
+  }
+
+  /**
+   * Handle list-dangers - List all protected danger zones
+   * @deprecated Delegated to DangerZoneHandler
+   */
+  async handleListDangers(): Promise<MCPToolResult> {
+    return this.dangerZoneHandler.handleListDangerZones();
   }
 
   /**

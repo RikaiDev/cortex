@@ -1,6 +1,8 @@
 import fs from "fs-extra";
 import * as path from "path";
 import { execSync } from "child_process";
+import { DangerZoneService } from "./danger-zone-service.js";
+import type { DangerZone } from "../types/danger-zone.js";
 
 export interface ValidationResult {
   isComplete: boolean;
@@ -8,6 +10,8 @@ export interface ValidationResult {
   mockDetected: boolean;
   scaffoldDetected: boolean;
   unusedCodeDetected: boolean;
+  dangerZoneDetected: boolean;
+  dangerZones: DangerZone[];
 }
 
 export interface ValidationIssue {
@@ -19,13 +23,21 @@ export interface ValidationIssue {
 }
 
 export class ImplementationValidator {
-  constructor(private projectRoot: string) {}
+  private dangerZoneService: DangerZoneService;
+
+  constructor(private projectRoot: string) {
+    this.dangerZoneService = new DangerZoneService(projectRoot);
+  }
 
   /**
    * Validate implementation completeness
    */
   async validateImplementation(files: string[]): Promise<ValidationResult> {
     const issues: ValidationIssue[] = [];
+
+    // Check for danger zones FIRST (most critical)
+    const dangerZoneCheck =
+      await this.dangerZoneService.checkChangedFiles(files);
 
     // Scan for mocks/scaffolds
     const mockIssues = await this.scanForMocks(files);
@@ -36,11 +48,13 @@ export class ImplementationValidator {
     issues.push(...unusedIssues);
 
     const result: ValidationResult = {
-      isComplete: issues.length === 0,
+      isComplete: issues.length === 0 && !dangerZoneCheck.hasDangerZones,
       issues,
       mockDetected: mockIssues.some((i) => i.type === "mock"),
       scaffoldDetected: mockIssues.some((i) => i.type === "scaffold"),
       unusedCodeDetected: unusedIssues.length > 0,
+      dangerZoneDetected: dangerZoneCheck.hasDangerZones,
+      dangerZones: dangerZoneCheck.zones,
     };
 
     return result;

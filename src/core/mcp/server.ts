@@ -620,6 +620,65 @@ export class CortexMCPServer {
                 },
               },
             },
+            {
+              name: "mark-danger",
+              description:
+                "Mark a code region as protected (danger zone) that should not be modified without explicit user confirmation. Can mark entire files or specific line ranges.",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  file: {
+                    type: "string",
+                    description: "File path relative to project root",
+                  },
+                  startLine: {
+                    type: "number",
+                    description:
+                      "Starting line number (optional, protects entire file if not provided)",
+                  },
+                  endLine: {
+                    type: "number",
+                    description:
+                      "Ending line number (optional, single line if not provided)",
+                  },
+                  reason: {
+                    type: "string",
+                    description:
+                      "Why this region is protected (e.g., 'Production config - manually tuned', 'Critical auth logic')",
+                  },
+                },
+                required: ["file", "reason"],
+              },
+            },
+            {
+              name: "unmark-danger",
+              description:
+                "Remove danger zone protection from a code region",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  file: {
+                    type: "string",
+                    description: "File path relative to project root",
+                  },
+                  line: {
+                    type: "number",
+                    description:
+                      "Specific line number (optional, removes all protections for file if not provided)",
+                  },
+                },
+                required: ["file"],
+              },
+            },
+            {
+              name: "list-dangers",
+              description:
+                "List all protected danger zones (from both config and code comments)",
+              inputSchema: {
+                type: "object",
+                properties: {},
+              },
+            },
           ],
         };
       } catch (error) {
@@ -713,6 +772,24 @@ export class CortexMCPServer {
             result = await this.stableWorkflowHandler.handleCheckpointClear(
               args as { checkpointId?: string }
             );
+            break;
+          case "mark-danger":
+            result = await this.stableWorkflowHandler.handleMarkDanger(
+              args as {
+                file: string;
+                startLine?: number;
+                endLine?: number;
+                reason: string;
+              }
+            );
+            break;
+          case "unmark-danger":
+            result = await this.stableWorkflowHandler.handleUnmarkDanger(
+              args as { file: string; line?: number }
+            );
+            break;
+          case "list-dangers":
+            result = await this.stableWorkflowHandler.handleListDangers();
             break;
           default:
             throw new Error(`Unknown tool: ${name}`);

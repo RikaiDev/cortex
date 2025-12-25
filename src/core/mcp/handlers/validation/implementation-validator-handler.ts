@@ -20,12 +20,36 @@ export class ImplementationValidatorHandler {
       const validator = new ImplementationValidator(this.projectRoot);
       const result = await validator.validateImplementation(args.changedFiles);
 
+      // Check for danger zones FIRST (highest priority)
+      if (result.dangerZoneDetected) {
+        const dangerZoneText = result.dangerZones
+          .map((zone) => {
+            const location =
+              zone.endLine && zone.endLine !== zone.startLine
+                ? `${zone.file}:${zone.startLine}-${zone.endLine}`
+                : `${zone.file}:${zone.startLine}`;
+
+            return `📍 **${location}**\n   Reason: ${zone.reason}\n   Source: ${zone.markedBy === "comment" ? "Code comment" : "Config file"}`;
+          })
+          .join("\n\n");
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `⚠️  **DANGER ZONE DETECTED - PROTECTED CODE REGIONS**\n\nThe following protected regions will be affected by your changes:\n\n${dangerZoneText}\n\n⚠️  **CRITICAL WARNING**: These regions are marked as protected and should not be modified without careful consideration.\n\n**REQUIRED ACTION**: \n- Review the reasons for protection above\n- Confirm with the user that modifying these regions is intentional\n- If confirmed, you may proceed with EXTREME CAUTION\n- If not confirmed, abort the changes to these files`,
+            },
+          ],
+          isError: true,
+        };
+      }
+
       if (result.isComplete) {
         return {
           content: [
             {
               type: "text",
-              text: "✅ Implementation validation passed:\n- No TODO/FIXME comments\n- No mock data or placeholders\n- No unused code (Knip)\n- No scaffold patterns\n\nReady to proceed.",
+              text: "✅ Implementation validation passed:\n- No TODO/FIXME comments\n- No mock data or placeholders\n- No unused code (Knip)\n- No scaffold patterns\n- No danger zones affected\n\nReady to proceed.",
             },
           ],
         };
