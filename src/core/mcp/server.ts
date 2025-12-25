@@ -36,6 +36,7 @@ import { EnvironmentHandler } from "./handlers/project/environment-handler.js";
 import { ImpactAnalysisHandler } from "./handlers/analysis/impact-analysis-handler.js";
 import { PerformanceAnalysisHandler } from "./handlers/analysis/performance-analysis-handler.js";
 import { TestCoverageHandler } from "./handlers/analysis/test-coverage-handler.js";
+import { CIPipelineHandler } from "./handlers/analysis/ci-pipeline-handler.js";
 import { DangerZoneHandler } from "./handlers/project/danger-zone-handler.js";
 import { SpecHandler } from "./handlers/workflow/spec-handler.js";
 import { PlanningHandler } from "./handlers/workflow/planning-handler.js";
@@ -125,6 +126,7 @@ export class CortexMCPServer {
       new PerformanceAnalysisHandler(this.projectRoot)
     );
     this.registry.registerHandler(new TestCoverageHandler(this.projectRoot));
+    this.registry.registerHandler(new CIPipelineHandler(this.projectRoot));
     this.registry.registerHandler(new DangerZoneHandler(this.projectRoot));
     this.registry.registerHandler(new SpecHandler(this.projectRoot));
     this.registry.registerHandler(new PlanningHandler(this.projectRoot));
