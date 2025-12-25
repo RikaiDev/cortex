@@ -24,7 +24,6 @@ import {
 
 import "reflect-metadata";
 import { CortexAI } from "../index.js";
-import { ToolHandler } from "./handlers/tool-handler.js";
 import { ResourceHandler } from "./handlers/resource-handler.js";
 import { MCPToolRegistry } from "./registry/index.js";
 
@@ -81,7 +80,6 @@ export class CortexMCPServer {
   private server: Server;
   private cortex: CortexAI;
   private projectRoot: string;
-  private toolHandler: ToolHandler;
   private resourceHandler: ResourceHandler;
   private registry: MCPToolRegistry;
 
@@ -102,7 +100,6 @@ export class CortexMCPServer {
 
     this.projectRoot = this.detectProjectRoot();
     this.cortex = new CortexAI(this.projectRoot);
-    this.toolHandler = new ToolHandler(this.projectRoot, this.cortex);
     this.resourceHandler = new ResourceHandler(this.projectRoot);
 
     // Initialize registry and register all domain handlers
