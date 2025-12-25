@@ -28,6 +28,7 @@ import { ReleaseHandler } from "./project/release-handler.js";
 import { OnboardHandler } from "./project/onboard-handler.js";
 import { ConstitutionHandler } from "./project/constitution-handler.js";
 import { DangerZoneHandler } from "./project/danger-zone-handler.js";
+import { EnvironmentHandler } from "./project/environment-handler.js";
 import type {
   MCPToolResult,
   WorkflowToolArgs,
@@ -49,6 +50,7 @@ export class StableWorkflowHandler {
   private onboardHandler: OnboardHandler;
   private constitutionHandler: ConstitutionHandler;
   private dangerZoneHandler: DangerZoneHandler;
+  private environmentHandler: EnvironmentHandler;
 
   constructor(private projectRoot: string) {
     // Initialize delegated handlers
@@ -66,6 +68,7 @@ export class StableWorkflowHandler {
     this.onboardHandler = new OnboardHandler(projectRoot);
     this.constitutionHandler = new ConstitutionHandler(projectRoot);
     this.dangerZoneHandler = new DangerZoneHandler(projectRoot);
+    this.environmentHandler = new EnvironmentHandler(projectRoot);
   }
 
   /**
@@ -308,6 +311,54 @@ export class StableWorkflowHandler {
    */
   async handleListDangers(): Promise<MCPToolResult> {
     return this.dangerZoneHandler.handleListDangerZones();
+  }
+
+  /**
+   * Handle environment-detect - Auto-detect environments from project files
+   * @deprecated Delegated to EnvironmentHandler
+   */
+  async handleEnvironmentDetect(): Promise<MCPToolResult> {
+    return this.environmentHandler.handleDetectEnvironments();
+  }
+
+  /**
+   * Handle environment-add - Add or update environment profile
+   * @deprecated Delegated to EnvironmentHandler
+   */
+  async handleEnvironmentAdd(args: {
+    name: string;
+    description?: string;
+    nodeVersion?: string;
+    envVarsMissing?: string[];
+    constraints?: string[];
+  }): Promise<MCPToolResult> {
+    return this.environmentHandler.handleAddEnvironment(args);
+  }
+
+  /**
+   * Handle environment-remove - Remove environment profile
+   * @deprecated Delegated to EnvironmentHandler
+   */
+  async handleEnvironmentRemove(args: { name: string }): Promise<MCPToolResult> {
+    return this.environmentHandler.handleRemoveEnvironment(args);
+  }
+
+  /**
+   * Handle environment-list - List all environment profiles
+   * @deprecated Delegated to EnvironmentHandler
+   */
+  async handleEnvironmentList(): Promise<MCPToolResult> {
+    return this.environmentHandler.handleListEnvironments();
+  }
+
+  /**
+   * Handle environment-check - Check code compatibility with environments
+   * @deprecated Delegated to EnvironmentHandler
+   */
+  async handleEnvironmentCheck(args: {
+    files: string[];
+  }): Promise<MCPToolResult> {
+    return this.environmentHandler.handleCheckCompatibility(args);
   }
 
   /**

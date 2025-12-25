@@ -44,12 +44,58 @@ export class ImplementationValidatorHandler {
         };
       }
 
+      // Check for environment compatibility issues (second priority after danger zones)
+      if (result.environmentIssuesDetected) {
+        const errorCount = result.environmentWarnings.filter(
+          (w) => w.severity === "error"
+        ).length;
+
+        const warningsByEnv = result.environmentWarnings.reduce(
+          (acc, warning) => {
+            if (!acc[warning.environment]) {
+              acc[warning.environment] = [];
+            }
+            acc[warning.environment].push(warning);
+            return acc;
+          },
+          {} as Record<string, typeof result.environmentWarnings>
+        );
+
+        const warningsText = Object.entries(warningsByEnv)
+          .map(([env, warnings]) => {
+            const warningsList = warnings
+              .map((w) => {
+                const icon =
+                  w.severity === "error"
+                    ? "❌"
+                    : w.severity === "warning"
+                      ? "⚠️"
+                      : "ℹ️";
+                return `  ${icon} **${w.type}**: ${w.message}\n     ${w.location ? `File: ${w.location.file}` : ""}\n     ${w.suggestion ? `💡 ${w.suggestion}` : ""}`;
+              })
+              .join("\n\n");
+
+            return `### ${env}\n\n${warningsList}`;
+          })
+          .join("\n\n");
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `⚠️  **Environment Compatibility Issues**\n\n${warningsText}\n\n**Summary:**\n- Errors: ${errorCount}\n- Warnings: ${result.environmentWarnings.length - errorCount}\n\n${errorCount > 0 ? "**REQUIRED ACTION**: Fix all errors before deploying to these environments." : "**Warnings found**: Review and address if applicable."}`,
+            },
+          ],
+          isError: errorCount > 0,
+        };
+      }
+
       if (result.isComplete) {
         return {
           content: [
             {
               type: "text",
-              text: "✅ Implementation validation passed:\n- No TODO/FIXME comments\n- No mock data or placeholders\n- No unused code (Knip)\n- No scaffold patterns\n- No danger zones affected\n\nReady to proceed.",
+              text: "✅ Implementation validation passed:\n- No TODO/FIXME comments\n- No mock data or placeholders\n- No unused code (Knip)\n- No scaffold patterns\n- No danger zones affected\n- No environment compatibility issues\n\nReady to proceed.",
             },
           ],
         };

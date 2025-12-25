@@ -679,6 +679,90 @@ export class CortexMCPServer {
                 properties: {},
               },
             },
+            {
+              name: "environment-detect",
+              description:
+                "Auto-detect environment profiles from project files (package.json, Dockerfile, CI configs, deployment configs)",
+              inputSchema: {
+                type: "object",
+                properties: {},
+              },
+            },
+            {
+              name: "environment-add",
+              description:
+                "Add or update an environment profile with runtime constraints",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  name: {
+                    type: "string",
+                    description:
+                      "Environment name (e.g., production, staging, ci)",
+                  },
+                  description: {
+                    type: "string",
+                    description: "Description of this environment",
+                  },
+                  nodeVersion: {
+                    type: "string",
+                    description:
+                      "Node.js version constraint (e.g., '18.x', '>=16.0.0')",
+                  },
+                  envVarsMissing: {
+                    type: "array",
+                    items: { type: "string" },
+                    description:
+                      "Environment variables that are NOT available in this environment",
+                  },
+                  constraints: {
+                    type: "array",
+                    items: { type: "string" },
+                    description:
+                      "General constraints (e.g., 'Read-only filesystem', 'Serverless 10s timeout')",
+                  },
+                },
+                required: ["name"],
+              },
+            },
+            {
+              name: "environment-remove",
+              description: "Remove an environment profile",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  name: {
+                    type: "string",
+                    description: "Environment name to remove",
+                  },
+                },
+                required: ["name"],
+              },
+            },
+            {
+              name: "environment-list",
+              description: "List all configured environment profiles",
+              inputSchema: {
+                type: "object",
+                properties: {},
+              },
+            },
+            {
+              name: "environment-check",
+              description:
+                "Check code compatibility with all environment profiles (detects version issues, missing env vars, filesystem constraints)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  files: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Files to check for compatibility",
+                  },
+                },
+                required: ["files"],
+              },
+            },
           ],
         };
       } catch (error) {
@@ -790,6 +874,35 @@ export class CortexMCPServer {
             break;
           case "list-dangers":
             result = await this.stableWorkflowHandler.handleListDangers();
+            break;
+          case "environment-detect":
+            result =
+              await this.stableWorkflowHandler.handleEnvironmentDetect();
+            break;
+          case "environment-add":
+            result = await this.stableWorkflowHandler.handleEnvironmentAdd(
+              args as {
+                name: string;
+                description?: string;
+                nodeVersion?: string;
+                envVarsMissing?: string[];
+                constraints?: string[];
+              }
+            );
+            break;
+          case "environment-remove":
+            result = await this.stableWorkflowHandler.handleEnvironmentRemove(
+              args as { name: string }
+            );
+            break;
+          case "environment-list":
+            result =
+              await this.stableWorkflowHandler.handleEnvironmentList();
+            break;
+          case "environment-check":
+            result = await this.stableWorkflowHandler.handleEnvironmentCheck(
+              args as { files: string[] }
+            );
             break;
           default:
             throw new Error(`Unknown tool: ${name}`);

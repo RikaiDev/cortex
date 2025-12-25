@@ -2,7 +2,9 @@ import fs from "fs-extra";
 import * as path from "path";
 import { execSync } from "child_process";
 import { DangerZoneService } from "./danger-zone-service.js";
+import { EnvironmentService } from "./environment-service.js";
 import type { DangerZone } from "../types/danger-zone.js";
+import type { EnvironmentWarning } from "../types/environment.js";
 
 export interface ValidationResult {
   isComplete: boolean;
@@ -12,6 +14,8 @@ export interface ValidationResult {
   unusedCodeDetected: boolean;
   dangerZoneDetected: boolean;
   dangerZones: DangerZone[];
+  environmentIssuesDetected: boolean;
+  environmentWarnings: EnvironmentWarning[];
 }
 
 export interface ValidationIssue {
@@ -24,9 +28,11 @@ export interface ValidationIssue {
 
 export class ImplementationValidator {
   private dangerZoneService: DangerZoneService;
+  private environmentService: EnvironmentService;
 
   constructor(private projectRoot: string) {
     this.dangerZoneService = new DangerZoneService(projectRoot);
+    this.environmentService = new EnvironmentService(projectRoot);
   }
 
   /**
@@ -39,6 +45,13 @@ export class ImplementationValidator {
     const dangerZoneCheck =
       await this.dangerZoneService.checkChangedFiles(files);
 
+    // Check environment compatibility
+    const environmentCheck =
+      await this.environmentService.checkCompatibility(files);
+    const environmentErrors = environmentCheck.warnings.filter(
+      (w) => w.severity === "error"
+    );
+
     // Scan for mocks/scaffolds
     const mockIssues = await this.scanForMocks(files);
     issues.push(...mockIssues);
@@ -48,13 +61,18 @@ export class ImplementationValidator {
     issues.push(...unusedIssues);
 
     const result: ValidationResult = {
-      isComplete: issues.length === 0 && !dangerZoneCheck.hasDangerZones,
+      isComplete:
+        issues.length === 0 &&
+        !dangerZoneCheck.hasDangerZones &&
+        environmentErrors.length === 0,
       issues,
       mockDetected: mockIssues.some((i) => i.type === "mock"),
       scaffoldDetected: mockIssues.some((i) => i.type === "scaffold"),
       unusedCodeDetected: unusedIssues.length > 0,
       dangerZoneDetected: dangerZoneCheck.hasDangerZones,
       dangerZones: dangerZoneCheck.zones,
+      environmentIssuesDetected: environmentCheck.warnings.length > 0,
+      environmentWarnings: environmentCheck.warnings,
     };
 
     return result;
