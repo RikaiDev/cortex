@@ -6,6 +6,7 @@
  * - list: List all workflows
  */
 
+import { MCPTool } from "../../decorators/index.js";
 import { WorkflowService } from "../../services/workflow-service.js";
 import { HandlerUtils } from "../utils/handler-utils.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
@@ -27,6 +28,20 @@ export class StatusHandler {
   /**
    * Handle status - Get workflow status
    */
+  @MCPTool({
+    name: "status",
+    description:
+      "Get detailed status of a workflow (progress, current phase, next steps)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        workflowId: {
+          type: "string",
+          description: "Workflow ID (optional, uses latest if not provided)",
+        },
+      },
+    },
+  })
   async handleStatus(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
       const workflowId = await this.ensureWorkflowId(args.workflowId);
@@ -70,6 +85,19 @@ ${status.workflow.currentRole || "None assigned"}`,
   /**
    * Handle list - List workflows
    */
+  @MCPTool({
+    name: "list",
+    description: "List all active workflows in the project",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: {
+          type: "number",
+          description: "Maximum number of workflows to list (default: 10)",
+        },
+      },
+    },
+  })
   async handleList(args: { limit?: number }): Promise<MCPToolResult> {
     try {
       const workflows = await this.workflowService.listWorkflows(

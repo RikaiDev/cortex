@@ -265,7 +265,8 @@ export class PerformanceAnalyzer {
         description: "Sequential await calls in loop (should use Promise.all)",
         regex: "(for|while)\\s*\\([^)]*\\)\\s*\\{[^}]*await\\s+",
         severity: "warning",
-        suggestion: "Use Promise.all() to parallelize independent async operations.",
+        suggestion:
+          "Use Promise.all() to parallelize independent async operations.",
         filePatterns: ["*.ts", "*.js", "*.tsx", "*.jsx"],
       },
 
@@ -273,7 +274,8 @@ export class PerformanceAnalyzer {
       {
         name: "missing-dependency-array",
         category: "rendering",
-        description: "useEffect without dependency array (runs on every render)",
+        description:
+          "useEffect without dependency array (runs on every render)",
         regex: "useEffect\\s*\\([^,)]+\\)\\s*(?!,)",
         severity: "warning",
         suggestion:
@@ -309,7 +311,8 @@ export class PerformanceAnalyzer {
         description: "Missing key prop in mapped list items",
         regex: "\\.map\\([^}]*return\\s*<[^>]*(?!key=)",
         severity: "warning",
-        suggestion: "Add unique 'key' prop to list items for efficient rendering.",
+        suggestion:
+          "Add unique 'key' prop to list items for efficient rendering.",
         filePatterns: ["*.tsx", "*.jsx"],
       },
 
@@ -328,8 +331,10 @@ export class PerformanceAnalyzer {
       {
         name: "unhandled-promise",
         category: "async",
-        description: "Promise without await or .catch() (potential unhandled rejection)",
-        regex: "\\b(?<!await\\s)\\w+\\.(?:query|find|fetch|request)\\([^)]*\\)(?!\\.(then|catch|finally))",
+        description:
+          "Promise without await or .catch() (potential unhandled rejection)",
+        regex:
+          "\\b(?<!await\\s)\\w+\\.(?:query|find|fetch|request)\\([^)]*\\)(?!\\.(then|catch|finally))",
         severity: "warning",
         suggestion: "Add await or .catch() to handle promise rejection.",
         filePatterns: ["*.ts", "*.js", "*.tsx", "*.jsx"],
@@ -341,7 +346,8 @@ export class PerformanceAnalyzer {
         category: "computation",
         description:
           "Large array operation without streaming (filter + map + filter)",
-        regex: "\\.(filter|map|reduce)\\([^)]+\\)\\.(filter|map|reduce)\\([^)]+\\)\\.(filter|map|reduce)",
+        regex:
+          "\\.(filter|map|reduce)\\([^)]+\\)\\.(filter|map|reduce)\\([^)]+\\)\\.(filter|map|reduce)",
         severity: "info",
         suggestion:
           "Consider using a single reduce or streaming for better performance.",
@@ -351,7 +357,8 @@ export class PerformanceAnalyzer {
         name: "json-parse-in-loop",
         category: "computation",
         description: "JSON.parse inside a loop (expensive operation)",
-        regex: "(for|while|forEach|map)\\s*\\([^)]*\\)\\s*\\{[^}]*JSON\\.parse\\s*\\(",
+        regex:
+          "(for|while|forEach|map)\\s*\\([^)]*\\)\\s*\\{[^}]*JSON\\.parse\\s*\\(",
         severity: "warning",
         suggestion: "Parse JSON outside loops when possible.",
         filePatterns: ["*.ts", "*.js"],
@@ -363,7 +370,8 @@ export class PerformanceAnalyzer {
         category: "resource-leak",
         description:
           "addEventListener without corresponding removeEventListener",
-        regex: "addEventListener\\s*\\([^)]+\\)(?![\\s\\S]{0,500}removeEventListener)",
+        regex:
+          "addEventListener\\s*\\([^)]+\\)(?![\\s\\S]{0,500}removeEventListener)",
         contextRegex: "(?!return\\s*\\(\\)\\s*=>)",
         severity: "warning",
         suggestion:
@@ -374,7 +382,8 @@ export class PerformanceAnalyzer {
         name: "unclosed-db-connection",
         category: "resource-leak",
         description: "Database connection opened but not closed",
-        regex: "\\.connect\\s*\\((?![\\s\\S]{0,1000}\\.(close|end|disconnect)\\s*\\()",
+        regex:
+          "\\.connect\\s*\\((?![\\s\\S]{0,1000}\\.(close|end|disconnect)\\s*\\()",
         severity: "error",
         suggestion:
           "Always close database connections in finally block or using try-with-resources.",

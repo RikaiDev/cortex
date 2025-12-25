@@ -314,7 +314,12 @@ export class ImpactAnalyzer {
       if (namedMatch) {
         const specifiers = namedMatch[1]
           .split(",")
-          .map((s) => s.trim().split(/\s+as\s+/)[0].trim())
+          .map((s) =>
+            s
+              .trim()
+              .split(/\s+as\s+/)[0]
+              .trim()
+          )
           .filter((s) => s);
 
         imports.push({
@@ -436,7 +441,13 @@ export class ImpactAnalyzer {
         if (match) {
           const names = match[1]
             .split(",")
-            .map((s) => s.trim().split(/\s+as\s+/).pop()!.trim())
+            .map((s) =>
+              s
+                .trim()
+                .split(/\s+as\s+/)
+                .pop()!
+                .trim()
+            )
             .filter((s) => s);
 
           for (const name of names) {
@@ -456,7 +467,13 @@ export class ImpactAnalyzer {
         if (match) {
           const names = match[1]
             .split(",")
-            .map((s) => s.trim().split(/\s+as\s+/).pop()!.trim())
+            .map((s) =>
+              s
+                .trim()
+                .split(/\s+as\s+/)
+                .pop()!
+                .trim()
+            )
             .filter((s) => s);
 
           for (const name of names) {
@@ -626,10 +643,7 @@ export class ImpactAnalyzer {
   /**
    * Check if file should be excluded
    */
-  private shouldExclude(
-    file: string,
-    patterns: string[] | undefined
-  ): boolean {
+  private shouldExclude(file: string, patterns: string[] | undefined): boolean {
     if (!patterns || patterns.length === 0) return false;
 
     return patterns.some((pattern) => {

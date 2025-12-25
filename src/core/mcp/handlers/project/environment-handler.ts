@@ -4,6 +4,7 @@
  * Handles environment profile management and compatibility checking
  */
 
+import { MCPTool } from "../../decorators/index.js";
 import { EnvironmentService } from "../../services/environment-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { EnvironmentProfile } from "../../types/environment.js";
@@ -18,6 +19,15 @@ export class EnvironmentHandler {
   /**
    * Auto-detect environments from project files
    */
+  @MCPTool({
+    name: "environment-detect",
+    description:
+      "Auto-detect environment profiles from project files (package.json, Dockerfile, CI configs, deployment configs)",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  })
   async handleDetectEnvironments(): Promise<MCPToolResult> {
     try {
       const result = await this.environmentService.autoDetect();
@@ -75,6 +85,41 @@ export class EnvironmentHandler {
   /**
    * Add or update environment profile
    */
+  @MCPTool({
+    name: "environment-add",
+    description:
+      "Add or update an environment profile with runtime constraints",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description: "Environment name (e.g., production, staging, ci)",
+        },
+        description: {
+          type: "string",
+          description: "Description of this environment",
+        },
+        nodeVersion: {
+          type: "string",
+          description: "Node.js version constraint (e.g., '18.x', '>=16.0.0')",
+        },
+        envVarsMissing: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Environment variables that are NOT available in this environment",
+        },
+        constraints: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "General constraints (e.g., 'Read-only filesystem', 'Serverless 10s timeout')",
+        },
+      },
+      required: ["name"],
+    },
+  })
   async handleAddEnvironment(args: {
     name: string;
     description?: string;
@@ -126,6 +171,20 @@ export class EnvironmentHandler {
   /**
    * Remove environment profile
    */
+  @MCPTool({
+    name: "environment-remove",
+    description: "Remove an environment profile",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description: "Environment name to remove",
+        },
+      },
+      required: ["name"],
+    },
+  })
   async handleRemoveEnvironment(args: {
     name: string;
   }): Promise<MCPToolResult> {
@@ -156,6 +215,14 @@ export class EnvironmentHandler {
   /**
    * List all environment profiles
    */
+  @MCPTool({
+    name: "environment-list",
+    description: "List all configured environment profiles",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  })
   async handleListEnvironments(): Promise<MCPToolResult> {
     try {
       const environments = await this.environmentService.listEnvironments();
@@ -180,7 +247,8 @@ export class EnvironmentHandler {
 
           if (env.container?.isDocker) {
             details.push("Docker");
-            if (env.container.workDir) details.push(`WorkDir: ${env.container.workDir}`);
+            if (env.container.workDir)
+              details.push(`WorkDir: ${env.container.workDir}`);
           }
 
           if (env.envVars?.missing && env.envVars.missing.length > 0) {
@@ -223,12 +291,29 @@ export class EnvironmentHandler {
   /**
    * Check code compatibility with environment profiles
    */
+  @MCPTool({
+    name: "environment-check",
+    description:
+      "Check code compatibility with all environment profiles (detects version issues, missing env vars, filesystem constraints)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        files: {
+          type: "array",
+          items: { type: "string" },
+          description: "Files to check for compatibility",
+        },
+      },
+      required: ["files"],
+    },
+  })
   async handleCheckCompatibility(args: {
     files: string[];
   }): Promise<MCPToolResult> {
     try {
-      const result =
-        await this.environmentService.checkCompatibility(args.files);
+      const result = await this.environmentService.checkCompatibility(
+        args.files
+      );
 
       if (result.isCompatible) {
         return {
@@ -258,7 +343,11 @@ export class EnvironmentHandler {
           const warningsList = warnings
             .map((w) => {
               const icon =
-                w.severity === "error" ? "❌" : w.severity === "warning" ? "⚠️" : "ℹ️";
+                w.severity === "error"
+                  ? "❌"
+                  : w.severity === "warning"
+                    ? "⚠️"
+                    : "ℹ️";
               return `  ${icon} **${w.type}**: ${w.message}\n     ${w.location ? `File: ${w.location.file}` : ""}\n     ${w.suggestion ? `💡 ${w.suggestion}` : ""}`;
             })
             .join("\n\n");

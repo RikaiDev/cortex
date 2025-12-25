@@ -7,6 +7,7 @@
  */
 
 import * as path from "node:path";
+import { MCPTool } from "../../decorators/index.js";
 import { TemplateGenerator } from "../../services/template-generator.js";
 import { WorkflowService } from "../../services/workflow-service.js";
 import { MemoryService } from "../../services/memory-service.js";
@@ -54,6 +55,21 @@ export class SpecHandler {
   /**
    * Handle spec - Create feature specification
    */
+  @MCPTool({
+    name: "spec",
+    description:
+      "Create a new workflow with feature specification (starts the development lifecycle)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        description: {
+          type: "string",
+          description: "Description of the feature to build",
+        },
+      },
+      required: ["description"],
+    },
+  })
   async handleSpec(args: { description: string }): Promise<MCPToolResult> {
     try {
       // 1. Create workflow with readable ID
@@ -120,6 +136,20 @@ After generating the specification, save it to:
   /**
    * Handle clarify - Resolve specification ambiguities
    */
+  @MCPTool({
+    name: "clarify",
+    description:
+      "Resolve ambiguities in a workflow specification through targeted questions",
+    inputSchema: {
+      type: "object",
+      properties: {
+        workflowId: {
+          type: "string",
+          description: "Workflow ID (optional, uses latest if not provided)",
+        },
+      },
+    },
+  })
   async handleClarify(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
       const workflowId = await this.ensureWorkflowId(args.workflowId);

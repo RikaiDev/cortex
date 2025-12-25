@@ -6,11 +6,27 @@
 
 import * as path from "node:path";
 import fs from "fs-extra";
+import { MCPTool } from "../../decorators/index.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 
 export class ConstitutionHandler {
   constructor(private projectRoot: string) {}
 
+  @MCPTool({
+    name: "constitution",
+    description:
+      "Create or update the project constitution (AI behavior guidelines and project preferences)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        updates: {
+          type: "string",
+          description:
+            "Specific updates to apply (optional, interactive if not provided)",
+        },
+      },
+    },
+  })
   async handleConstitution(args: { updates?: string }): Promise<MCPToolResult> {
     try {
       const constitutionPath = path.join(

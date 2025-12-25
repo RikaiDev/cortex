@@ -4,6 +4,7 @@
  * Handles marking and unmarking protected code regions
  */
 
+import { MCPTool } from "../../decorators/index.js";
 import { DangerZoneService } from "../../services/danger-zone-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 
@@ -17,6 +18,36 @@ export class DangerZoneHandler {
   /**
    * Mark a code region as protected (danger zone)
    */
+  @MCPTool({
+    name: "mark-danger",
+    description:
+      "Mark a code region as protected (danger zone) that should not be modified without explicit user confirmation. Can mark entire files or specific line ranges.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          description: "File path relative to project root",
+        },
+        startLine: {
+          type: "number",
+          description:
+            "Starting line number (optional, protects entire file if not provided)",
+        },
+        endLine: {
+          type: "number",
+          description:
+            "Ending line number (optional, single line if not provided)",
+        },
+        reason: {
+          type: "string",
+          description:
+            "Why this region is protected (e.g., 'Production config - manually tuned', 'Critical auth logic')",
+        },
+      },
+      required: ["file", "reason"],
+    },
+  })
   async handleMarkDanger(args: {
     file: string;
     startLine?: number;
@@ -61,6 +92,25 @@ export class DangerZoneHandler {
   /**
    * Remove danger zone protection from a region
    */
+  @MCPTool({
+    name: "unmark-danger",
+    description: "Remove danger zone protection from a code region",
+    inputSchema: {
+      type: "object",
+      properties: {
+        file: {
+          type: "string",
+          description: "File path relative to project root",
+        },
+        line: {
+          type: "number",
+          description:
+            "Specific line number (optional, removes all protections for file if not provided)",
+        },
+      },
+      required: ["file"],
+    },
+  })
   async handleUnmarkDanger(args: {
     file: string;
     line?: number;
@@ -94,6 +144,15 @@ export class DangerZoneHandler {
   /**
    * List all protected danger zones
    */
+  @MCPTool({
+    name: "list-dangers",
+    description:
+      "List all protected danger zones (from both config and code comments)",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  })
   async handleListDangerZones(): Promise<MCPToolResult> {
     try {
       const zones = await this.dangerZoneService.getAllDangerZones();

@@ -4,6 +4,7 @@
  * Handles dependency version management and compatibility checking
  */
 
+import { MCPTool } from "../../decorators/index.js";
 import { DependencyService } from "../../services/dependency-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 
@@ -17,6 +18,15 @@ export class DependencyHandler {
   /**
    * Analyze all project dependencies
    */
+  @MCPTool({
+    name: "dependency-analyze",
+    description:
+      "Analyze all project dependencies from package.json, requirements.txt, go.mod",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  })
   async handleAnalyzeDependencies(): Promise<MCPToolResult> {
     try {
       const analysis = await this.dependencyService.analyzeDependencies();
@@ -74,12 +84,29 @@ export class DependencyHandler {
   /**
    * Check dependency compatibility
    */
+  @MCPTool({
+    name: "dependency-check",
+    description:
+      "Check dependency compatibility (detect deprecated APIs, version conflicts)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        files: {
+          type: "array",
+          items: { type: "string" },
+          description: "Files to check for deprecated API usage",
+        },
+      },
+      required: ["files"],
+    },
+  })
   async handleCheckCompatibility(args: {
     files: string[];
   }): Promise<MCPToolResult> {
     try {
-      const result =
-        await this.dependencyService.checkCompatibility(args.files);
+      const result = await this.dependencyService.checkCompatibility(
+        args.files
+      );
 
       if (result.isCompatible) {
         return {
@@ -102,9 +129,7 @@ export class DependencyHandler {
             const replacement = d.replacement
               ? `\n     💡 Use: ${d.replacement}`
               : "";
-            const removal = d.removedIn
-              ? ` (removed in ${d.removedIn})`
-              : "";
+            const removal = d.removedIn ? ` (removed in ${d.removedIn})` : "";
 
             return `  ⚠️  **${d.package}**: ${d.api}\n     Deprecated in v${d.deprecatedIn}${removal}${location}${replacement}`;
           })
@@ -172,12 +197,25 @@ export class DependencyHandler {
   /**
    * Get version of a specific dependency
    */
-  async handleGetVersion(args: {
-    package: string;
-  }): Promise<MCPToolResult> {
+  @MCPTool({
+    name: "dependency-version",
+    description: "Get the installed version of a specific package",
+    inputSchema: {
+      type: "object",
+      properties: {
+        package: {
+          type: "string",
+          description: "Package name to query",
+        },
+      },
+      required: ["package"],
+    },
+  })
+  async handleGetVersion(args: { package: string }): Promise<MCPToolResult> {
     try {
-      const version =
-        await this.dependencyService.getDependencyVersion(args.package);
+      const version = await this.dependencyService.getDependencyVersion(
+        args.package
+      );
 
       if (!version) {
         return {
@@ -214,6 +252,26 @@ export class DependencyHandler {
   /**
    * Suggest compatibility for adding a new dependency
    */
+  @MCPTool({
+    name: "dependency-suggest",
+    description:
+      "Check compatibility before adding a new dependency (detect potential conflicts)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        package: {
+          type: "string",
+          description: "Package name to add",
+        },
+        version: {
+          type: "string",
+          description:
+            "Target version (optional, checks latest if not provided)",
+        },
+      },
+      required: ["package"],
+    },
+  })
   async handleSuggestDependency(args: {
     package: string;
     version?: string;

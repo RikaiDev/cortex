@@ -8,7 +8,9 @@
     "dist/**",
     "cortex/**",
     "node_modules/**",
-    "src/adapters/**"
+    "src/adapters/**",
+    "src/core/mcp/decorators/mcp-param.ts",
+    "src/core/mcp/registry/schema-generator.ts"
   ],
   "ignoreExportsUsedInFile": {
     "interface": true,

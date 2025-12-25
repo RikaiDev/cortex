@@ -6,11 +6,21 @@
 
 import * as path from "node:path";
 import fs from "fs-extra";
+import { MCPTool } from "../../decorators/index.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 
 export class OnboardHandler {
   constructor(private projectRoot: string) {}
 
+  @MCPTool({
+    name: "onboard",
+    description:
+      "Interactive onboarding for new projects (setup .cortex, create constitution)",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  })
   async handleOnboard(): Promise<MCPToolResult> {
     try {
       // 1. Check current state

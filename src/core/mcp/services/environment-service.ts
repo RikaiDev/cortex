@@ -98,9 +98,10 @@ export class EnvironmentService {
       sources.push({
         file: "Dockerfile",
         type: "dockerfile",
-        detectedConstraints: ["Docker container", dockerEnv.container?.workDir || ""].filter(
-          Boolean
-        ),
+        detectedConstraints: [
+          "Docker container",
+          dockerEnv.container?.workDir || "",
+        ].filter(Boolean),
       });
     }
 
@@ -224,11 +225,7 @@ export class EnvironmentService {
    * Detect environment from GitHub Actions
    */
   private async detectFromGitHubActions(): Promise<EnvironmentProfile | null> {
-    const workflowsDir = path.join(
-      this.projectRoot,
-      ".github",
-      "workflows"
-    );
+    const workflowsDir = path.join(this.projectRoot, ".github", "workflows");
 
     if (!(await fs.pathExists(workflowsDir))) {
       return null;
@@ -236,7 +233,9 @@ export class EnvironmentService {
 
     try {
       const files = await fs.readdir(workflowsDir);
-      const ymlFiles = files.filter((f) => f.endsWith(".yml") || f.endsWith(".yaml"));
+      const ymlFiles = files.filter(
+        (f) => f.endsWith(".yml") || f.endsWith(".yaml")
+      );
 
       if (ymlFiles.length === 0) {
         return null;
@@ -389,7 +388,8 @@ export class EnvironmentService {
               severity: "warning",
               message: `Optional chaining (?.) requires Node 14+, but ${env.name} uses Node ${env.runtime.node}`,
               location: { file },
-              suggestion: "Use traditional null checking or upgrade Node version",
+              suggestion:
+                "Use traditional null checking or upgrade Node version",
             });
           }
 
@@ -426,9 +426,7 @@ export class EnvironmentService {
   /**
    * Add or update environment profile
    */
-  async upsertEnvironment(
-    profile: EnvironmentProfile
-  ): Promise<void> {
+  async upsertEnvironment(profile: EnvironmentProfile): Promise<void> {
     const config = await this.loadConfig();
 
     const existingIndex = config.environments.findIndex(

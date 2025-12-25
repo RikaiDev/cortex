@@ -4,6 +4,7 @@
  * Handles checkpoint operations for resumable work sessions
  */
 
+import { MCPTool } from "../../decorators/index.js";
 import { CheckpointService } from "../../services/checkpoint-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { Checkpoint, CheckpointFile } from "../../types/checkpoint.js";
@@ -18,6 +19,65 @@ export class CheckpointHandler {
   /**
    * Handle checkpoint-save - Save task progress
    */
+  @MCPTool({
+    name: "checkpoint-save",
+    description:
+      "Save current task progress as a checkpoint for resuming later",
+    inputSchema: {
+      type: "object",
+      properties: {
+        taskDescription: {
+          type: "string",
+          description: "Brief description of the task being checkpointed",
+        },
+        completed: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              path: { type: "string" },
+              description: { type: "string" },
+              status: {
+                type: "string",
+                enum: ["completed", "in-progress", "pending"],
+              },
+            },
+            required: ["path", "description", "status"],
+          },
+          description: "List of completed files",
+        },
+        pending: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              path: { type: "string" },
+              description: { type: "string" },
+              status: {
+                type: "string",
+                enum: ["completed", "in-progress", "pending"],
+              },
+            },
+            required: ["path", "description", "status"],
+          },
+          description: "List of pending files",
+        },
+        context: {
+          type: "string",
+          description: "Additional context about the current state",
+        },
+        nextStep: {
+          type: "string",
+          description: "Recommended next step for resuming",
+        },
+        workflowId: {
+          type: "string",
+          description: "Associated workflow ID (optional)",
+        },
+      },
+      required: ["taskDescription"],
+    },
+  })
   async handleCheckpointSave(args: {
     taskDescription: string;
     completed?: CheckpointFile[];
@@ -112,6 +172,20 @@ Or resume from the latest checkpoint:
   /**
    * Handle checkpoint-resume - Resume from checkpoint
    */
+  @MCPTool({
+    name: "checkpoint-resume",
+    description: "Resume from a saved checkpoint (by ID or latest)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        checkpointId: {
+          type: "string",
+          description:
+            "Checkpoint ID to resume from (optional, uses latest if not provided)",
+        },
+      },
+    },
+  })
   async handleCheckpointResume(args: {
     checkpointId?: string;
   }): Promise<MCPToolResult> {
@@ -187,6 +261,20 @@ Ready to continue!`,
   /**
    * Handle checkpoint-list - List saved checkpoints
    */
+  @MCPTool({
+    name: "checkpoint-list",
+    description: "List all saved checkpoints",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: {
+          type: "number",
+          description: "Maximum number of checkpoints to return (default: 10)",
+          default: 10,
+        },
+      },
+    },
+  })
   async handleCheckpointList(args: { limit?: number }): Promise<MCPToolResult> {
     try {
       const checkpoints = await this.checkpointService.listCheckpoints(
@@ -247,6 +335,20 @@ Ready to continue!`,
   /**
    * Handle checkpoint-clear - Clear checkpoint(s)
    */
+  @MCPTool({
+    name: "checkpoint-clear",
+    description: "Clear checkpoint(s) - specific ID or all checkpoints",
+    inputSchema: {
+      type: "object",
+      properties: {
+        checkpointId: {
+          type: "string",
+          description:
+            "Specific checkpoint ID to clear (if not provided, clears all)",
+        },
+      },
+    },
+  })
   async handleCheckpointClear(args: {
     checkpointId?: string;
   }): Promise<MCPToolResult> {

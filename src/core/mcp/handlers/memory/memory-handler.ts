@@ -4,6 +4,7 @@
  * Handles memory operations (learn, context, correct)
  */
 
+import { MCPTool } from "../../decorators/index.js";
 import { MemoryService } from "../../services/memory-service.js";
 import { CorrectionService } from "../../services/correction-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
@@ -20,6 +21,21 @@ export class MemoryHandler {
   /**
    * Handle context - Enhance context from memory
    */
+  @MCPTool({
+    name: "context",
+    description:
+      "Retrieve relevant context from project memory (past experiences, patterns, decisions)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description: "What to search for in project memory",
+        },
+      },
+      required: ["query"],
+    },
+  })
   async handleContext(args: { query: string }): Promise<MCPToolResult> {
     try {
       const context = await this.memoryService.enhanceContext(args.query);
@@ -59,6 +75,41 @@ export class MemoryHandler {
   /**
    * Handle correct - Record correction to prevent future mistakes
    */
+  @MCPTool({
+    name: "correct",
+    description:
+      "Record a correction to prevent AI from repeating mistakes in future sessions",
+    inputSchema: {
+      type: "object",
+      properties: {
+        wrongBehavior: {
+          type: "string",
+          description: "What the AI did wrong",
+        },
+        correctBehavior: {
+          type: "string",
+          description: "What the AI should do instead",
+        },
+        severity: {
+          type: "string",
+          enum: ["minor", "moderate", "major"],
+          description: "How serious was the mistake",
+        },
+        filePatterns: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "File patterns where this applies (e.g., '**/*.test.ts')",
+        },
+        triggerKeywords: {
+          type: "array",
+          items: { type: "string" },
+          description: "Keywords that should trigger this correction",
+        },
+      },
+      required: ["wrongBehavior", "correctBehavior"],
+    },
+  })
   async handleCorrect(args: {
     wrongBehavior: string;
     correctBehavior: string;
@@ -112,6 +163,35 @@ This correction has been saved to project memory. The AI will be warned before r
   /**
    * Handle learn - Record experience to memory
    */
+  @MCPTool({
+    name: "learn",
+    description:
+      "Record an experience, pattern, or lesson to project memory for future reference",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          description: "Short title for this experience",
+        },
+        content: {
+          type: "string",
+          description: "Full description of what was learned",
+        },
+        type: {
+          type: "string",
+          enum: ["pattern", "decision", "solution", "lesson"],
+          description: "Type of experience",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "Tags for easier retrieval",
+        },
+      },
+      required: ["title", "content", "type"],
+    },
+  })
   async handleLearn(args: {
     title: string;
     content: string;

@@ -22,12 +22,28 @@ import {
   GetPromptRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
+import "reflect-metadata";
 import { CortexAI } from "../index.js";
 import { ToolHandler } from "./handlers/tool-handler.js";
 import { ResourceHandler } from "./handlers/resource-handler.js";
-import { StableWorkflowHandler } from "./handlers/stable-workflow-handler.js";
-import type { CheckpointFile } from "./types/checkpoint.js";
-import type { PerformanceCategory } from "./types/performance.js";
+import { MCPToolRegistry } from "./registry/index.js";
+
+// Domain handlers
+import { CheckpointHandler } from "./handlers/checkpoint/checkpoint-handler.js";
+import { MemoryHandler } from "./handlers/memory/memory-handler.js";
+import { TeamKnowledgeHandler } from "./handlers/collaboration/team-knowledge-handler.js";
+import { DependencyHandler } from "./handlers/project/dependency-handler.js";
+import { EnvironmentHandler } from "./handlers/project/environment-handler.js";
+import { ImpactAnalysisHandler } from "./handlers/analysis/impact-analysis-handler.js";
+import { PerformanceAnalysisHandler } from "./handlers/analysis/performance-analysis-handler.js";
+import { DangerZoneHandler } from "./handlers/project/danger-zone-handler.js";
+import { SpecHandler } from "./handlers/workflow/spec-handler.js";
+import { PlanningHandler } from "./handlers/workflow/planning-handler.js";
+import { ExecutionHandler } from "./handlers/workflow/execution-handler.js";
+import { StatusHandler } from "./handlers/workflow/status-handler.js";
+import { ReleaseHandler } from "./handlers/project/release-handler.js";
+import { OnboardHandler } from "./handlers/project/onboard-handler.js";
+import { ConstitutionHandler } from "./handlers/project/constitution-handler.js";
 
 // ES Module support for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -67,7 +83,7 @@ export class CortexMCPServer {
   private projectRoot: string;
   private toolHandler: ToolHandler;
   private resourceHandler: ResourceHandler;
-  private stableWorkflowHandler: StableWorkflowHandler;
+  private registry: MCPToolRegistry;
 
   constructor() {
     this.server = new Server(
@@ -88,9 +104,36 @@ export class CortexMCPServer {
     this.cortex = new CortexAI(this.projectRoot);
     this.toolHandler = new ToolHandler(this.projectRoot, this.cortex);
     this.resourceHandler = new ResourceHandler(this.projectRoot);
-    this.stableWorkflowHandler = new StableWorkflowHandler(this.projectRoot);
+
+    // Initialize registry and register all domain handlers
+    this.registry = new MCPToolRegistry();
+    this.registerHandlers();
+
     this.setupHandlers();
     this.initializeCortexWorkspace();
+  }
+
+  /**
+   * Register all domain handlers with the registry
+   */
+  private registerHandlers(): void {
+    this.registry.registerHandler(new CheckpointHandler(this.projectRoot));
+    this.registry.registerHandler(new MemoryHandler(this.projectRoot));
+    this.registry.registerHandler(new TeamKnowledgeHandler(this.projectRoot));
+    this.registry.registerHandler(new DependencyHandler(this.projectRoot));
+    this.registry.registerHandler(new EnvironmentHandler(this.projectRoot));
+    this.registry.registerHandler(new ImpactAnalysisHandler(this.projectRoot));
+    this.registry.registerHandler(
+      new PerformanceAnalysisHandler(this.projectRoot)
+    );
+    this.registry.registerHandler(new DangerZoneHandler(this.projectRoot));
+    this.registry.registerHandler(new SpecHandler(this.projectRoot));
+    this.registry.registerHandler(new PlanningHandler(this.projectRoot));
+    this.registry.registerHandler(new ExecutionHandler(this.projectRoot));
+    this.registry.registerHandler(new StatusHandler(this.projectRoot));
+    this.registry.registerHandler(new ReleaseHandler(this.projectRoot));
+    this.registry.registerHandler(new OnboardHandler(this.projectRoot));
+    this.registry.registerHandler(new ConstitutionHandler(this.projectRoot));
   }
 
   /**
@@ -330,821 +373,11 @@ export class CortexMCPServer {
       }
     });
 
-    // Handle list tools
+    // Handle list tools - auto-generated from registry
     this.server.setRequestHandler(ListToolsRequestSchema, async () => {
       try {
         return {
-          tools: [
-            {
-              name: "spec",
-              description:
-                "Create feature specification (auto-creates workflow)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  description: {
-                    type: "string",
-                    description: "Feature description",
-                  },
-                },
-                required: ["description"],
-              },
-            },
-            {
-              name: "workflow",
-              description:
-                "Execute workflow phases: clarify (resolve ambiguities), plan (create implementation plan), review (technical review), tasks (generate task breakdown), implement (execute with Multi-Role coordination), status (get workflow progress). Uses latest workflow if workflowId not provided.",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  phase: {
-                    type: "string",
-                    enum: [
-                      "clarify",
-                      "plan",
-                      "review",
-                      "tasks",
-                      "implement",
-                      "status",
-                    ],
-                    description: "Workflow phase to execute",
-                  },
-                  workflowId: {
-                    type: "string",
-                    description: "Workflow ID (optional, defaults to latest)",
-                  },
-                },
-                required: ["phase"],
-              },
-            },
-            {
-              name: "list",
-              description: "List all workflows",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  limit: {
-                    type: "number",
-                    description: "Maximum number of workflows to return",
-                    default: 10,
-                  },
-                },
-              },
-            },
-            {
-              name: "release",
-              description:
-                "Analyze changes and generate release documentation (CHANGELOG/RELEASE_NOTES) with optional git tag and push",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  version: {
-                    type: "string",
-                    description:
-                      "Version number (optional, auto-detected if not provided)",
-                  },
-                  tag: {
-                    type: "boolean",
-                    description: "Create git tag for this release",
-                    default: false,
-                  },
-                  push: {
-                    type: "boolean",
-                    description: "Push commits and tags to remote",
-                    default: false,
-                  },
-                },
-              },
-            },
-            {
-              name: "onboard",
-              description:
-                "Interactive onboarding for first-time users - guides through initialization and constitution creation",
-              inputSchema: {
-                type: "object",
-                properties: {},
-              },
-            },
-            {
-              name: "constitution",
-              description:
-                "Create or update project constitution - AI guides through principles, governance, and versioning",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  updates: {
-                    type: "string",
-                    description:
-                      "Optional: specific updates to make (e.g., 'add testing principle')",
-                  },
-                },
-              },
-            },
-            {
-              name: "memory",
-              description:
-                "Interact with project memory: learn (record experience/pattern/decision/solution/lesson) or context (retrieve relevant experiences based on query)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  action: {
-                    type: "string",
-                    enum: ["learn", "context"],
-                    description: "Memory action to perform",
-                  },
-                  title: {
-                    type: "string",
-                    description:
-                      "[learn] Brief descriptive title (max 200 characters)",
-                  },
-                  content: {
-                    type: "string",
-                    description:
-                      "[learn] Full markdown content of the experience",
-                  },
-                  type: {
-                    type: "string",
-                    enum: ["pattern", "decision", "solution", "lesson"],
-                    description: "[learn] Experience category",
-                  },
-                  tags: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "[learn] Searchable keywords (1-10 tags)",
-                  },
-                  query: {
-                    type: "string",
-                    description:
-                      "[context] Search query to find relevant experiences",
-                  },
-                },
-                required: ["action"],
-              },
-            },
-            {
-              name: "correct",
-              description:
-                "Record a correction to AI behavior - the AI will avoid repeating this mistake in future sessions",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  wrongBehavior: {
-                    type: "string",
-                    description: "What the AI did wrong",
-                  },
-                  correctBehavior: {
-                    type: "string",
-                    description: "What the correct behavior should be",
-                  },
-                  severity: {
-                    type: "string",
-                    enum: ["minor", "moderate", "major"],
-                    description:
-                      "How serious the mistake was (default: moderate)",
-                  },
-                  filePatterns: {
-                    type: "array",
-                    items: { type: "string" },
-                    description:
-                      "File patterns where this applies (e.g., '*.tsx')",
-                  },
-                  triggerKeywords: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Keywords that should trigger this warning",
-                  },
-                },
-                required: ["wrongBehavior", "correctBehavior"],
-              },
-            },
-            {
-              name: "checkpoint-save",
-              description:
-                "Save current task progress as a checkpoint for resuming later",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  taskDescription: {
-                    type: "string",
-                    description:
-                      "Brief description of the task being checkpointed",
-                  },
-                  completed: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        path: { type: "string" },
-                        description: { type: "string" },
-                        status: {
-                          type: "string",
-                          enum: ["completed", "in-progress", "pending"],
-                        },
-                      },
-                      required: ["path", "description", "status"],
-                    },
-                    description: "List of completed files",
-                  },
-                  pending: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        path: { type: "string" },
-                        description: { type: "string" },
-                        status: {
-                          type: "string",
-                          enum: ["completed", "in-progress", "pending"],
-                        },
-                      },
-                      required: ["path", "description", "status"],
-                    },
-                    description: "List of pending files",
-                  },
-                  context: {
-                    type: "string",
-                    description: "Additional context about current progress",
-                  },
-                  nextStep: {
-                    type: "string",
-                    description: "Guidance for what to do next when resuming",
-                  },
-                  workflowId: {
-                    type: "string",
-                    description: "Associated workflow ID (optional)",
-                  },
-                },
-                required: ["taskDescription"],
-              },
-            },
-            {
-              name: "checkpoint-resume",
-              description: "Resume from a saved checkpoint (by ID or latest)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  checkpointId: {
-                    type: "string",
-                    description:
-                      "Checkpoint ID to resume from (optional, uses latest if not provided)",
-                  },
-                },
-              },
-            },
-            {
-              name: "checkpoint-list",
-              description: "List all saved checkpoints",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  limit: {
-                    type: "number",
-                    description:
-                      "Maximum number of checkpoints to return (default: 10)",
-                    default: 10,
-                  },
-                },
-              },
-            },
-            {
-              name: "checkpoint-clear",
-              description:
-                "Clear checkpoint(s) - specific ID or all checkpoints",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  checkpointId: {
-                    type: "string",
-                    description:
-                      "Specific checkpoint ID to clear (if not provided, clears all)",
-                  },
-                },
-              },
-            },
-            {
-              name: "mark-danger",
-              description:
-                "Mark a code region as protected (danger zone) that should not be modified without explicit user confirmation. Can mark entire files or specific line ranges.",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  file: {
-                    type: "string",
-                    description: "File path relative to project root",
-                  },
-                  startLine: {
-                    type: "number",
-                    description:
-                      "Starting line number (optional, protects entire file if not provided)",
-                  },
-                  endLine: {
-                    type: "number",
-                    description:
-                      "Ending line number (optional, single line if not provided)",
-                  },
-                  reason: {
-                    type: "string",
-                    description:
-                      "Why this region is protected (e.g., 'Production config - manually tuned', 'Critical auth logic')",
-                  },
-                },
-                required: ["file", "reason"],
-              },
-            },
-            {
-              name: "unmark-danger",
-              description:
-                "Remove danger zone protection from a code region",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  file: {
-                    type: "string",
-                    description: "File path relative to project root",
-                  },
-                  line: {
-                    type: "number",
-                    description:
-                      "Specific line number (optional, removes all protections for file if not provided)",
-                  },
-                },
-                required: ["file"],
-              },
-            },
-            {
-              name: "list-dangers",
-              description:
-                "List all protected danger zones (from both config and code comments)",
-              inputSchema: {
-                type: "object",
-                properties: {},
-              },
-            },
-            {
-              name: "environment-detect",
-              description:
-                "Auto-detect environment profiles from project files (package.json, Dockerfile, CI configs, deployment configs)",
-              inputSchema: {
-                type: "object",
-                properties: {},
-              },
-            },
-            {
-              name: "environment-add",
-              description:
-                "Add or update an environment profile with runtime constraints",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  name: {
-                    type: "string",
-                    description:
-                      "Environment name (e.g., production, staging, ci)",
-                  },
-                  description: {
-                    type: "string",
-                    description: "Description of this environment",
-                  },
-                  nodeVersion: {
-                    type: "string",
-                    description:
-                      "Node.js version constraint (e.g., '18.x', '>=16.0.0')",
-                  },
-                  envVarsMissing: {
-                    type: "array",
-                    items: { type: "string" },
-                    description:
-                      "Environment variables that are NOT available in this environment",
-                  },
-                  constraints: {
-                    type: "array",
-                    items: { type: "string" },
-                    description:
-                      "General constraints (e.g., 'Read-only filesystem', 'Serverless 10s timeout')",
-                  },
-                },
-                required: ["name"],
-              },
-            },
-            {
-              name: "environment-remove",
-              description: "Remove an environment profile",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  name: {
-                    type: "string",
-                    description: "Environment name to remove",
-                  },
-                },
-                required: ["name"],
-              },
-            },
-            {
-              name: "environment-list",
-              description: "List all configured environment profiles",
-              inputSchema: {
-                type: "object",
-                properties: {},
-              },
-            },
-            {
-              name: "environment-check",
-              description:
-                "Check code compatibility with all environment profiles (detects version issues, missing env vars, filesystem constraints)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  files: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Files to check for compatibility",
-                  },
-                },
-                required: ["files"],
-              },
-            },
-            {
-              name: "dependency-analyze",
-              description:
-                "Analyze all project dependencies from package.json, requirements.txt, go.mod",
-              inputSchema: {
-                type: "object",
-                properties: {},
-              },
-            },
-            {
-              name: "dependency-check",
-              description:
-                "Check dependency compatibility (detect deprecated APIs, version conflicts)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  files: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Files to check for deprecated API usage",
-                  },
-                },
-                required: ["files"],
-              },
-            },
-            {
-              name: "dependency-version",
-              description: "Get the installed version of a specific package",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  package: {
-                    type: "string",
-                    description: "Package name to query",
-                  },
-                },
-                required: ["package"],
-              },
-            },
-            {
-              name: "dependency-suggest",
-              description:
-                "Check compatibility before adding a new dependency (detect potential conflicts)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  package: {
-                    type: "string",
-                    description: "Package name to add",
-                  },
-                  version: {
-                    type: "string",
-                    description:
-                      "Target version (optional, checks latest if not provided)",
-                  },
-                },
-                required: ["package"],
-              },
-            },
-            {
-              name: "impact-build-graph",
-              description:
-                "Build or refresh the dependency graph for impact analysis (caches for 5 minutes)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  forceRebuild: {
-                    type: "boolean",
-                    description:
-                      "Force rebuild even if cache is valid (default: false)",
-                  },
-                },
-              },
-            },
-            {
-              name: "impact-analyze",
-              description:
-                "Analyze what files will be affected by changes to target files (shows import dependencies)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  files: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Files to analyze impact for",
-                  },
-                  includeTests: {
-                    type: "boolean",
-                    description: "Include test files in analysis (default: true)",
-                  },
-                  maxDepth: {
-                    type: "number",
-                    description:
-                      "Maximum dependency depth to traverse (default: 10)",
-                  },
-                  excludePatterns: {
-                    type: "array",
-                    items: { type: "string" },
-                    description:
-                      "Glob patterns to exclude (e.g., '**/node_modules/**')",
-                  },
-                },
-                required: ["files"],
-              },
-            },
-            {
-              name: "impact-preview",
-              description:
-                "Quick preview of change impact before modifying files (lighter than full analysis)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  files: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Files to preview impact for",
-                  },
-                },
-                required: ["files"],
-              },
-            },
-            {
-              name: "impact-validate",
-              description:
-                "Validate that changes didn't break dependencies (run after making changes)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  files: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Files that were changed",
-                  },
-                },
-                required: ["files"],
-              },
-            },
-            {
-              name: "impact-stats",
-              description:
-                "Get statistics about the dependency graph (file count, imports, exports)",
-              inputSchema: {
-                type: "object",
-                properties: {},
-              },
-            },
-            {
-              name: "performance-analyze",
-              description:
-                "Analyze files for performance anti-patterns (N+1 queries, missing cleanup, blocking operations)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  files: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Files to analyze for performance issues",
-                  },
-                },
-                required: ["files"],
-              },
-            },
-            {
-              name: "performance-list-patterns",
-              description:
-                "List all performance analysis patterns (built-in and custom)",
-              inputSchema: {
-                type: "object",
-                properties: {},
-              },
-            },
-            {
-              name: "performance-add-pattern",
-              description:
-                "Add a custom performance pattern for project-specific detection",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  name: {
-                    type: "string",
-                    description: "Unique pattern name",
-                  },
-                  category: {
-                    type: "string",
-                    description:
-                      "Category (database, async, memory, rendering, computation, io, resource-leak)",
-                  },
-                  description: {
-                    type: "string",
-                    description: "Description of the performance issue",
-                  },
-                  regex: {
-                    type: "string",
-                    description: "Regular expression pattern to match",
-                  },
-                  contextRegex: {
-                    type: "string",
-                    description:
-                      "Optional context pattern (e.g., must be in a loop)",
-                  },
-                  severity: {
-                    type: "string",
-                    enum: ["info", "warning", "error"],
-                    description: "Severity level",
-                  },
-                  suggestion: {
-                    type: "string",
-                    description: "Suggestion for fixing the issue",
-                  },
-                  filePatterns: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "File patterns to apply this rule to",
-                  },
-                },
-                required: [
-                  "name",
-                  "category",
-                  "description",
-                  "regex",
-                  "severity",
-                  "suggestion",
-                ],
-              },
-            },
-            {
-              name: "performance-disable-pattern",
-              description: "Disable a performance pattern by name",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  patternName: {
-                    type: "string",
-                    description: "Name of the pattern to disable",
-                  },
-                },
-                required: ["patternName"],
-              },
-            },
-            {
-              name: "performance-enable-pattern",
-              description: "Enable a previously disabled performance pattern",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  patternName: {
-                    type: "string",
-                    description: "Name of the pattern to enable",
-                  },
-                },
-                required: ["patternName"],
-              },
-            },
-            {
-              name: "team-share-insight",
-              description:
-                "Share an insight, learning, or decision with the team",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  title: {
-                    type: "string",
-                    description: "Short title for the insight",
-                  },
-                  content: {
-                    type: "string",
-                    description: "Detailed content of the insight",
-                  },
-                  type: {
-                    type: "string",
-                    enum: ["learning", "pattern", "decision", "pr-review"],
-                    description: "Type of insight",
-                  },
-                  author: {
-                    type: "string",
-                    description: "Name of the developer sharing the insight",
-                  },
-                  tags: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Tags for categorization",
-                  },
-                  scope: {
-                    type: "string",
-                    description:
-                      "File pattern this applies to (e.g., 'src/api/**')",
-                  },
-                },
-                required: ["title", "content", "type", "author"],
-              },
-            },
-            {
-              name: "team-view-insights",
-              description: "View team insights with optional filtering",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  author: {
-                    type: "string",
-                    description: "Filter by author",
-                  },
-                  type: {
-                    type: "string",
-                    description: "Filter by type",
-                  },
-                  tags: {
-                    type: "array",
-                    items: { type: "string" },
-                    description: "Filter by tags",
-                  },
-                },
-              },
-            },
-            {
-              name: "team-learn-pr",
-              description:
-                "Extract review patterns from a PR to learn team preferences",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  prNumber: {
-                    type: "number",
-                    description: "Pull request number",
-                  },
-                },
-                required: ["prNumber"],
-              },
-            },
-            {
-              name: "team-view-conflicts",
-              description:
-                "View conflicting insights between team members",
-              inputSchema: {
-                type: "object",
-                properties: {},
-              },
-            },
-            {
-              name: "team-resolve-conflict",
-              description:
-                "Resolve a conflict by marking team decision",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  conflictId: {
-                    type: "string",
-                    description: "ID of the conflict to resolve",
-                  },
-                  resolution: {
-                    type: "string",
-                    description: "Team decision/resolution",
-                  },
-                },
-                required: ["conflictId", "resolution"],
-              },
-            },
-            {
-              name: "team-sync",
-              description:
-                "Sync team knowledge (push to or pull from git repository)",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  direction: {
-                    type: "string",
-                    enum: ["push", "pull"],
-                    description: "Sync direction",
-                  },
-                },
-                required: ["direction"],
-              },
-            },
-            {
-              name: "team-stats",
-              description: "Get team knowledge statistics",
-              inputSchema: {
-                type: "object",
-                properties: {},
-              },
-            },
-          ],
+          tools: this.registry.getToolDefinitions(),
         };
       } catch (error) {
         console.error("Error in ListToolsRequestSchema handler:", error);
@@ -1152,273 +385,16 @@ export class CortexMCPServer {
       }
     });
 
-    // Handle call tool
+    // Handle call tool - routed through registry
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
         const { name, arguments: args } = request.params;
 
-        let result;
-        switch (name) {
-          case "spec":
-            result = await this.stableWorkflowHandler.handleSpec(
-              args as { description: string }
-            );
-            break;
-          case "workflow":
-            result = await this.stableWorkflowHandler.handleWorkflow(
-              args as {
-                phase:
-                  | "clarify"
-                  | "plan"
-                  | "review"
-                  | "tasks"
-                  | "implement"
-                  | "status";
-                workflowId?: string;
-              }
-            );
-            break;
-          case "list":
-            result = await this.stableWorkflowHandler.handleList(
-              args as { limit?: number }
-            );
-            break;
-          case "release":
-            result = await this.stableWorkflowHandler.handleRelease(
-              args as { version?: string; tag?: boolean; push?: boolean }
-            );
-            break;
-          case "onboard":
-            result = await this.stableWorkflowHandler.handleOnboard();
-            break;
-          case "constitution":
-            result = await this.stableWorkflowHandler.handleConstitution(
-              args as { updates?: string }
-            );
-            break;
-          case "memory":
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            result = await this.stableWorkflowHandler.handleMemory(args as any);
-            break;
-          case "correct":
-            result = await this.stableWorkflowHandler.handleCorrect(
-              args as {
-                wrongBehavior: string;
-                correctBehavior: string;
-                severity?: string;
-                filePatterns?: string[];
-                triggerKeywords?: string[];
-              }
-            );
-            break;
-          case "checkpoint-save":
-            result = await this.stableWorkflowHandler.handleCheckpointSave(
-              args as {
-                taskDescription: string;
-                completed?: CheckpointFile[];
-                pending?: CheckpointFile[];
-                context?: string;
-                nextStep?: string;
-                workflowId?: string;
-              }
-            );
-            break;
-          case "checkpoint-resume":
-            result = await this.stableWorkflowHandler.handleCheckpointResume(
-              args as { checkpointId?: string }
-            );
-            break;
-          case "checkpoint-list":
-            result = await this.stableWorkflowHandler.handleCheckpointList(
-              args as { limit?: number }
-            );
-            break;
-          case "checkpoint-clear":
-            result = await this.stableWorkflowHandler.handleCheckpointClear(
-              args as { checkpointId?: string }
-            );
-            break;
-          case "mark-danger":
-            result = await this.stableWorkflowHandler.handleMarkDanger(
-              args as {
-                file: string;
-                startLine?: number;
-                endLine?: number;
-                reason: string;
-              }
-            );
-            break;
-          case "unmark-danger":
-            result = await this.stableWorkflowHandler.handleUnmarkDanger(
-              args as { file: string; line?: number }
-            );
-            break;
-          case "list-dangers":
-            result = await this.stableWorkflowHandler.handleListDangers();
-            break;
-          case "environment-detect":
-            result =
-              await this.stableWorkflowHandler.handleEnvironmentDetect();
-            break;
-          case "environment-add":
-            result = await this.stableWorkflowHandler.handleEnvironmentAdd(
-              args as {
-                name: string;
-                description?: string;
-                nodeVersion?: string;
-                envVarsMissing?: string[];
-                constraints?: string[];
-              }
-            );
-            break;
-          case "environment-remove":
-            result = await this.stableWorkflowHandler.handleEnvironmentRemove(
-              args as { name: string }
-            );
-            break;
-          case "environment-list":
-            result =
-              await this.stableWorkflowHandler.handleEnvironmentList();
-            break;
-          case "environment-check":
-            result = await this.stableWorkflowHandler.handleEnvironmentCheck(
-              args as { files: string[] }
-            );
-            break;
-          case "dependency-analyze":
-            result =
-              await this.stableWorkflowHandler.handleDependencyAnalyze();
-            break;
-          case "dependency-check":
-            result = await this.stableWorkflowHandler.handleDependencyCheck(
-              args as { files: string[] }
-            );
-            break;
-          case "dependency-version":
-            result = await this.stableWorkflowHandler.handleDependencyVersion(
-              args as { package: string }
-            );
-            break;
-          case "dependency-suggest":
-            result = await this.stableWorkflowHandler.handleDependencySuggest(
-              args as { package: string; version?: string }
-            );
-            break;
-          case "impact-build-graph":
-            result = await this.stableWorkflowHandler.handleImpactBuildGraph(
-              args as { forceRebuild?: boolean }
-            );
-            break;
-          case "impact-analyze":
-            result = await this.stableWorkflowHandler.handleImpactAnalyze(
-              args as {
-                files: string[];
-                includeTests?: boolean;
-                maxDepth?: number;
-                excludePatterns?: string[];
-              }
-            );
-            break;
-          case "impact-preview":
-            result = await this.stableWorkflowHandler.handleImpactPreview(
-              args as { files: string[] }
-            );
-            break;
-          case "impact-validate":
-            result = await this.stableWorkflowHandler.handleImpactValidate(
-              args as { files: string[] }
-            );
-            break;
-          case "impact-stats":
-            result = await this.stableWorkflowHandler.handleImpactStats();
-            break;
-          case "performance-analyze":
-            result = await this.stableWorkflowHandler.handlePerformanceAnalyze(
-              args as { files: string[] }
-            );
-            break;
-          case "performance-list-patterns":
-            result =
-              await this.stableWorkflowHandler.handlePerformanceListPatterns();
-            break;
-          case "performance-add-pattern":
-            result = await this.stableWorkflowHandler.handlePerformanceAddPattern(
-              {
-                ...(args as {
-                  name: string;
-                  category: string;
-                  description: string;
-                  regex: string;
-                  contextRegex?: string;
-                  severity: "info" | "warning" | "error";
-                  suggestion: string;
-                  filePatterns?: string[];
-                }),
-                category: (args as { category: string })
-                  .category as PerformanceCategory,
-              }
-            );
-            break;
-          case "performance-disable-pattern":
-            result =
-              await this.stableWorkflowHandler.handlePerformanceDisablePattern(
-                args as { patternName: string }
-              );
-            break;
-          case "performance-enable-pattern":
-            result =
-              await this.stableWorkflowHandler.handlePerformanceEnablePattern(
-                args as { patternName: string }
-              );
-            break;
-          case "team-share-insight":
-            result = await this.stableWorkflowHandler.handleTeamShareInsight(
-              args as {
-                title: string;
-                content: string;
-                type: "learning" | "pattern" | "decision" | "pr-review";
-                author: string;
-                tags?: string[];
-                scope?: string;
-              }
-            );
-            break;
-          case "team-view-insights":
-            result = await this.stableWorkflowHandler.handleTeamViewInsights(
-              args as {
-                author?: string;
-                type?: string;
-                tags?: string[];
-              }
-            );
-            break;
-          case "team-learn-pr":
-            result = await this.stableWorkflowHandler.handleTeamLearnPR(
-              args as { prNumber: number }
-            );
-            break;
-          case "team-view-conflicts":
-            result = await this.stableWorkflowHandler.handleTeamViewConflicts();
-            break;
-          case "team-resolve-conflict":
-            result = await this.stableWorkflowHandler.handleTeamResolveConflict(
-              args as {
-                conflictId: string;
-                resolution: string;
-              }
-            );
-            break;
-          case "team-sync":
-            result = await this.stableWorkflowHandler.handleTeamSync(
-              args as { direction: "push" | "pull" }
-            );
-            break;
-          case "team-stats":
-            result = await this.stableWorkflowHandler.handleTeamStats();
-            break;
-          default:
-            throw new Error(`Unknown tool: ${name}`);
+        if (!this.registry.hasTool(name)) {
+          throw new Error(`Unknown tool: ${name}`);
         }
+
+        const result = await this.registry.executeTool(name, args ?? {});
 
         return {
           content: result.content,
@@ -1689,89 +665,36 @@ export class CortexMCPServer {
       }
     });
 
-    // Handle get prompt
+    // Handle get prompt - routed through registry
     this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
       try {
         const { name, arguments: args } = request.params;
 
-        // Map prompt names to tool calls
-        const toolName = name.replace("cortex-", "cortex.");
+        // Map prompt names (cortex-xxx) to tool names (xxx)
+        const promptName = name.replace("cortex-", "");
 
-        let toolArgs: Record<string, unknown> = {};
-        if (args) {
-          // args is already a Record<string, string> from MCP SDK
-          toolArgs = args as Record<string, unknown>;
+        // Map workflow phase prompts to the workflow tool with phase argument
+        const workflowPhases = ["clarify", "plan", "review", "tasks"];
+        let toolName: string;
+        let toolArgs: Record<string, unknown> = args
+          ? (args as Record<string, unknown>)
+          : {};
+
+        if (workflowPhases.includes(promptName)) {
+          // These are workflow phases - call the "workflow" tool with phase
+          toolName = "workflow";
+          toolArgs = { ...toolArgs, phase: promptName };
+        } else {
+          // Direct mapping for other prompts
+          toolName = promptName;
         }
 
-        // Call the corresponding tool
-        let result;
-        switch (toolName) {
-          case "cortex.spec":
-            result = await this.stableWorkflowHandler.handleSpec(
-              toolArgs as { description: string }
-            );
-            break;
-          case "cortex.clarify":
-            result = await this.stableWorkflowHandler.handleClarify(
-              toolArgs as { workflowId: string }
-            );
-            break;
-          case "cortex.plan":
-            result = await this.stableWorkflowHandler.handlePlan(
-              toolArgs as { workflowId: string }
-            );
-            break;
-          case "cortex.review":
-            result = await this.stableWorkflowHandler.handleReview(
-              toolArgs as { workflowId: string }
-            );
-            break;
-          case "cortex.tasks":
-            result = await this.stableWorkflowHandler.handleTasks(
-              toolArgs as { workflowId: string }
-            );
-            break;
-          case "cortex.implement":
-            result = await this.stableWorkflowHandler.handleImplement(
-              toolArgs as { workflowId: string }
-            );
-            break;
-          case "cortex.decompose-task":
-            result = await this.stableWorkflowHandler.handleTaskDecomposition(
-              toolArgs as {
-                workflowId: string;
-                taskId: string;
-                taskDescription: string;
-              }
-            );
-            break;
-          case "cortex.validate-implementation":
-            result =
-              await this.stableWorkflowHandler.handleImplementationValidation(
-                toolArgs as { changedFiles: string[] }
-              );
-            break;
-          case "cortex.release":
-            result = await this.stableWorkflowHandler.handleRelease(
-              toolArgs as { version?: string; tag?: boolean; push?: boolean }
-            );
-            break;
-          case "cortex.onboard":
-            result = await this.stableWorkflowHandler.handleOnboard();
-            break;
-          case "cortex.status":
-            result = await this.stableWorkflowHandler.handleStatus(
-              toolArgs as { workflowId: string }
-            );
-            break;
-          case "cortex.list":
-            result = await this.stableWorkflowHandler.handleList(
-              toolArgs as { limit?: number }
-            );
-            break;
-          default:
-            throw new Error(`Unknown prompt: ${name}`);
+        // Execute through registry
+        if (!this.registry.hasTool(toolName)) {
+          throw new Error(`Unknown prompt: ${name}`);
         }
+
+        const result = await this.registry.executeTool(toolName, toolArgs);
 
         // Convert tool result to prompt response
         return {

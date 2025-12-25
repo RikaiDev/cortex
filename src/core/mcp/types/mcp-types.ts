@@ -7,38 +7,6 @@ export interface MCPToolResult {
   isError?: boolean;
 }
 
-/**
- * Workflow phase types
- */
-export type WorkflowPhase =
-  | "clarify"
-  | "plan"
-  | "review"
-  | "tasks"
-  | "implement"
-  | "status";
-
-export interface WorkflowToolArgs {
-  phase: WorkflowPhase;
-  workflowId?: string;
-}
-
-/**
- * Memory tool arguments (discriminated union)
- */
-export type MemoryToolArgs =
-  | {
-      action: "learn";
-      title: string;
-      content: string;
-      type: "pattern" | "decision" | "solution" | "lesson";
-      tags?: string[];
-    }
-  | {
-      action: "context";
-      query: string;
-    };
-
 export interface MCPResourceResult {
   contents: Array<{
     uri: string;

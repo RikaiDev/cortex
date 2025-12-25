@@ -7,6 +7,7 @@
  */
 
 import * as path from "node:path";
+import { MCPTool } from "../../decorators/index.js";
 import { TemplateGenerator } from "../../services/template-generator.js";
 import { WorkflowService } from "../../services/workflow-service.js";
 import { MemoryService } from "../../services/memory-service.js";
@@ -54,6 +55,20 @@ export class ExecutionHandler {
   /**
    * Handle tasks - Generate task breakdown
    */
+  @MCPTool({
+    name: "tasks",
+    description:
+      "Generate a detailed task breakdown from the implementation plan",
+    inputSchema: {
+      type: "object",
+      properties: {
+        workflowId: {
+          type: "string",
+          description: "Workflow ID (optional, uses latest if not provided)",
+        },
+      },
+    },
+  })
   async handleTasks(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
       const workflowId = await this.ensureWorkflowId(args.workflowId);
@@ -114,6 +129,20 @@ After generating the task breakdown, save it to:
   /**
    * Handle implement - Execute implementation
    */
+  @MCPTool({
+    name: "implement",
+    description:
+      "Start implementation execution with Multi-Role AI coordination",
+    inputSchema: {
+      type: "object",
+      properties: {
+        workflowId: {
+          type: "string",
+          description: "Workflow ID (optional, uses latest if not provided)",
+        },
+      },
+    },
+  })
   async handleImplement(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
       const workflowId = await this.ensureWorkflowId(args.workflowId);

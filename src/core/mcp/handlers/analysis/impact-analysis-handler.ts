@@ -4,6 +4,7 @@
  * Handles change impact analysis and dependency graph operations
  */
 
+import { MCPTool } from "../../decorators/index.js";
 import { ImpactAnalyzer } from "../../services/impact-analyzer.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { ImpactAnalysisOptions } from "../../types/change-impact.js";
@@ -18,6 +19,20 @@ export class ImpactAnalysisHandler {
   /**
    * Build dependency graph
    */
+  @MCPTool({
+    name: "impact-build-graph",
+    description:
+      "Build or refresh the dependency graph for impact analysis (caches for 5 minutes)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        forceRebuild: {
+          type: "boolean",
+          description: "Force rebuild even if cache is valid (default: false)",
+        },
+      },
+    },
+  })
   async handleBuildGraph(args: {
     forceRebuild?: boolean;
   }): Promise<MCPToolResult> {
@@ -51,6 +66,36 @@ export class ImpactAnalysisHandler {
   /**
    * Analyze impact of changing files
    */
+  @MCPTool({
+    name: "impact-analyze",
+    description:
+      "Analyze change impact for specific files (shows affected files, breaking changes, recommendations)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        files: {
+          type: "array",
+          items: { type: "string" },
+          description: "Files to analyze impact for (relative paths)",
+        },
+        includeTests: {
+          type: "boolean",
+          description: "Include test files in impact analysis (default: true)",
+        },
+        maxDepth: {
+          type: "number",
+          description:
+            "Maximum dependency depth to analyze (default: 10, higher = more thorough)",
+        },
+        excludePatterns: {
+          type: "array",
+          items: { type: "string" },
+          description: "Glob patterns to exclude from analysis",
+        },
+      },
+      required: ["files"],
+    },
+  })
   async handleAnalyzeImpact(args: {
     files: string[];
     includeTests?: boolean;
@@ -174,9 +219,23 @@ export class ImpactAnalysisHandler {
   /**
    * Preview impact before making changes
    */
-  async handlePreviewImpact(args: {
-    files: string[];
-  }): Promise<MCPToolResult> {
+  @MCPTool({
+    name: "impact-preview",
+    description:
+      "Quick preview of change impact before modifying files (lightweight analysis)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        files: {
+          type: "array",
+          items: { type: "string" },
+          description: "Files you plan to modify",
+        },
+      },
+      required: ["files"],
+    },
+  })
+  async handlePreviewImpact(args: { files: string[] }): Promise<MCPToolResult> {
     try {
       const result = await this.impactAnalyzer.analyzeImpact(args.files, {
         includeTests: true,
@@ -194,7 +253,16 @@ export class ImpactAnalysisHandler {
         content: [
           {
             type: "text",
-            text: `## 🔍 Impact Preview\n\n**Before modifying these files:**\n${args.files.map((f) => `- ${f}`).join("\n")}\n\n**You should know:**\n\n${this.getImpactEmoji(result.impactLevel)} **Impact Level:** ${result.impactLevel.toUpperCase()}\n\n📦 **${prodFiles.length}** production file(s) will be affected\n🧪 **${testFiles.length}** test file(s) will be affected\n\n**Next Steps:**\n${result.affectedFiles.length === 0 ? "✅ Safe to proceed with changes" : `⚠️  Review affected files:\n${result.affectedFiles.slice(0, 10).map((f) => `   - ${f}`).join("\n")}${result.affectedFiles.length > 10 ? `\n   ... and ${result.affectedFiles.length - 10} more` : ""}`}\n\n💡 Use \`impact-analyze\` for detailed analysis before implementing.`,
+            text: `## 🔍 Impact Preview\n\n**Before modifying these files:**\n${args.files.map((f) => `- ${f}`).join("\n")}\n\n**You should know:**\n\n${this.getImpactEmoji(result.impactLevel)} **Impact Level:** ${result.impactLevel.toUpperCase()}\n\n📦 **${prodFiles.length}** production file(s) will be affected\n🧪 **${testFiles.length}** test file(s) will be affected\n\n**Next Steps:**\n${
+              result.affectedFiles.length === 0
+                ? "✅ Safe to proceed with changes"
+                : `⚠️  Review affected files:\n${result.affectedFiles
+                    .slice(0, 10)
+                    .map((f) => `   - ${f}`)
+                    .join(
+                      "\n"
+                    )}${result.affectedFiles.length > 10 ? `\n   ... and ${result.affectedFiles.length - 10} more` : ""}`
+            }\n\n💡 Use \`impact-analyze\` for detailed analysis before implementing.`,
           },
         ],
       };
@@ -214,6 +282,22 @@ export class ImpactAnalysisHandler {
   /**
    * Validate changes didn't break dependencies
    */
+  @MCPTool({
+    name: "impact-validate",
+    description:
+      "Validate that recent changes didn't break dependencies (run after modifying files)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        files: {
+          type: "array",
+          items: { type: "string" },
+          description: "Files that were modified",
+        },
+      },
+      required: ["files"],
+    },
+  })
   async handleValidateChanges(args: {
     files: string[];
   }): Promise<MCPToolResult> {
@@ -248,7 +332,12 @@ export class ImpactAnalysisHandler {
         content: [
           {
             type: "text",
-            text: `⚠️  **Review Required**\n\n**Modified files:**\n${args.files.map((f) => `- ${f}`).join("\n")}\n\n**Files that may need updates:**\n${issues.slice(0, 20).map((f) => `- ${f}`).join("\n")}${issues.length > 20 ? `\n... and ${issues.length - 20} more` : ""}\n\n**Recommendation:**\nReview the affected files to ensure they're compatible with your changes.`,
+            text: `⚠️  **Review Required**\n\n**Modified files:**\n${args.files.map((f) => `- ${f}`).join("\n")}\n\n**Files that may need updates:**\n${issues
+              .slice(0, 20)
+              .map((f) => `- ${f}`)
+              .join(
+                "\n"
+              )}${issues.length > 20 ? `\n... and ${issues.length - 20} more` : ""}\n\n**Recommendation:**\nReview the affected files to ensure they're compatible with your changes.`,
           },
         ],
         isError: false,
@@ -269,6 +358,15 @@ export class ImpactAnalysisHandler {
   /**
    * Get dependency graph statistics
    */
+  @MCPTool({
+    name: "impact-stats",
+    description:
+      "Get dependency graph statistics (file count, imports, exports, cache status)",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  })
   async handleGraphStats(): Promise<MCPToolResult> {
     try {
       const stats = this.impactAnalyzer.getGraphStats();
@@ -284,12 +382,12 @@ export class ImpactAnalysisHandler {
         };
       }
 
-      const avgImportsPerFile = (
-        stats.totalImports / stats.fileCount
-      ).toFixed(1);
-      const avgExportsPerFile = (
-        stats.totalExports / stats.fileCount
-      ).toFixed(1);
+      const avgImportsPerFile = (stats.totalImports / stats.fileCount).toFixed(
+        1
+      );
+      const avgExportsPerFile = (stats.totalExports / stats.fileCount).toFixed(
+        1
+      );
 
       return {
         content: [

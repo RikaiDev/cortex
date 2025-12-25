@@ -6,6 +6,7 @@
 
 import * as path from "node:path";
 import fs from "fs-extra";
+import { MCPTool } from "../../decorators/index.js";
 import { ProjectDetector } from "../../services/project-detector.js";
 import { ChangeAnalyzer } from "../../services/change-analyzer.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
@@ -13,6 +14,29 @@ import type { MCPToolResult } from "../../types/mcp-types.js";
 export class ReleaseHandler {
   constructor(private projectRoot: string) {}
 
+  @MCPTool({
+    name: "release",
+    description:
+      "Generate release documentation (CHANGELOG, release notes) based on git history and workflows",
+    inputSchema: {
+      type: "object",
+      properties: {
+        version: {
+          type: "string",
+          description:
+            "Version to release (optional, auto-detects if not provided)",
+        },
+        tag: {
+          type: "boolean",
+          description: "Create a git tag for this release",
+        },
+        push: {
+          type: "boolean",
+          description: "Push changes and tag to remote",
+        },
+      },
+    },
+  })
   async handleRelease(args: {
     version?: string;
     tag?: boolean;

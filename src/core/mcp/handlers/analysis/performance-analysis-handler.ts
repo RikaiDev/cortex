@@ -4,6 +4,7 @@
  * Handles performance anti-pattern detection
  */
 
+import { MCPTool } from "../../decorators/index.js";
 import { PerformanceAnalyzer } from "../../services/performance-analyzer.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type {
@@ -21,6 +22,22 @@ export class PerformanceAnalysisHandler {
   /**
    * Analyze files for performance issues
    */
+  @MCPTool({
+    name: "performance-analyze",
+    description:
+      "Analyze files for performance anti-patterns (N+1 queries, missing cleanup, blocking operations, resource leaks)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        files: {
+          type: "array",
+          items: { type: "string" },
+          description: "Files to analyze for performance issues",
+        },
+      },
+      required: ["files"],
+    },
+  })
   async handleAnalyzePerformance(args: {
     files: string[];
   }): Promise<MCPToolResult> {
@@ -116,6 +133,14 @@ export class PerformanceAnalysisHandler {
   /**
    * List all performance patterns
    */
+  @MCPTool({
+    name: "performance-list-patterns",
+    description: "List all performance analysis patterns (built-in and custom)",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  })
   async handleListPatterns(): Promise<MCPToolResult> {
     try {
       const patterns = this.performanceAnalyzer.getPatterns();
@@ -175,6 +200,68 @@ export class PerformanceAnalysisHandler {
   /**
    * Add custom pattern
    */
+  @MCPTool({
+    name: "performance-add-pattern",
+    description: "Add a custom performance anti-pattern to detect",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description: "Unique pattern name",
+        },
+        category: {
+          type: "string",
+          enum: [
+            "database",
+            "async",
+            "memory",
+            "rendering",
+            "computation",
+            "io",
+            "resource-leak",
+          ],
+          description: "Pattern category",
+        },
+        description: {
+          type: "string",
+          description: "What this pattern detects",
+        },
+        regex: {
+          type: "string",
+          description: "Regex pattern to match (JavaScript regex syntax)",
+        },
+        contextRegex: {
+          type: "string",
+          description:
+            "Optional regex for surrounding context that must also match",
+        },
+        severity: {
+          type: "string",
+          enum: ["info", "warning", "error"],
+          description: "How critical is this pattern",
+        },
+        suggestion: {
+          type: "string",
+          description: "How to fix this issue",
+        },
+        filePatterns: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "Glob patterns for files to check (e.g., ['**/*.ts', '**/*.tsx'])",
+        },
+      },
+      required: [
+        "name",
+        "category",
+        "description",
+        "regex",
+        "severity",
+        "suggestion",
+      ],
+    },
+  })
   async handleAddPattern(args: {
     name: string;
     category: PerformanceCategory;
@@ -223,6 +310,20 @@ export class PerformanceAnalysisHandler {
   /**
    * Disable a pattern
    */
+  @MCPTool({
+    name: "performance-disable-pattern",
+    description: "Disable a performance pattern (stops checking for it)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        patternName: {
+          type: "string",
+          description: "Name of the pattern to disable",
+        },
+      },
+      required: ["patternName"],
+    },
+  })
   async handleDisablePattern(args: {
     patternName: string;
   }): Promise<MCPToolResult> {
@@ -253,6 +354,20 @@ export class PerformanceAnalysisHandler {
   /**
    * Enable a pattern
    */
+  @MCPTool({
+    name: "performance-enable-pattern",
+    description: "Re-enable a previously disabled performance pattern",
+    inputSchema: {
+      type: "object",
+      properties: {
+        patternName: {
+          type: "string",
+          description: "Name of the pattern to enable",
+        },
+      },
+      required: ["patternName"],
+    },
+  })
   async handleEnablePattern(args: {
     patternName: string;
   }): Promise<MCPToolResult> {

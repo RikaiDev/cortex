@@ -205,7 +205,9 @@ export class DangerZoneService {
 
       lines.push(`📍 ${location}`);
       lines.push(`   Reason: ${zone.reason}`);
-      lines.push(`   Source: ${zone.markedBy === "comment" ? "Code comment" : "Config file"}`);
+      lines.push(
+        `   Source: ${zone.markedBy === "comment" ? "Code comment" : "Config file"}`
+      );
       lines.push("");
     }
 

@@ -7,6 +7,7 @@
  */
 
 import * as path from "node:path";
+import { MCPTool } from "../../decorators/index.js";
 import { TemplateGenerator } from "../../services/template-generator.js";
 import { WorkflowService } from "../../services/workflow-service.js";
 import { MemoryService } from "../../services/memory-service.js";
@@ -54,6 +55,19 @@ export class PlanningHandler {
   /**
    * Handle plan - Create implementation plan
    */
+  @MCPTool({
+    name: "plan",
+    description: "Create an implementation plan for a workflow specification",
+    inputSchema: {
+      type: "object",
+      properties: {
+        workflowId: {
+          type: "string",
+          description: "Workflow ID (optional, uses latest if not provided)",
+        },
+      },
+    },
+  })
   async handlePlan(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
       const workflowId = await this.ensureWorkflowId(args.workflowId);
@@ -121,6 +135,20 @@ await contextManager.updateContext('${workflowId}');
   /**
    * Handle review - Technical review of implementation plan
    */
+  @MCPTool({
+    name: "review",
+    description:
+      "Conduct a technical review of the implementation plan before execution",
+    inputSchema: {
+      type: "object",
+      properties: {
+        workflowId: {
+          type: "string",
+          description: "Workflow ID (optional, uses latest if not provided)",
+        },
+      },
+    },
+  })
   async handleReview(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
       const workflowId = await this.ensureWorkflowId(args.workflowId);

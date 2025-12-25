@@ -4,6 +4,7 @@
  * Handles team knowledge sharing and collaboration
  */
 
+import { MCPTool } from "../../decorators/index.js";
 import { TeamKnowledgeService } from "../../services/team-knowledge-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { TeamInsight } from "../../types/team-knowledge.js";
@@ -18,6 +19,44 @@ export class TeamKnowledgeHandler {
   /**
    * Share an insight with the team
    */
+  @MCPTool({
+    name: "team-share-insight",
+    description:
+      "Share an insight, pattern, or decision with the team (stored in .cortex/team-knowledge.json)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          description: "Short title for the insight",
+        },
+        content: {
+          type: "string",
+          description: "Full description of the insight",
+        },
+        type: {
+          type: "string",
+          enum: ["learning", "pattern", "decision", "pr-review"],
+          description: "Type of insight",
+        },
+        author: {
+          type: "string",
+          description: "Who is sharing this insight",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "Tags for categorization",
+        },
+        scope: {
+          type: "string",
+          description:
+            "Optional scope (e.g., 'authentication', 'database', 'api')",
+        },
+      },
+      required: ["title", "content", "type", "author"],
+    },
+  })
   async handleShareInsight(args: {
     title: string;
     content: string;
@@ -62,6 +101,29 @@ export class TeamKnowledgeHandler {
   /**
    * View team insights
    */
+  @MCPTool({
+    name: "team-view-insights",
+    description: "View team insights (filter by author, type, or tags)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        author: {
+          type: "string",
+          description: "Filter by author",
+        },
+        type: {
+          type: "string",
+          enum: ["learning", "pattern", "decision", "pr-review"],
+          description: "Filter by type",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "Filter by tags (any match)",
+        },
+      },
+    },
+  })
   async handleViewInsights(args: {
     author?: string;
     type?: string;
@@ -96,10 +158,13 @@ export class TeamKnowledgeHandler {
       );
 
       for (const [type, typeInsights] of Object.entries(byType)) {
-        sections.push(`\n### ${this.formatType(type)} (${typeInsights.length})`);
+        sections.push(
+          `\n### ${this.formatType(type)} (${typeInsights.length})`
+        );
 
         for (const insight of typeInsights.slice(0, 5)) {
-          const conflictIcon = insight.conflicts && insight.conflicts.length > 0 ? "⚠️  " : "";
+          const conflictIcon =
+            insight.conflicts && insight.conflicts.length > 0 ? "⚠️  " : "";
           const scopeText = insight.scope ? ` [${insight.scope}]` : "";
           sections.push(
             `\n${conflictIcon}**${insight.title}**${scopeText}\n   Author: ${insight.author} | ${new Date(insight.timestamp).toLocaleDateString()}\n   ${insight.content.substring(0, 150)}${insight.content.length > 150 ? "..." : ""}\n   Tags: ${insight.tags.join(", ") || "none"}`
@@ -135,6 +200,21 @@ export class TeamKnowledgeHandler {
   /**
    * Learn from PR reviews
    */
+  @MCPTool({
+    name: "team-learn-pr",
+    description:
+      "Extract review patterns from a PR to learn team preferences and standards",
+    inputSchema: {
+      type: "object",
+      properties: {
+        prNumber: {
+          type: "number",
+          description: "PR number to learn from",
+        },
+      },
+      required: ["prNumber"],
+    },
+  })
   async handleLearnFromPR(args: { prNumber: number }): Promise<MCPToolResult> {
     try {
       const patterns = await this.teamKnowledgeService.extractPRPatterns(
@@ -183,6 +263,15 @@ export class TeamKnowledgeHandler {
   /**
    * View conflicts
    */
+  @MCPTool({
+    name: "team-view-conflicts",
+    description:
+      "View unresolved conflicts between team insights (contradicting patterns or decisions)",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  })
   async handleViewConflicts(): Promise<MCPToolResult> {
     try {
       const conflicts = await this.teamKnowledgeService.getConflicts(false);
@@ -235,6 +324,25 @@ export class TeamKnowledgeHandler {
   /**
    * Resolve a conflict
    */
+  @MCPTool({
+    name: "team-resolve-conflict",
+    description:
+      "Resolve a conflict between team insights by recording a decision",
+    inputSchema: {
+      type: "object",
+      properties: {
+        conflictId: {
+          type: "string",
+          description: "ID of the conflict to resolve",
+        },
+        resolution: {
+          type: "string",
+          description: "How the conflict was resolved (which approach to use)",
+        },
+      },
+      required: ["conflictId", "resolution"],
+    },
+  })
   async handleResolveConflict(args: {
     conflictId: string;
     resolution: string;
@@ -269,7 +377,25 @@ export class TeamKnowledgeHandler {
   /**
    * Sync team knowledge
    */
-  async handleSync(args: { direction: "push" | "pull" }): Promise<MCPToolResult> {
+  @MCPTool({
+    name: "team-sync",
+    description:
+      "Sync team knowledge with git (push local insights or pull team updates)",
+    inputSchema: {
+      type: "object",
+      properties: {
+        direction: {
+          type: "string",
+          enum: ["push", "pull"],
+          description: "Push local insights or pull team updates",
+        },
+      },
+      required: ["direction"],
+    },
+  })
+  async handleSync(args: {
+    direction: "push" | "pull";
+  }): Promise<MCPToolResult> {
     try {
       if (args.direction === "push") {
         await this.teamKnowledgeService.syncToGit();
@@ -308,6 +434,15 @@ export class TeamKnowledgeHandler {
   /**
    * Get team knowledge statistics
    */
+  @MCPTool({
+    name: "team-stats",
+    description:
+      "Get team knowledge statistics (insights count, conflicts, contributors)",
+    inputSchema: {
+      type: "object",
+      properties: {},
+    },
+  })
   async handleGetStats(): Promise<MCPToolResult> {
     try {
       const stats = await this.teamKnowledgeService.getStats();

@@ -72,7 +72,9 @@ export class TeamKnowledgeService {
   /**
    * Share an insight with the team
    */
-  async shareInsight(insight: Omit<TeamInsight, "id" | "timestamp">): Promise<string> {
+  async shareInsight(
+    insight: Omit<TeamInsight, "id" | "timestamp">
+  ): Promise<string> {
     await this.loadConfig();
 
     if (!this.config.enabled) {
@@ -163,7 +165,11 @@ export class TeamKnowledgeService {
       if (data.reviews) {
         for (const review of data.reviews) {
           if (review.body) {
-            this.extractPatternsFromComment(review.body, review.author.login, patterns);
+            this.extractPatternsFromComment(
+              review.body,
+              review.author.login,
+              patterns
+            );
           }
         }
       }
@@ -172,7 +178,11 @@ export class TeamKnowledgeService {
       if (data.comments) {
         for (const comment of data.comments) {
           if (comment.body) {
-            this.extractPatternsFromComment(comment.body, comment.author.login, patterns);
+            this.extractPatternsFromComment(
+              comment.body,
+              comment.author.login,
+              patterns
+            );
           }
         }
       }
@@ -199,7 +209,9 @@ export class TeamKnowledgeService {
 
       return Array.from(patterns.values());
     } catch (error) {
-      throw new Error(`Failed to extract PR patterns: ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(
+        `Failed to extract PR patterns: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
   }
 
@@ -213,13 +225,22 @@ export class TeamKnowledgeService {
   ): void {
     // Common review patterns to detect
     const reviewPatterns = [
-      { regex: /missing\s+error\s+handling/i, pattern: "missing-error-handling" },
+      {
+        regex: /missing\s+error\s+handling/i,
+        pattern: "missing-error-handling",
+      },
       { regex: /add\s+(tests?|unit\s+tests?)/i, pattern: "missing-tests" },
       { regex: /(consider|use)\s+async\/await/i, pattern: "use-async-await" },
       { regex: /missing\s+validation/i, pattern: "missing-validation" },
-      { regex: /extract\s+(to\s+)?(\w+\s+)?(function|method|constant)/i, pattern: "extract-function" },
+      {
+        regex: /extract\s+(to\s+)?(\w+\s+)?(function|method|constant)/i,
+        pattern: "extract-function",
+      },
       { regex: /typo|spelling/i, pattern: "typo" },
-      { regex: /performance|optimize|inefficient/i, pattern: "performance-concern" },
+      {
+        regex: /performance|optimize|inefficient/i,
+        pattern: "performance-concern",
+      },
       { regex: /security|vulnerable|sanitize/i, pattern: "security-issue" },
       { regex: /naming|rename|better\s+name/i, pattern: "naming-improvement" },
       { regex: /duplicate|DRY|don't\s+repeat/i, pattern: "code-duplication" },
@@ -256,10 +277,11 @@ export class TeamKnowledgeService {
     const descriptions: Record<string, string> = {
       "missing-error-handling": "Error handling is missing or incomplete",
       "missing-tests": "Tests should be added for this code",
-      "use-async-await": "Consider using async/await instead of callbacks/promises",
+      "use-async-await":
+        "Consider using async/await instead of callbacks/promises",
       "missing-validation": "Input validation is missing",
       "extract-function": "Code should be extracted to a separate function",
-      "typo": "Spelling or grammar issues",
+      typo: "Spelling or grammar issues",
       "performance-concern": "Performance optimization needed",
       "security-issue": "Security vulnerability or concern",
       "naming-improvement": "Variable/function naming could be improved",
@@ -327,7 +349,9 @@ export class TeamKnowledgeService {
         this.scopesOverlap(existingInsight.scope, newInsight.scope)
       ) {
         // Check for content conflict (simple heuristic)
-        if (this.hasContentConflict(existingInsight.content, newInsight.content)) {
+        if (
+          this.hasContentConflict(existingInsight.content, newInsight.content)
+        ) {
           const conflictId = `conflict-${Date.now()}`;
 
           const conflict: ConflictDetection = {
@@ -360,9 +384,7 @@ export class TeamKnowledgeService {
   private scopesOverlap(scope1: string, scope2: string): boolean {
     // Simple pattern matching
     return (
-      scope1 === scope2 ||
-      scope1.includes(scope2) ||
-      scope2.includes(scope1)
+      scope1 === scope2 || scope1.includes(scope2) || scope2.includes(scope1)
     );
   }
 
@@ -474,19 +496,19 @@ export class TeamKnowledgeService {
       });
 
       // Check if there are changes
-      const status = execSync("git status --porcelain .cortex/team-knowledge/", {
-        cwd: this.projectRoot,
-        encoding: "utf-8",
-      });
+      const status = execSync(
+        "git status --porcelain .cortex/team-knowledge/",
+        {
+          cwd: this.projectRoot,
+          encoding: "utf-8",
+        }
+      );
 
       if (status.trim()) {
         // Commit changes
-        execSync(
-          'git commit -m "chore: sync team knowledge insights"',
-          {
-            cwd: this.projectRoot,
-          }
-        );
+        execSync('git commit -m "chore: sync team knowledge insights"', {
+          cwd: this.projectRoot,
+        });
       }
     } catch {
       // Ignore errors (might not be a git repo or no changes)
