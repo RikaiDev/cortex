@@ -8,6 +8,8 @@ import { readFileSync } from "fs";
 import * as path from "path";
 import * as os from "os";
 import fs from "fs-extra";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -23,6 +25,11 @@ import {
 import { CortexAI } from "../index.js";
 import { ToolHandler } from "./handlers/tool-handler.js";
 import { ResourceHandler } from "./handlers/resource-handler.js";
+import { StableWorkflowHandler } from "./handlers/stable-workflow-handler.js";
+
+// ES Module support for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Get version from package.json
@@ -44,7 +51,7 @@ function getPackageVersion(): string {
     }
 
     return "0.0.0";
-  } catch (error) {
+  } catch {
     return "0.0.0";
   }
 }
@@ -58,6 +65,7 @@ export class CortexMCPServer {
   private projectRoot: string;
   private toolHandler: ToolHandler;
   private resourceHandler: ResourceHandler;
+  private stableWorkflowHandler: StableWorkflowHandler;
 
   constructor() {
     this.server = new Server(
@@ -78,6 +86,7 @@ export class CortexMCPServer {
     this.cortex = new CortexAI(this.projectRoot);
     this.toolHandler = new ToolHandler(this.projectRoot, this.cortex);
     this.resourceHandler = new ResourceHandler(this.projectRoot);
+    this.stableWorkflowHandler = new StableWorkflowHandler(this.projectRoot);
     this.setupHandlers();
     this.initializeCortexWorkspace();
   }
@@ -185,17 +194,60 @@ export class CortexMCPServer {
     const cortexDir = path.join(this.projectRoot, ".cortex");
     const rolesDir = path.join(cortexDir, "roles");
     const workflowsDir = path.join(cortexDir, "workflows");
-    const workspacesDir = path.join(cortexDir, "workspaces");
-    const experiencesDir = path.join(cortexDir, "experiences");
+    const memoryDir = path.join(cortexDir, "memory");
+    const templatesDir = path.join(cortexDir, "templates");
 
     // Create directories
     fs.ensureDirSync(rolesDir);
     fs.ensureDirSync(workflowsDir);
-    fs.ensureDirSync(workspacesDir);
-    fs.ensureDirSync(experiencesDir);
+    fs.ensureDirSync(memoryDir);
+    fs.ensureDirSync(templatesDir);
+
+    // Find cortex-ai tool's installation directory
+    const toolRoot = this.findToolRoot();
+
+    // Copy stable workflow templates from tool to user project
+    const toolTemplatesDir = path.join(toolRoot, "templates", "cortex");
+    if (fs.existsSync(toolTemplatesDir)) {
+      // Copy all template files
+      const templateFiles = [
+        "constitution.md",
+        "spec-template.md",
+        "clarify-template.md",
+        "plan-template.md",
+        "review-template.md",
+        "tasks-template.md",
+        "checklist-template.md",
+        "execution-template.md",
+        "memory-index.json",
+      ];
+
+      for (const templateFile of templateFiles) {
+        const sourcePath = path.join(toolTemplatesDir, templateFile);
+        const targetPath = path.join(templatesDir, templateFile);
+        if (fs.existsSync(sourcePath) && !fs.existsSync(targetPath)) {
+          fs.copyFileSync(sourcePath, targetPath);
+        }
+      }
+
+      // Copy commands directory
+      const commandsSourceDir = path.join(toolTemplatesDir, "commands");
+      const commandsTargetDir = path.join(templatesDir, "commands");
+      if (fs.existsSync(commandsSourceDir)) {
+        fs.ensureDirSync(commandsTargetDir);
+        const commandFiles = fs.readdirSync(commandsSourceDir);
+        for (const commandFile of commandFiles) {
+          const sourcePath = path.join(commandsSourceDir, commandFile);
+          const targetPath = path.join(commandsTargetDir, commandFile);
+          if (!fs.existsSync(targetPath)) {
+            fs.copyFileSync(sourcePath, targetPath);
+          }
+        }
+      }
+    }
 
     // Copy default role files if they don't exist
-    const defaultRolesDir = path.join(this.projectRoot, "templates", "roles");
+    const defaultRolesDir = path.join(toolRoot, "templates", "roles");
     if (fs.existsSync(defaultRolesDir)) {
       const roleFiles = fs.readdirSync(defaultRolesDir);
       for (const roleFile of roleFiles) {
@@ -206,6 +258,47 @@ export class CortexMCPServer {
         }
       }
     }
+
+    // Initialize empty memory index
+    const memoryIndexPath = path.join(memoryDir, "index.json");
+    if (!fs.existsSync(memoryIndexPath)) {
+      const emptyIndex = {
+        version: "1.0",
+        lastUpdated: new Date().toISOString(),
+        totalExperiences: 0,
+        categories: {
+          patterns: 0,
+          decisions: 0,
+          solutions: 0,
+          lessons: 0,
+        },
+        index: [],
+      };
+      fs.writeJsonSync(memoryIndexPath, emptyIndex, { spaces: 2 });
+    }
+  }
+
+  /**
+   * Find cortex-ai tool's root directory
+   */
+  private findToolRoot(): string {
+    // Try relative to current file location (works in development and production)
+    const currentFileDir = __dirname;
+    const possiblePaths = [
+      path.join(currentFileDir, "..", "..", ".."), // dist/core/mcp -> root
+      path.join(currentFileDir, "..", ".."), // dist/core -> root
+      path.join(currentFileDir, ".."), // dist -> root
+    ];
+
+    for (const possiblePath of possiblePaths) {
+      const templatesPath = path.join(possiblePath, "templates", "cortex");
+      if (fs.existsSync(templatesPath)) {
+        return possiblePath;
+      }
+    }
+
+    // Fallback to project root if in development
+    return this.projectRoot;
   }
 
   /**
@@ -239,74 +332,41 @@ export class CortexMCPServer {
         return {
           tools: [
             {
-              name: "cortex-task",
-              description:
-                "Create and execute a complete AI collaboration workflow",
+              name: "spec",
+              description: "Create feature specification (auto-creates workflow)",
               inputSchema: {
                 type: "object",
                 properties: {
                   description: {
                     type: "string",
-                    description: "Task description for AI collaboration",
+                    description: "Feature description",
                   },
                 },
                 required: ["description"],
               },
             },
             {
-              name: "execute-workflow-role",
-              description: "Execute the next role in a workflow",
+              name: "workflow",
+              description: "Execute workflow phases: clarify (resolve ambiguities), plan (create implementation plan), review (technical review), tasks (generate task breakdown), implement (execute with Multi-Role coordination), status (get workflow progress). Uses latest workflow if workflowId not provided.",
               inputSchema: {
                 type: "object",
                 properties: {
+                  phase: {
+                    type: "string",
+                    enum: ["clarify", "plan", "review", "tasks", "implement", "status"],
+                    description: "Workflow phase to execute",
+                  },
                   workflowId: {
                     type: "string",
-                    description: "Workflow ID",
+                    description: "Workflow ID (optional, defaults to latest)",
                   },
                 },
-                required: ["workflowId"],
+                required: ["phase"],
               },
             },
             {
-              name: "submit-role-result",
-              description:
-                "Submit AI-processed result for a role back to the workflow",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  workflowId: {
-                    type: "string",
-                    description: "Workflow identifier",
-                  },
-                  roleId: {
-                    type: "string",
-                    description: "Role identifier",
-                  },
-                  result: {
-                    type: "string",
-                    description: "AI-processed result content",
-                  },
-                },
-                required: ["workflowId", "roleId", "result"],
-              },
-            },
-            {
-              name: "get-workflow-status",
-              description: "Get status and progress of a workflow",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  workflowId: {
-                    type: "string",
-                    description: "Workflow identifier",
-                  },
-                },
-                required: ["workflowId"],
-              },
-            },
-            {
-              name: "list-workflows",
-              description: "List all available workflows",
+              name: "list",
+              description: "List all workflows",
               inputSchema: {
                 type: "object",
                 properties: {
@@ -319,27 +379,117 @@ export class CortexMCPServer {
               },
             },
             {
-              name: "create-pull-request",
-              description: "Create a pull request for workflow results",
+              name: "release",
+              description: "Analyze changes and generate release documentation (CHANGELOG/RELEASE_NOTES) with optional git tag and push",
               inputSchema: {
                 type: "object",
                 properties: {
-                  workflowId: {
+                  version: {
                     type: "string",
-                    description: "Workflow identifier",
+                    description: "Version number (optional, auto-detected if not provided)",
                   },
-                  baseBranch: {
-                    type: "string",
-                    description: "Base branch for the pull request",
-                    default: "main",
-                  },
-                  draft: {
+                  tag: {
                     type: "boolean",
-                    description: "Create as draft pull request",
+                    description: "Create git tag for this release",
+                    default: false,
+                  },
+                  push: {
+                    type: "boolean",
+                    description: "Push commits and tags to remote",
                     default: false,
                   },
                 },
-                required: ["workflowId"],
+              },
+            },
+            {
+              name: "onboard",
+              description: "Interactive onboarding for first-time users - guides through initialization and constitution creation",
+              inputSchema: {
+                type: "object",
+                properties: {},
+              },
+            },
+            {
+              name: "constitution",
+              description: "Create or update project constitution - AI guides through principles, governance, and versioning",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  updates: {
+                    type: "string",
+                    description: "Optional: specific updates to make (e.g., 'add testing principle')",
+                  },
+                },
+              },
+            },
+            {
+              name: "memory",
+              description: "Interact with project memory: learn (record experience/pattern/decision/solution/lesson) or context (retrieve relevant experiences based on query)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  action: {
+                    type: "string",
+                    enum: ["learn", "context"],
+                    description: "Memory action to perform",
+                  },
+                  title: {
+                    type: "string",
+                    description: "[learn] Brief descriptive title (max 200 characters)",
+                  },
+                  content: {
+                    type: "string",
+                    description: "[learn] Full markdown content of the experience",
+                  },
+                  type: {
+                    type: "string",
+                    enum: ["pattern", "decision", "solution", "lesson"],
+                    description: "[learn] Experience category",
+                  },
+                  tags: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "[learn] Searchable keywords (1-10 tags)",
+                  },
+                  query: {
+                    type: "string",
+                    description: "[context] Search query to find relevant experiences",
+                  },
+                },
+                required: ["action"],
+              },
+            },
+            {
+              name: "correct",
+              description: "Record a correction to AI behavior - the AI will avoid repeating this mistake in future sessions",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  wrongBehavior: {
+                    type: "string",
+                    description: "What the AI did wrong",
+                  },
+                  correctBehavior: {
+                    type: "string",
+                    description: "What the correct behavior should be",
+                  },
+                  severity: {
+                    type: "string",
+                    enum: ["minor", "moderate", "major"],
+                    description: "How serious the mistake was (default: moderate)",
+                  },
+                  filePatterns: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "File patterns where this applies (e.g., '*.tsx')",
+                  },
+                  triggerKeywords: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Keywords that should trigger this warning",
+                  },
+                },
+                required: ["wrongBehavior", "correctBehavior"],
               },
             },
           ],
@@ -357,38 +507,47 @@ export class CortexMCPServer {
 
         let result;
         switch (name) {
-          case "cortex-task":
-            result = await this.toolHandler.handleTask(
+          case "spec":
+            result = await this.stableWorkflowHandler.handleSpec(
               args as { description: string }
             );
             break;
-          case "execute-workflow-role":
-            result = await this.toolHandler.handleExecuteWorkflowRole(
-              args as { workflowId: string }
+          case "workflow":
+            result = await this.stableWorkflowHandler.handleWorkflow(
+              args as { phase: 'clarify' | 'plan' | 'review' | 'tasks' | 'implement' | 'status'; workflowId?: string }
             );
             break;
-          case "submit-role-result":
-            result = await this.toolHandler.handleSubmitRoleResult(
-              args as { workflowId: string; roleId: string; result: string }
-            );
-            break;
-          case "create-pull-request":
-            result = await this.toolHandler.handleCreatePullRequest(
-              args as {
-                workflowId: string;
-                baseBranch?: string;
-                draft?: boolean;
-              }
-            );
-            break;
-          case "get-workflow-status":
-            result = await this.toolHandler.handleGetWorkflowStatus(
-              args as { workflowId: string }
-            );
-            break;
-          case "list-workflows":
-            result = await this.toolHandler.handleListWorkflows(
+          case "list":
+            result = await this.stableWorkflowHandler.handleList(
               args as { limit?: number }
+            );
+            break;
+          case "release":
+            result = await this.stableWorkflowHandler.handleRelease(
+              args as { version?: string; tag?: boolean; push?: boolean }
+            );
+            break;
+          case "onboard":
+            result = await this.stableWorkflowHandler.handleOnboard();
+            break;
+          case "constitution":
+            result = await this.stableWorkflowHandler.handleConstitution(
+              args as { updates?: string }
+            );
+            break;
+          case "memory":
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            result = await this.stableWorkflowHandler.handleMemory(args as any);
+            break;
+          case "correct":
+            result = await this.stableWorkflowHandler.handleCorrect(
+              args as {
+                wrongBehavior: string;
+                correctBehavior: string;
+                severity?: string;
+                filePatterns?: string[];
+                triggerKeywords?: string[];
+              }
             );
             break;
           default:
@@ -455,6 +614,26 @@ export class CortexMCPServer {
                 "Guide for setting up IDE integration with Cortex AI",
               mimeType: "text/markdown",
             },
+            {
+              uri: "cortex://memory/index",
+              name: "Memory Index",
+              description:
+                "Index of all stored experiences (patterns, decisions, solutions, lessons)",
+              mimeType: "application/json",
+            },
+            {
+              uri: "cortex://memory/experiences/{type}",
+              name: "Memory Experiences by Type",
+              description:
+                "Experiences filtered by type (patterns, decisions, solutions, lessons)",
+              mimeType: "application/json",
+            },
+            {
+              uri: "cortex://memory/search?query={query}",
+              name: "Memory Search",
+              description: "Search experiences by query with relevance scoring",
+              mimeType: "application/json",
+            },
           ],
         };
       } catch (error) {
@@ -486,59 +665,147 @@ export class CortexMCPServer {
         return {
           prompts: [
             {
-              name: "workflow-role-analysis",
-              description:
-                "Generate structured analysis for a role in the current workflow",
+              name: "spec",
+              description: "Create feature specification for a new feature",
               arguments: [
                 {
-                  name: "roleId",
-                  description:
-                    "The role ID to analyze (e.g., architecture-designer, code-assistant)",
-                  required: true,
-                },
-                {
-                  name: "workflowId",
-                  description: "The workflow ID containing the role",
+                  name: "description",
+                  description: "Feature description",
                   required: true,
                 },
               ],
             },
             {
-              name: "technical-code-review",
-              description: "Generate technical code review and assessment",
+              name: "clarify",
+              description: "Resolve specification ambiguities (max 5 questions)",
               arguments: [
                 {
-                  name: "codebase",
-                  description: "The codebase or technical context to review",
-                  required: true,
-                },
-                {
-                  name: "requirements",
-                  description: "The requirements and technical specifications",
-                  required: true,
-                },
-                {
-                  name: "role",
-                  description:
-                    "The role performing the review (e.g., code-assistant)",
+                  name: "workflowId",
+                  description: "Workflow ID to clarify",
                   required: true,
                 },
               ],
             },
             {
-              name: "workflow-progress-summary",
-              description:
-                "Generate executive summary of workflow progress and decisions",
+              name: "plan",
+              description: "Create implementation plan from specification",
               arguments: [
                 {
                   name: "workflowId",
-                  description: "The workflow ID to summarize",
+                  description: "Workflow ID to plan",
+                  required: true,
+                },
+              ],
+            },
+            {
+              name: "review",
+              description: "Technical review of implementation plan",
+              arguments: [
+                {
+                  name: "workflowId",
+                  description: "Workflow ID to review",
+                  required: true,
+                },
+              ],
+            },
+            {
+              name: "tasks",
+              description: "Generate task breakdown from implementation plan",
+              arguments: [
+                {
+                  name: "workflowId",
+                  description: "Workflow ID to create tasks for",
+                  required: true,
+                },
+              ],
+            },
+            {
+              name: "implement",
+              description: "Execute implementation phase with Multi-Role coordination",
+              arguments: [
+                {
+                  name: "workflowId",
+                  description: "Workflow ID to implement",
+                  required: true,
+                },
+              ],
+            },
+            {
+              name: "decompose-task",
+              description: "Break down large task into atomic subtasks",
+              arguments: [
+                {
+                  name: "workflowId",
+                  description: "Workflow ID",
                   required: true,
                 },
                 {
-                  name: "includeTechnicalDetails",
-                  description:
-                    "Whether to include technical implementation details",
+                  name: "taskId",
+                  description: "Task ID to decompose",
+                  required: true,
+                },
+                {
+                  name: "taskDescription",
+                  description: "Task description",
+                  required: true,
+                },
+              ],
+            },
+            {
+              name: "validate-implementation",
+              description: "Validate implementation for mocks, TODOs, unused code",
+              arguments: [
+                {
+                  name: "changedFiles",
+                  description: "Array of changed file paths",
+                  required: true,
+                },
+              ],
+            },
+            {
+              name: "release",
+              description: "Analyze changes and generate release documentation",
+              arguments: [
+                {
+                  name: "version",
+                  description: "Version number (optional, auto-detected if not provided)",
+                  required: false,
+                },
+                {
+                  name: "tag",
+                  description: "Create git tag (default: false)",
+                  required: false,
+                },
+                {
+                  name: "push",
+                  description: "Push to remote (default: false)",
+                  required: false,
+                },
+              ],
+            },
+            {
+              name: "onboard",
+              description: "Interactive onboarding for first-time users",
+              arguments: [],
+            },
+            {
+              name: "status",
+              description: "Get workflow status and progress",
+              arguments: [
+                {
+                  name: "workflowId",
+                  description: "Workflow ID to check status",
+                  required: true,
+                },
+              ],
+            },
+            {
+              name: "list",
+              description: "List all workflows",
+              arguments: [
+                {
+                  name: "limit",
+                  description: "Maximum number of workflows to return (default: 10)",
                   required: false,
                 },
               ],
@@ -556,32 +823,75 @@ export class CortexMCPServer {
       try {
         const { name, arguments: args } = request.params;
 
-        switch (name) {
-          case "workflow-role-analysis":
-            return await this.generateWorkflowRoleAnalysisPrompt(
-              args as {
-                roleId: string;
-                workflowId: string;
-              }
+        // Map prompt names to tool calls
+        const toolName = name.replace('cortex-', 'cortex.');
+        
+        let toolArgs: Record<string, unknown> = {};
+        if (args) {
+          // args is already a Record<string, string> from MCP SDK
+          toolArgs = args as Record<string, unknown>;
+        }
+
+        // Call the corresponding tool
+        let result;
+        switch (toolName) {
+          case "cortex.spec":
+            result = await this.stableWorkflowHandler.handleSpec(toolArgs as { description: string });
+            break;
+          case "cortex.clarify":
+            result = await this.stableWorkflowHandler.handleClarify(toolArgs as { workflowId: string });
+            break;
+          case "cortex.plan":
+            result = await this.stableWorkflowHandler.handlePlan(toolArgs as { workflowId: string });
+            break;
+          case "cortex.review":
+            result = await this.stableWorkflowHandler.handleReview(toolArgs as { workflowId: string });
+            break;
+          case "cortex.tasks":
+            result = await this.stableWorkflowHandler.handleTasks(toolArgs as { workflowId: string });
+            break;
+          case "cortex.implement":
+            result = await this.stableWorkflowHandler.handleImplement(toolArgs as { workflowId: string });
+            break;
+          case "cortex.decompose-task":
+            result = await this.stableWorkflowHandler.handleTaskDecomposition(
+              toolArgs as { workflowId: string; taskId: string; taskDescription: string }
             );
-          case "technical-code-review":
-            return await this.generateTechnicalCodeReviewPrompt(
-              args as {
-                codebase: string;
-                requirements: string;
-                role: string;
-              }
+            break;
+          case "cortex.validate-implementation":
+            result = await this.stableWorkflowHandler.handleImplementationValidation(
+              toolArgs as { changedFiles: string[] }
             );
-          case "workflow-progress-summary":
-            return await this.generateWorkflowProgressSummaryPrompt(
-              args as unknown as {
-                workflowId: string;
-                includeTechnicalDetails?: boolean;
-              }
-            );
+            break;
+          case "cortex.release":
+            result = await this.stableWorkflowHandler.handleRelease(toolArgs as { version?: string; tag?: boolean; push?: boolean });
+            break;
+          case "cortex.onboard":
+            result = await this.stableWorkflowHandler.handleOnboard();
+            break;
+          case "cortex.status":
+            result = await this.stableWorkflowHandler.handleStatus(toolArgs as { workflowId: string });
+            break;
+          case "cortex.list":
+            result = await this.stableWorkflowHandler.handleList(toolArgs as { limit?: number });
+            break;
           default:
             throw new Error(`Unknown prompt: ${name}`);
         }
+
+        // Convert tool result to prompt response
+        return {
+          description: `Cortex AI - ${name}`,
+          messages: [
+            {
+              role: "user",
+              content: {
+                type: "text",
+                text: result.content[0]?.text || "No content"
+              }
+            }
+          ]
+        };
       } catch (error) {
         console.error("Error getting prompt:", error);
         throw error;
@@ -807,3 +1117,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(1);
   });
 }
+

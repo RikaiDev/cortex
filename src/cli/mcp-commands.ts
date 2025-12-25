@@ -44,65 +44,14 @@ export async function ensureCortexWorkspace(
 
 /**
  * Add MCP commands to the CLI
+ * 
+ * Note: Workflow commands (spec, plan, tasks, etc.) are now accessed via MCP prompts
+ * in your AI assistant (e.g., /cortex.spec in Cursor). CLI only provides init and start.
  */
 export function addMCPCommands(program: Command): void {
-  // Add individual commands directly to the main program
-
-  // List tools command
-  program
-    .command("tools")
-    .description("List available MCP tools")
-    .action(async () => {
-      try {
-        await listMCPTools();
-      } catch (error) {
-        console.log(
-          chalk.yellow("  Attempting to initialize workspace due to error...")
-        );
-        const projectPath = process.cwd();
-        await ensureCortexWorkspace(projectPath);
-        await listMCPTools();
-      }
-    });
-
-  // Execute specific tool command
-  program
-    .command("tool <toolName> [input]")
-    .description("Execute a specific MCP tool")
-    .action(async (toolName, input) => {
-      try {
-        await executeMCPTool(toolName, input || "{}");
-      } catch (error) {
-        console.log(
-          chalk.yellow("  Attempting to initialize workspace due to error...")
-        );
-        const projectPath = process.cwd();
-        await ensureCortexWorkspace(projectPath);
-        await executeMCPTool(toolName, input || "{}");
-      }
-    });
-
-  // Generate rules command
-  program
-    .command("generate-rules")
-    .description("Regenerate Cortex rules with latest role definitions")
-    .option(
-      "-p, --project-path <path>",
-      "Project path (default: current directory)"
-    )
-    .action(async (options) => {
-      try {
-        const projectPath = options.projectPath || process.cwd();
-        await regenerateRules(projectPath);
-      } catch (error) {
-        console.log(
-          chalk.yellow("  Attempting to initialize workspace due to error...")
-        );
-        const projectPath = options.projectPath || process.cwd();
-        await ensureCortexWorkspace(projectPath);
-        await regenerateRules(projectPath);
-      }
-    });
+  // Only essential CLI commands remain
+  // Workflow commands (spec, plan, tasks, etc.) are accessed through MCP prompts
+  // in your AI assistant (e.g., /cortex.spec in Cursor)
 
   // Initialize workspace command
   program
@@ -139,7 +88,7 @@ export function addMCPCommands(program: Command): void {
         const projectRoot =
           options.projectRoot || options.projectPath || process.cwd();
         await startMCPServer(projectRoot);
-      } catch (error) {
+      } catch {
         console.log(
           chalk.yellow("  Attempting to initialize workspace due to error...")
         );
@@ -149,231 +98,6 @@ export function addMCPCommands(program: Command): void {
         await startMCPServer(projectRoot);
       }
     });
-}
-
-/**
- * List available MCP tools
- */
-async function listMCPTools(): Promise<void> {
-  console.log(chalk.blue("🔧 Available MCP Tools:"));
-  console.log();
-
-  try {
-    // Check if Cortex workspace exists
-    const fs = await import("fs-extra");
-    const path = await import("path");
-    const cortexDir = path.join(process.cwd(), ".cortex");
-    const rolesDir = path.join(cortexDir, "roles");
-
-    if (!(await fs.pathExists(rolesDir))) {
-      throw new Error("Cortex workspace not initialized");
-    }
-
-    // List the available tools
-    const tools = [
-      "task",
-      "enhance-context",
-      "record-experience",
-      "create-workflow",
-      "execute-workflow-role",
-      "create-pull-request",
-    ];
-
-    if (tools.length === 0) {
-      console.log(
-        chalk.yellow(
-          "  No tools registered. This might indicate an issue with tool registration."
-        )
-      );
-    } else {
-      tools.forEach((tool: string) => {
-        console.log(`- ${tool}`);
-      });
-    }
-
-    console.log();
-    console.log(chalk.gray(`Total: ${tools.length} tools available`));
-
-    // Also show the tools that should be available
-    console.log();
-    console.log(chalk.cyan(" Available MCP Tools:"));
-    console.log(
-      "- task: Execute a complete development task with AI collaboration workflow"
-    );
-    console.log(
-      "- enhance-context: Enhance current context with relevant past experiences and knowledge"
-    );
-    console.log(
-      "- record-experience: Record a new experience or solution for future reference"
-    );
-    console.log(
-      "- create-workflow: Create a new Multi-Role Pattern workflow for complex development tasks"
-    );
-    console.log(
-      "- execute-workflow-role: Execute the next role in an existing Multi-Role workflow"
-    );
-    console.log(
-      "- create-pull-request: Create a GitHub pull request using the generated pr.md file"
-    );
-
-    // Show MCP server status
-    console.log();
-    console.log(chalk.cyan(" MCP Server Status:"));
-    console.log("- MCP server provides context engineering tools");
-    console.log("- Tools are designed to work with Cursor IDE integration");
-    console.log("- Use 'cortex start' to start the MCP server");
-  } catch (error) {
-    console.error(chalk.red(" Failed to list tools:"), error);
-    throw error; // Re-throw to allow error fallback to handle it
-  }
-}
-
-/**
- * Execute a specific MCP tool
- */
-async function executeMCPTool(
-  toolName: string,
-  inputStr: string
-): Promise<void> {
-  console.log(chalk.blue(`🔧 Executing MCP tool: ${toolName}`));
-  console.log(chalk.gray(`Input: ${inputStr}`));
-  console.log();
-
-  try {
-    console.log(chalk.gray(`Raw input string: ${inputStr}`));
-
-    let input: Record<string, unknown>;
-    try {
-      // Try to parse as JSON first
-      input = JSON.parse(inputStr);
-    } catch (jsonError) {
-      // If not valid JSON, treat as a simple string and wrap it appropriately
-      console.log(
-        chalk.yellow(`  Input is not valid JSON, treating as string parameter`)
-      );
-
-      // For different tools, wrap the string input appropriately
-      switch (toolName) {
-        case "enhance-context":
-          input = { query: inputStr };
-          break;
-        case "record-experience":
-          input = {
-            title: inputStr,
-            description: inputStr,
-            tags: [],
-          };
-          break;
-        case "create-workflow":
-          input = {
-            title: inputStr,
-            description: inputStr,
-          };
-          break;
-        case "execute-workflow-role":
-          input = {
-            workflowId: inputStr,
-          };
-          break;
-        case "create-pull-request":
-          input = {
-            workflowId: inputStr,
-          };
-          break;
-        case "task":
-          input = {
-            description: inputStr,
-          };
-          break;
-        default:
-          input = { input: inputStr };
-      }
-    }
-
-    console.log(chalk.gray(`Parsed input: ${JSON.stringify(input, null, 2)}`));
-
-    // Create MCP server
-    const { createCortexMCPServer } = await import("../core/mcp/server.js");
-
-    await createCortexMCPServer();
-
-    // Simple CLI testing - simulate tool response
-    let result;
-    if (toolName === "enhance-context") {
-      result = {
-        content: [
-          {
-            type: "text",
-            text: `Context enhancement prepared! Query: ${(input as { query?: string }).query || "test query"}`,
-          },
-        ],
-      };
-    } else if (toolName === "record-experience") {
-      result = {
-        content: [
-          {
-            type: "text",
-            text: `Experience recorded successfully! Input: ${(input as { input?: string }).input || "test input"}`,
-          },
-        ],
-      };
-    } else if (toolName === "create-workflow") {
-      result = {
-        content: [
-          {
-            type: "text",
-            text: `Workflow created successfully! Title: ${(input as { title?: string }).title || "Test Workflow"}`,
-          },
-        ],
-      };
-    } else if (toolName === "execute-workflow-role") {
-      result = {
-        content: [
-          {
-            type: "text",
-            text: `Role execution prepared! Workflow ID: ${(input as { workflowId?: string }).workflowId || "test-workflow"}`,
-          },
-        ],
-      };
-    } else if (toolName === "create-pull-request") {
-      result = {
-        content: [
-          {
-            type: "text",
-            text: `Pull request creation prepared! Workflow ID: ${(input as { workflowId?: string }).workflowId || "test-workflow"}`,
-          },
-        ],
-      };
-    } else if (toolName === "task") {
-      result = {
-        content: [
-          {
-            type: "text",
-            text: `Task created successfully! Description: ${(input as { description?: string }).description || "Test task description"}`,
-          },
-        ],
-      };
-    } else {
-      throw new Error(`Tool ${toolName} not supported in CLI mode`);
-    }
-
-    console.log(chalk.green(" Tool executed successfully!"));
-    console.log();
-    console.log(chalk.cyan("📊 Result:"));
-    if (
-      result &&
-      result.content &&
-      Array.isArray(result.content) &&
-      result.content[0]
-    ) {
-      console.log(result.content[0]);
-    } else {
-      console.log(JSON.stringify(result, null, 2));
-    }
-  } catch (error) {
-    console.error(chalk.red(" Tool execution failed:"), error);
-    process.exit(1);
-  }
 }
 
 /**
@@ -427,7 +151,7 @@ function resolveWorkspaceRoot(projectRoot: string): string {
  * Regenerate Cortex rules with latest role definitions
  */
 async function regenerateRules(projectPath: string): Promise<void> {
-  console.log(chalk.blue(" Regenerating Cortex rules with latest roles..."));
+  console.log(chalk.blue("🔧 Regenerating Cortex rules with latest roles..."));
   console.log(chalk.gray(`Project path: ${projectPath}`));
   console.log();
 
@@ -443,18 +167,18 @@ async function regenerateRules(projectPath: string): Promise<void> {
     const geminiAdapter = new GeminiAdapter(projectPath);
 
     // Regenerate configurations
-    console.log(" Regenerating Cursor rules...");
+    console.log("📝 Regenerating Cursor rules...");
     await cursorAdapter.generateRules();
 
-    console.log(" Regenerating Claude configuration...");
+    console.log("📝 Regenerating Claude configuration...");
     await claudeAdapter.generateClaudeConfig();
 
-    console.log(" Regenerating Gemini configuration...");
+    console.log("📝 Regenerating Gemini configuration...");
     await geminiAdapter.generateGeminiConfig();
 
     console.log();
     console.log(
-      chalk.green(" Successfully regenerated all Cortex configurations!")
+      chalk.green("✅ Successfully regenerated all Cortex configurations!")
     );
     console.log(
       chalk.gray("Rules have been updated with the latest role definitions.")
@@ -463,7 +187,7 @@ async function regenerateRules(projectPath: string): Promise<void> {
       chalk.gray("You can now use the updated roles in your AI conversations.")
     );
   } catch (error) {
-    console.error(chalk.red(" Failed to regenerate rules:"), error);
+    console.error(chalk.red("❌ Failed to regenerate rules:"), error);
     process.exit(1);
   }
 }
@@ -886,14 +610,18 @@ async function initializeCortexWorkspace(projectPath: string): Promise<void> {
     // Create .cortex directory structure
     const cortexDir = path.join(projectPath, ".cortex");
     const workflowsDir = path.join(cortexDir, "workflows");
-    const workspacesDir = path.join(cortexDir, "workspaces");
+    const memoryDir = path.join(cortexDir, "memory");
+    const templatesDir = path.join(cortexDir, "templates");
+    const commandsDir = path.join(templatesDir, "commands");
     const rolesDir = path.join(cortexDir, "roles");
     const templatesRolesDir = path.join(projectPath, "templates", "roles");
 
     // Create directories
     await fs.ensureDir(cortexDir);
     await fs.ensureDir(workflowsDir);
-    await fs.ensureDir(workspacesDir);
+    await fs.ensureDir(memoryDir);
+    await fs.ensureDir(templatesDir);
+    await fs.ensureDir(commandsDir);
     await fs.ensureDir(rolesDir);
 
     // Copy role templates to .cortex/roles if they don't exist
@@ -911,6 +639,48 @@ async function initializeCortexWorkspace(projectPath: string): Promise<void> {
       }
     }
 
+    // Copy template files from tool templates
+    const toolTemplatesDir = path.join(projectPath, "templates", "cortex");
+    if (await fs.pathExists(toolTemplatesDir)) {
+      // Copy all template files
+      const templateFiles = await fs.readdir(toolTemplatesDir);
+      for (const templateFile of templateFiles) {
+        if (templateFile.endsWith(".md")) {
+          const sourcePath = path.join(toolTemplatesDir, templateFile);
+          const targetPath = path.join(templatesDir, templateFile);
+          if (!(await fs.pathExists(targetPath))) {
+            await fs.copy(sourcePath, targetPath);
+            console.log(chalk.green(`   Copied template: ${templateFile}`));
+          }
+        }
+      }
+
+      // Copy commands directory
+      const commandsSourceDir = path.join(toolTemplatesDir, "commands");
+      if (await fs.pathExists(commandsSourceDir)) {
+        const commandFiles = await fs.readdir(commandsSourceDir);
+        for (const commandFile of commandFiles) {
+          const sourcePath = path.join(commandsSourceDir, commandFile);
+          const targetPath = path.join(commandsDir, commandFile);
+          if (!(await fs.pathExists(targetPath))) {
+            await fs.copy(sourcePath, targetPath);
+            console.log(chalk.green(`   Copied command: ${commandFile}`));
+          }
+        }
+      }
+    }
+
+    // Initialize memory index
+    const memoryIndexPath = path.join(memoryDir, "index.json");
+    if (!(await fs.pathExists(memoryIndexPath))) {
+      const emptyIndex = {
+        version: "1.0.0",
+        initialized: new Date().toISOString(),
+        index: [],
+      };
+      await fs.writeJson(memoryIndexPath, emptyIndex, { spaces: 2 });
+    }
+
     // Create .cortexrc configuration file
     const cortexConfig = {
       version: "1.0.0",
@@ -918,7 +688,8 @@ async function initializeCortexWorkspace(projectPath: string): Promise<void> {
       projectRoot: projectPath,
       structure: {
         workflows: ".cortex/workflows",
-        workspaces: ".cortex/workspaces",
+        memory: ".cortex/memory",
+        templates: ".cortex/templates",
         roles: ".cortex/roles",
       },
     };
@@ -933,7 +704,9 @@ async function initializeCortexWorkspace(projectPath: string): Promise<void> {
     console.log(`  ${cortexDir}/`);
     console.log(`  ├── .cortexrc          # Configuration file`);
     console.log(`  ├── workflows/         # Workflow state files`);
-    console.log(`  ├── workspaces/        # Individual workspace folders`);
+    console.log(`  ├── memory/            # Learning experiences`);
+    console.log(`  ├── templates/         # Spec, plan, tasks templates`);
+    console.log(`  │   └── commands/      # AI execution guides`);
     console.log(`  └── roles/             # Role definitions`);
     console.log();
     console.log(chalk.yellow("💡 Next steps:"));

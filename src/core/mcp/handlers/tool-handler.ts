@@ -5,6 +5,7 @@
 import { CortexAI } from "../../index.js";
 import { HandoffService } from "../services/handoff-service.js";
 import { TasksReader } from "../utils/tasks-reader.js";
+import { MemoryService } from "../services/memory-service.js";
 import { MCPToolResult } from "../types/mcp-types.js";
 import * as path from "path";
 import fs from "fs-extra";
@@ -12,6 +13,7 @@ import fs from "fs-extra";
 export class ToolHandler {
   private handoffService: HandoffService;
   private tasksReader: TasksReader;
+  private memoryService: MemoryService;
 
   constructor(
     private projectRoot: string,
@@ -19,6 +21,7 @@ export class ToolHandler {
   ) {
     this.handoffService = new HandoffService(projectRoot);
     this.tasksReader = new TasksReader(projectRoot);
+    this.memoryService = new MemoryService(projectRoot);
   }
 
   /**
@@ -580,7 +583,7 @@ Recommended next action: Call execute-workflow-role to start the workflow.`,
               currentRole: workflow.currentRole,
               progress: `${workflow.handoffData?.context?.currentStep || 0}/${workflow.roles?.length || 0}`,
             });
-          } catch (error) {
+          } catch {
             // Skip invalid workflow files
           }
         }

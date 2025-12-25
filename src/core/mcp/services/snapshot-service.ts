@@ -154,7 +154,7 @@ export class SnapshotService {
         try {
           const snapshot = await this.generateWorkflowSnapshot(workflowId);
           workflowSnapshots.push(snapshot);
-        } catch (error) {
+        } catch {
           // Skip invalid workflows
         }
       }

@@ -374,7 +374,7 @@ function runSecurityChecks() {
         }
         if (verbose) console.log(result);
       }
-    } catch (error) {
+    } catch {
       // grep returns non-zero exit code when no matches found, which is expected
     }
   }

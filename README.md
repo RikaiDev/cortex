@@ -6,260 +6,55 @@
 
 [English](README.md) | [繁體中文](README.zh-TW.md) | [Documentation](docs/) | [Changelog](CHANGELOG.md)
 
-## 🧠 AI Collaboration Brain
+## What is Cortex AI?
 
-**Cortex AI** is an intelligent AI collaboration system that transforms AI models into reliable, learning partners.
-It solves the fundamental problems of AI inconsistency and lack of memory through **prompt injection** and **real-time preference learning**.
+**Cortex AI** is a stable, structured development workflow system that transforms AI-assisted development from unpredictable "vibe coding" into reliable, quality-driven feature delivery.
 
-### 🎯 **Core Mission**
+Built on the **MCP (Model Context Protocol)**, Cortex provides a **constitution-driven, template-based workflow** that ensures consistent output regardless of which AI model you use
+(Cursor, Claude, Copilot, or others).
 
-To create consistent, personalized, and continuously improving AI collaboration experiences that adapt to individual developers and project needs,
-eliminating the frustration of repetitive explanations and inconsistent AI behavior.
+### The Problem
 
-### 🎯 **Why Cortex?**
+Traditional AI-assisted development suffers from:
+- **Unpredictable output quality** - AI generates different results each time
+- **No quality gates** - Features built without validation checkpoints
+- **Inconsistent structure** - Every developer gets different file structures
+- **Runaway AI** - AI continues without user confirmation, creating unwanted changes
 
-**The Problem:**
+### The Solution
 
-- AI models behave inconsistently across different platforms
-- AI forgets user preferences and coding patterns
-- Repetitive explanations of the same project conventions
-- Lack of personalization in AI collaboration
-- No memory of successful interaction patterns
+Cortex AI introduces **Stable Workflow System**:
+- **Template + Command Architecture** - Structured templates with AI execution guidance
+- **Constitution-Driven Validation** - Every phase checked against project principles
+- **Mandatory User Checkpoints** - Explicit confirmation before proceeding to next phase
+- **Automatic Quality Validation** - Built-in checklists and tech stack detection
 
-**The Solution:**
+---
 
-- **🧠 Consistent AI Behavior** - Standardized thinking processes across all AI platforms
-- **📚 Learning Memory** - Remembers user preferences and project patterns
-- **🔄 Continuous Adaptation** - Evolves based on successful interactions
-- **🎯 Context Awareness** - Understands project-specific conventions and workflows
+## ⚡ Quick Start
 
-### 🏗️ **Architecture**
-
-Cortex AI uses a multi-layered architecture for intelligent AI collaboration:
-
-```text
-🧠 Brain Layer (AI Platform Integration)
-├── MCP Server - Unified protocol interface
-├── Multi-Role Workflows - Structured task execution
-├── Real-time Learning - User preference memory
-└── Cross-platform Consistency - Unified behavior
-
-📚 Experience Layer (.cortex directory)
-├── Invisible project configuration
-├── User preference learning
-├── Project pattern recognition
-└── Continuous improvement
-
-🛠️ Essential Tools
-├── MCP tools system - Rich feature set
-├── Resource management - Project snapshots
-├── Prompt templates - Structured thinking
-└── CLI interface - Simplified operations
-```
-
-> **📖 [Detailed Architecture Guide](docs/architecture.md)** - Complete system architecture and technical details
-
-### 🧠 **Core Principles** - The Ingenious Design Philosophy
-
-**Cortex AI** implements revolutionary principles that transform AI collaboration through architectural brilliance:
-
-1. **🔮 Few-Shot to Fine-Tune Transformation** - **The Alchemical Process**: We don't just use few-shot examples - we *transmute* them.
-A simple user instruction like *"write comments in English"* becomes a comprehensive, production-ready prompt system that enforces this preference across all future interactions.
-This isn't learning - it's systematic transformation.
-
-2. **🪝 Hook-Based Interception System** - **The Invisible Conductor**: Every single user input is intercepted before reaching the AI model.
-We don't wait for AI responses - we *shape* them.
-This architectural sleight-of-hand ensures that no matter which AI model you use (Cursor, Claude, Gemini), they all behave consistently because we've already predetermined the outcome.
-
-3. **⚙️ Deterministic Expansion Over Randomness** - **The Clockwork Mind**: We reject the "emergent behavior" fallacy.
-Instead of hoping AI will "figure it out," we systematically expand minimal inputs into complete, well-structured instructions.
-When you say *"fix the bug,"* we don't hope the AI understands - we *tell* it exactly what to do, how to do it, and why.
-
-4. **🔒 Guaranteed Processing Pipeline** - **The Unbreakable Chain**: Every input goes through our complete pipeline with 100% execution rate.
-No step is ever skipped, no process is ever bypassed.
-This isn't reliability - it's *architectural inevitability*. The system cannot fail to apply your preferences because failure is literally impossible.
-
-5. **📋 Explicit Reasoning and Documentation** - **The Transparent Brain**: Every transformation is logged, every decision is documented, every preference change is traceable.
-You can literally see how *"use TypeScript"* becomes a system-wide directive that affects every code suggestion, every comment, every response.
-
-This philosophy creates an intelligent system that doesn't just respond - it *evolves with you*,
-learning your patterns and preferences through systematic, deterministic transformation of your intent into perfect execution, moving beyond trial and error approaches.
-
-**The Result?** Simple inputs become comprehensive, personalized AI experiences.
-*"Don't use async/await"* becomes a universal rule that shapes every code suggestion, every refactoring, every architectural decision.
-
-#### MCP Workflow Architecture - The Architectural Masterpiece
-
-This diagram reveals the ingenious design that makes Cortex AI truly unique:
-
-```mermaid
-graph TD
-    A[User Input] --> B[AI Platform Processing]
-    B --> C[MCP Protocol Layer]
-    C --> D[Intelligent Workflow]
-    D --> E[Task Analysis & Planning]
-    E --> F[Role Collaboration Execution]
-    F --> G[Result Integration Output]
-
-    subgraph "The Three Pillars of Genius"
-        C
-        H[🪝 Interception Architecture - Every input is caught and shaped]
-        I[🔮 Transformation Engine - Simple → Sophisticated]
-        J[⚙️ Deterministic Pipeline - Predictable perfection]
-    end
-
-    H -.-> C
-    I -.-> C
-    J -.-> C
-```
-
-**The Hidden Brilliance:**
-- **Interception Point (C)**: The pivotal moment where raw user input becomes orchestrated intelligence
-- **Transformation Flow**: Watch how *"fix the bug"* becomes a multi-step symphony of analysis, planning, and execution
-- **Guaranteed Outcome**: Every path leads to the same destination - your preferences perfectly applied
-
-#### MCP Processing Sequence - The Choreographed Intelligence
-
-This sequence diagram unveils the intricate dance of intelligence transformation:
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant A as AI Platform
-    participant R as Cortex Rules
-    participant I as Thought Interceptor
-    participant W as Workflow Engine
-    participant T as MCP Tools
-
-    U->>A: Input Message
-    A->>R: Load Cortex Rules
-    R->>A: Enforce Structured Thinking
-    A->>I: Intercept User Input for Processing
-    I->>W: Initiate Intelligent Workflow
-    W->>T: Execute Intent Analysis
-    T->>W: Return Analysis Results
-    W->>T: Execute Task Decomposition
-    T->>W: Return Task Structure
-    W->>T: Execute Role Selection
-    T->>W: Return Role Assignments
-    W->>I: Return Complete Processing Results
-    I->>A: Inject Structured Thinking Results
-    A->>U: Return Intelligent Response
-```
-
-**The Choreographic Brilliance:**
-- **Rule Loading (Step 2)**: Before any AI processing, we load your personalized rules
-- **Interception Point (Step 4)**: The critical moment where raw input becomes structured intelligence
-- **Workflow Orchestration (Steps 5-10)**: A symphony of analysis, decomposition, and role assignment
-- **Result Injection (Step 12)**: The final transformation where structured thinking becomes natural response
-
-**Why This Matters:** This isn't just processing - it's a deterministic transformation where *"help me code"* becomes a multi-step, multi-role collaboration that respects every preference you've ever expressed.
-
-## ✨ **Core Features**
-
-### **🧠 MCP Protocol Support**
-
-**Cortex AI** fully supports MCP (Model Context Protocol), providing rich tools, resources, and prompt systems that build upon our core principles:
-
-#### **🛠️ MCP Tools**
-
-| Tool Name | Description | Purpose |
-|-----------|-------------|---------|
-| `cortex-task` | Create and execute complete AI collaboration workflows | Launch multi-role collaboration for complex development tasks |
-| `execute-workflow-role` | Execute the next role in a workflow | Continue ongoing workflow execution |
-| `submit-role-result` | Submit AI-processed results back to workflow | Complete role tasks and pass results |
-| `get-workflow-status` | Get workflow status and progress | Track workflow execution status |
-| `list-workflows` | List all available workflows | View project workflow list |
-| `create-pull-request` | Create pull requests for workflow results | Automate PR creation process |
-
-#### **📚 MCP Resources**
-
-| Resource URI | Name | Description | Format |
-|-------------|------|-------------|--------|
-| `cortex://workflows` | Cortex Workflows | List of all Cortex AI workflows | JSON |
-| `cortex://workflows/{id}/handoff` | Workflow Handoff | Handoff document for specific workflow | Markdown |
-| `cortex://workflows/{id}/pr` | Workflow PR | Pull request document for specific workflow | Markdown |
-| `cortex://snapshots/project` | Project Snapshot | Current project structure and architecture snapshot | JSON |
-| `cortex://snapshots/{id}` | Workflow Snapshot | Workflow execution and decision snapshot | JSON |
-| `cortex://project/tasks` | Project Tasks | Development tasks from .vscode/tasks.json | JSON |
-| `cortex://ide/integration-guide` | IDE Integration Guide | Cortex AI IDE integration setup guide | Markdown |
-
-#### **💬 MCP Prompts**
-
-| Prompt Name | Description | Parameters |
-|-------------|-------------|------------|
-| `workflow-role-analysis` | Generate structured analysis for roles in workflows | `roleId`, `workflowId` |
-| `technical-code-review` | Generate technical code review and assessment | `codebase`, `requirements`, `role` |
-| `workflow-progress-summary` | Generate workflow progress and decision summaries | `workflowId`, `includeTechnicalDetails` |
-
-### **🔄 Multi-Role Workflows**
-
-**Cortex AI** supports multi-role collaboration patterns, with each role focusing on specific domains:
-
-- **🏗️ Architecture Designer** - System architecture design and decisions
-- **💻 Code Assistant** - Code writing and quality assurance
-- **📝 Documentation Specialist** - Documentation writing and maintenance
-- **🔒 Security Specialist** - Security review and best practices
-- **🧪 Testing Specialist** - Testing strategy and implementation
-- **🎨 UI/UX Designer** - User experience design
-- **⚛️ React Expert** - React ecosystem expertise
-
-Each role has specialized templates and guidelines ensuring professionalism and consistency.
-
-### **📚 Enhanced Learning System**
-
-Our core principles enable advanced learning capabilities:
-
-- **User Preference Detection** - Learns from keywords like "wrong", "we use", "don't"
-- **Immediate Application** - Applies learned preferences to current responses
-- **No Error Repetition** - Never repeats corrected mistakes
-- **Frustration Detection** - Identifies and learns from user frustration
-
-### **🔄 Cross-Platform Consistency**
-
-- **Cursor Integration** - Enhanced MDC with preference learning
-- **Claude Support** - Context-aware system messages
-- **Gemini Support** - Platform-specific prompt engineering
-- **Unified Behavior** - Same learning and thinking across all platforms
-
-## 🚀 **Quick Start**
-
-### **Simple Task Execution (Recommended)**
-
-Execute a complete development task with AI collaboration in one command:
+### 1. Install Cortex
 
 ```bash
-# Execute a development task with full AI workflow
-npx @rikaidev/cortex@latest task "Implement user authentication system with registration, login, and password reset"
-
-# With PR options
-npx @rikaidev/cortex@latest task "Add dark mode toggle to settings page" --draft-pr --base-branch develop
-```
-
-**Automatic execution flow:**
-
-1. 🧠 **Context Enhancement** - Uses MCP tools to find relevant past experiences
-2. 📝 **Workflow Creation** - Creates structured multi-role workflows
-3. 🎭 **Role Execution** - Executes each role task in sequence
-4. 📚 **Experience Recording** - Records learning for future tasks
-5. 🚀 **PR Creation** - Generates complete PR documentation and creates GitHub PR
-
-### **Installation**
-
-```bash
-# Direct execution via npx (recommended)
-npx @rikaidev/cortex@latest
-
-# Or global installation
+# Global installation
 npm install -g @rikaidev/cortex
+
+# Or use npx (no installation)
+npx @rikaidev/cortex init
 ```
 
-> **Note**: Using `@rikaidev/cortex@latest` ensures you always get the latest version without manual updates.
+### 2. Initialize Your Project
 
-### **MCP Client Configuration**
+```bash
+cd your-project
+cortex init
+```
 
-Add the following config to your MCP client:
+This creates `.cortex/` directory with templates, constitution, and workflow structure.
 
+### 3. Setup MCP Client
+
+**Cursor:**
 ```json
 {
   "mcpServers": {
@@ -271,102 +66,376 @@ Add the following config to your MCP client:
 }
 ```
 
-#### **Supported MCP Clients**
-
-**Claude Code**
+**Claude Code:**
 ```bash
-claude mcp add cortex-ai npx -y @rikaidev/cortex@latest start
+claude mcp add cortex npx -y @rikaidev/cortex@latest start
 ```
 
-**Cursor**
-- Go to `Cursor Settings` → `MCP` → `New MCP Server`
-- Use the config provided above
-
-**VS Code**
-```bash
-code --add-mcp '{"name":"cortex-ai","command":"npx","args":["-y","@rikaidev/cortex@latest","start"]}'
-```
-
-### **Project Initialization**
+### 4. Start Your First Feature
 
 ```bash
-# Initialize Cortex workspace structure and IDE integration
-npx @rikaidev/cortex@latest init
-
-# Or skip IDE integration if you only want workspace setup
-npx @rikaidev/cortex@latest init --skip-ide
+# In your AI assistant
+spec "Add user authentication with email and password"
 ```
 
-### **Workspace Structure**
+Output: Workflow `001-add-user-auth` created
 
-Cortex creates isolated workspaces for each workflow:
-
-```text
-.cortex/
-├── .cortexrc              # Configuration file
-├── workflows/             # Workflow state files
-├── workspaces/            # Individual workspace folders (hash-based)
-│   └── abc12345/          # Unique workspace for each workflow
-│       ├── handoff.md     # Role handoff documentation
-│       └── pr.md          # Pull request description
-└── roles/                 # Role definitions
-```
-
-## 📚 **Documentation**
-
-- **[Getting Started](docs/getting-started.md)** - Quick setup guide
-- **[Architecture](docs/architecture.md)** - System architecture details
-- **[Code Patterns](docs/code-patterns.md)** - Code style guidelines
-- **[Changelog](CHANGELOG.md)** - Complete change history
-- **[Roadmap](ROADMAP.md)** - Future development plans
-
-## 🛠️ **Development**
-
-### **Prerequisites**
-
-- Node.js 18+
-- TypeScript knowledge
-
-### **Setup**
+### 5. Follow the Workflow
 
 ```bash
-# Clone repository
-git clone https://github.com/RikaiDev/cortex.git
-cd cortex
+# Commands automatically use the latest workflow
+# (workflowId is optional - omit to use latest)
 
-# Install dependencies
-npm install
+# Optional: Clarify ambiguities
+clarify
 
-# Build project
-npm run build
+# Generate implementation plan
+plan
 
-# Run code quality checks
-npm run quality
+# Optional: Technical review
+review
 
-# Run tests
-npm run test
+# Break down into tasks
+tasks
 
-# Start development
-npm run dev
+# Execute implementation
+implement
 ```
 
-### **Contributing**
-
-- [Contributing Guidelines](CONTRIBUTING.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Development Setup](docs/development/)
-
-## 🎯 **Why "Cortex"?**
-
-**Cortex (大腦皮質)** represents the brain's advanced cognitive functions:
-
-- **🧠 Thinking** - Structured reasoning and problem-solving
-- **📚 Memory** - Learning and storing experiences
-- **🔄 Evolution** - Continuous improvement through experience
-- **🎯 Decision** - Making informed choices based on learning
-
-Just like the human cerebral cortex, **Cortex AI** is the "brain" for AI systems - responsible for thinking, memory, learning, and decision-making.
+> **Note**: All commands default to the most recent workflow. You can still specify a workflow ID if needed: `plan 001-add-user-auth`
 
 ---
 
-**Transform your AI interactions from frustrating repetitions to intelligent, learning partnerships with Cortex AI.**
+## 📊 Workflow Visualization
+
+```mermaid
+flowchart LR
+    Start([User Request]) --> FirstTime{First<br/>Time?}
+    
+    FirstTime -->|Yes| Onboard[Onboard<br/>Interactive Setup]
+    Onboard --> Constitution
+    FirstTime -->|No| Constitution
+    
+    Constitution[Constitution<br/>Setup Principles] -->|Auto-apply| Spec
+    
+    Spec[Specification<br/>Define Requirements] -->|Review & Confirm| Decision1{User<br/>Satisfied?}
+    
+    Decision1 -->|No| Clarify[Clarify<br/>Resolve Ambiguities]
+    Clarify -->|Update Spec| Spec
+    Decision1 -->|Yes| Plan
+    
+    Plan[Plan<br/>Technical Design] -->|Review & Confirm| Decision2{User<br/>Satisfied?}
+    
+    Decision2 -->|No| Review[Review<br/>Technical Analysis]
+    Review -->|Feedback| Plan
+    Decision2 -->|Yes| Tasks
+    
+    Tasks[Tasks<br/>Break Down Work] -->|Review & Confirm| Decision3{User<br/>Ready?}
+    
+    Decision3 -->|No| Tasks
+    Decision3 -->|Yes| Implement
+    
+    Implement[Implement<br/>Execute Tasks] --> Done{Release?}
+    
+    Done -->|Yes| Release[Release<br/>Analyze & Commit]
+    Release --> Complete([Released])
+    Done -->|No| Complete
+    
+    style Constitution fill:#e1f5ff
+    style Spec fill:#e1f5ff
+    style Clarify fill:#fff4e1
+    style Plan fill:#e1f5ff
+    style Review fill:#fff4e1
+    style Tasks fill:#e1f5ff
+    style Implement fill:#e1f5ff
+    style Onboard fill:#d4f1d4
+    style Release fill:#d4f1d4
+    style FirstTime fill:#2b2b2b,color:#fff
+    style Decision1 fill:#2b2b2b,color:#fff
+    style Decision2 fill:#2b2b2b,color:#fff
+    style Decision3 fill:#2b2b2b,color:#fff
+    style Done fill:#2b2b2b,color:#fff
+```
+
+**Legend:**
+- 🔵 **Blue boxes** - AI execution phases
+- 🟡 **Yellow boxes** - Optional user interaction phases
+- 🟢 **Green boxes** - Setup & release phases
+- ⚫ **Black diamonds** - User decision checkpoints
+
+---
+
+## 🔧 Available Commands
+
+All commands automatically use the latest workflow. Optionally specify a workflow ID: `plan 001-feature-name`
+
+| Command | Description | Automatic Actions | User Confirmation |
+|---------|-------------|-------------------|-------------------|
+| `spec <description>` | Define feature requirements | Generate requirements checklist, create workflow | Yes - before plan |
+| `clarify` | Resolve specification ambiguities | Update spec.md, save clarifications.md | Yes - iterative Q&A |
+| `plan` | Create technical implementation plan | Update CONTEXT.md, generate design checklist | Yes - before tasks |
+| `review` | Perform technical review of plan | Save review.md with action items | Yes - approve/revise |
+| `tasks` | Break down plan into actionable tasks | Generate tasks checklist | Yes - before implement |
+| `implement` | Execute implementation with role coordination | Validate gitignore, generate implementation checklist, execute tasks | Progress monitoring |
+| `status` | Check workflow status and progress | - | No |
+| `list` | List all workflows | - | No |
+| `release` | Analyze changes and generate release docs | Auto-detect conventions, validate quality (no TODOs/mocks), generate CHANGELOG/RELEASE_NOTES | Yes - before commit |
+| `onboard` | Interactive setup for first-time users | Q&A to create constitution, initialize structure | Yes - sequential questions |
+
+---
+
+## 🤖 Automation Built-In
+
+| Phase | Automatic Actions | Triggered When | Output Files |
+|-------|-------------------|----------------|--------------|
+| **Spec** | Requirements checklist generation | After spec.md created | `checklists/requirements.md` |
+| **Plan** | Context memory update, Design checklist generation | After plan.md created | `CONTEXT.md`, `checklists/design.md` |
+| **Tasks** | Tasks checklist generation | After tasks.md created | `checklists/tasks.md` |
+| **Implement** | Gitignore validation, Implementation checklist, Tech stack detection | Before execution starts | `.gitignore` (updated), `checklists/implementation.md` |
+| **Completion** | Automatic learning extraction from all phases | Workflow status becomes 'completed' | `.cortex/memory/experiences/*` |
+
+**No manual tool calls needed** - These validations and checks happen automatically at the right workflow points.
+
+---
+
+## 📚 Core Philosophy
+
+| Principle | Description | Benefit |
+|-----------|-------------|---------|
+| **Template + Command = Stable Output** | Templates provide structure (placeholders), commands guide AI execution | Consistent, predictable results across all AI models |
+| **Constitution-Driven Development** | Every phase validates against project principles | Maintains quality and consistency throughout development |
+| **User Confirmation Checkpoints** | Mandatory pauses after spec, plan, and tasks | Prevents runaway AI, ensures alignment with intent |
+| **Incremental Quality Validation** | Auto-generated checklists for each phase | Catch issues early, maintain quality gates |
+
+---
+
+## 🏗️ Architecture
+
+Cortex AI uses a **multi-layered MCP-based architecture**:
+
+```
+AI Platforms (Cursor/Claude/Copilot)
+         ↓
+    MCP Protocol
+         ↓
+  Stable Workflow Handler ← Constitution Validator
+         ↓                ← Template Generator
+    Service Layer:        ← Workflow Service
+    ├─ GitignoreValidator
+    ├─ ContextManager
+    └─ ChecklistGenerator
+         ↓
+  .cortex/ File Structure
+```
+
+**Key Components:**
+- **StableWorkflowHandler** - Coordinates all workflow phases
+- **Template System** - Structured templates + execution commands
+- **Service Layer** - Automated validation and quality checks
+- **Constitution** - Project-specific principles and rules
+
+For detailed architecture and technical specifications, see [Architecture Documentation](docs/architecture.md).
+
+---
+
+## 📖 Learn More
+
+- **[Architecture](docs/architecture.md)** - Technical deep dive into system components
+- **[Getting Started](docs/getting-started.md)** - Comprehensive tutorial with examples
+- **[Code Patterns](docs/code-patterns.md)** - Development guidelines and best practices
+
+---
+
+## 🎯 Example Workflow
+
+```bash
+# Step 1: Initialize
+cortex init
+
+# Step 2: Create specification (AI generates structured spec)
+cortex spec "Build a task management system with kanban board"
+# → Output: 001-task-management created
+
+# Step 3: Clarify (optional - AI asks targeted questions)
+cortex clarify 001-task-management
+# AI: "Should tasks support sub-tasks?"
+# You: "Yes, up to 2 levels deep"
+# → spec.md updated with clarification
+
+# Step 4: Generate plan (AI creates technical design)
+cortex plan 001-task-management
+# → Automatically:
+#   - CONTEXT.md updated with tech stack
+#   - checklists/design.md generated
+
+# Step 5: Review (optional - technical analysis)
+cortex review 001-task-management
+# → AI performs 6-category review:
+#   Architecture, Security, Performance, etc.
+
+# Step 6: Break down tasks
+cortex tasks 001-task-management
+# → Automatically:
+#   - checklists/tasks.md generated
+#   - Tasks marked for parallel execution
+
+# Step 7: Implement
+cortex implement 001-task-management
+# → Automatically:
+#   - .gitignore validated based on tech stack
+#   - checklists/implementation.md generated
+#   - Tasks executed in correct order
+```
+
+---
+
+## 🌟 Key Features
+
+### ✅ Quality First
+
+- Every phase includes validation checkpoints
+- Constitution principles enforced automatically
+- Auto-generated checklists ensure completeness
+
+### ✅ Predictable Output
+
+- Template-based structure guarantees consistency
+- Same workflow produces same quality across different AI models
+- No "vibe coding" - every step is intentional
+
+### ✅ User Control
+
+- Mandatory confirmation before major phase transitions
+- Optional clarification and review steps
+- Full visibility into what AI generates
+
+### ✅ Smart Automation
+
+- Tech stack detection and gitignore validation
+- Context memory tracks project evolution
+- Parallel task execution where possible
+
+### ✅ Learning System
+
+- **Automatic Learning Extraction** - Workflows automatically extract patterns, decisions, solutions, and lessons when completed
+- Memory system stores successful patterns with searchable tags
+- Constitution evolves with project needs
+- Context enhancement from past experiences
+
+### ✅ Smart Release Management
+
+- Auto-detect project conventions (CHANGELOG vs RELEASE_NOTES)
+- Analyze changes from git commits AND Cortex workflows
+- Generate professional release documentation automatically
+- Quality validation with zero-tolerance for incomplete code
+- Automatic commit message generation following conventions
+
+### ✅ Zero-Tolerance Quality
+
+- NO TODO comments in production code
+- NO mock data or scaffolding
+- NO unused code (enforced by Knip)
+- NO asking "continue or simplify?" - always decompose tasks
+- Task decomposition over shortcuts - break large tasks into completable units
+- Validation repeats until perfect - no attempt limits
+
+---
+
+## 🛠️ CLI Commands
+
+```bash
+# Phase commands (use with workflow ID from cortex.spec)
+cortex spec "<description>"       # Create specification
+cortex clarify <workflow-id>      # Clarify ambiguities
+cortex plan <workflow-id>         # Generate plan
+cortex review <workflow-id>       # Technical review
+cortex tasks <workflow-id>        # Break down tasks
+cortex implement <workflow-id>    # Execute implementation
+
+# Status commands
+cortex status <workflow-id>       # Check progress
+cortex list                       # List all workflows
+cortex list --limit 5             # Limit results
+
+# Learning commands
+cortex learn <workflow-id>        # Extract lessons
+cortex context <query>            # Search memory
+
+# Utility commands
+cortex init                       # Initialize project
+cortex init --skip-ide            # Skip IDE integration
+```
+
+---
+
+## 📋 Project Structure
+
+After running `cortex init`, your project will have:
+
+```
+.cortex/
+├── constitution.md              # Project principles
+├── memory/
+│   └── index.json              # Experience index
+├── templates/
+│   ├── constitution.md         # Constitution template
+│   ├── spec-template.md        # Spec template
+│   ├── clarify-template.md     # Clarify template
+│   ├── plan-template.md        # Plan template
+│   ├── review-template.md      # Review template
+│   ├── tasks-template.md       # Tasks template
+│   └── commands/               # AI execution guides
+│       ├── constitution.md
+│       ├── spec.md
+│       ├── clarify.md
+│       ├── plan.md
+│       ├── review.md
+│       ├── tasks.md
+│       └── implement.md
+└── workflows/
+    └── 001-feature-name/       # Individual workflow
+        ├── spec.md
+        ├── clarifications.md   # If clarify used
+        ├── plan.md
+        ├── CONTEXT.md          # Auto-generated
+        ├── review.md           # If review used
+        ├── tasks.md
+        ├── checklists/         # Auto-generated
+        │   ├── requirements.md
+        │   ├── design.md
+        │   ├── tasks.md
+        │   └── implementation.md
+        └── execution/          # Implementation logs
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+## 📄 License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+## 🙏 Acknowledgements
+
+Inspired by [spec-kit](https://github.com/github/spec-kit) - GitHub's Spec-Driven Development toolkit.
+
+We adopted spec-kit's brilliant **Template + Commands = Stable Output** approach and integrated it into Cortex AI's existing:
+- MCP protocol integration for cross-platform AI support
+- Multi-role coordination system
+- Constitution-driven validation
+- Learning memory system for continuous improvement
+
+---
+
+## 💬 Support
+
+- **Documentation**: [docs/](docs/)
+- **Issues**: [GitHub Issues](https://github.com/RikaiDev/cortex/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/RikaiDev/cortex/discussions)
