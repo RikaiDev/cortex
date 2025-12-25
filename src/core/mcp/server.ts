@@ -26,6 +26,7 @@ import { CortexAI } from "../index.js";
 import { ToolHandler } from "./handlers/tool-handler.js";
 import { ResourceHandler } from "./handlers/resource-handler.js";
 import { StableWorkflowHandler } from "./handlers/stable-workflow-handler.js";
+import type { CheckpointFile } from "./types/checkpoint.js";
 
 // ES Module support for __dirname
 const __filename = fileURLToPath(import.meta.url);
@@ -196,12 +197,14 @@ export class CortexMCPServer {
     const workflowsDir = path.join(cortexDir, "workflows");
     const memoryDir = path.join(cortexDir, "memory");
     const templatesDir = path.join(cortexDir, "templates");
+    const checkpointsDir = path.join(cortexDir, "checkpoints");
 
     // Create directories
     fs.ensureDirSync(rolesDir);
     fs.ensureDirSync(workflowsDir);
     fs.ensureDirSync(memoryDir);
     fs.ensureDirSync(templatesDir);
+    fs.ensureDirSync(checkpointsDir);
 
     // Find cortex-ai tool's installation directory
     const toolRoot = this.findToolRoot();
@@ -333,7 +336,8 @@ export class CortexMCPServer {
           tools: [
             {
               name: "spec",
-              description: "Create feature specification (auto-creates workflow)",
+              description:
+                "Create feature specification (auto-creates workflow)",
               inputSchema: {
                 type: "object",
                 properties: {
@@ -347,13 +351,21 @@ export class CortexMCPServer {
             },
             {
               name: "workflow",
-              description: "Execute workflow phases: clarify (resolve ambiguities), plan (create implementation plan), review (technical review), tasks (generate task breakdown), implement (execute with Multi-Role coordination), status (get workflow progress). Uses latest workflow if workflowId not provided.",
+              description:
+                "Execute workflow phases: clarify (resolve ambiguities), plan (create implementation plan), review (technical review), tasks (generate task breakdown), implement (execute with Multi-Role coordination), status (get workflow progress). Uses latest workflow if workflowId not provided.",
               inputSchema: {
                 type: "object",
                 properties: {
                   phase: {
                     type: "string",
-                    enum: ["clarify", "plan", "review", "tasks", "implement", "status"],
+                    enum: [
+                      "clarify",
+                      "plan",
+                      "review",
+                      "tasks",
+                      "implement",
+                      "status",
+                    ],
                     description: "Workflow phase to execute",
                   },
                   workflowId: {
@@ -380,13 +392,15 @@ export class CortexMCPServer {
             },
             {
               name: "release",
-              description: "Analyze changes and generate release documentation (CHANGELOG/RELEASE_NOTES) with optional git tag and push",
+              description:
+                "Analyze changes and generate release documentation (CHANGELOG/RELEASE_NOTES) with optional git tag and push",
               inputSchema: {
                 type: "object",
                 properties: {
                   version: {
                     type: "string",
-                    description: "Version number (optional, auto-detected if not provided)",
+                    description:
+                      "Version number (optional, auto-detected if not provided)",
                   },
                   tag: {
                     type: "boolean",
@@ -403,7 +417,8 @@ export class CortexMCPServer {
             },
             {
               name: "onboard",
-              description: "Interactive onboarding for first-time users - guides through initialization and constitution creation",
+              description:
+                "Interactive onboarding for first-time users - guides through initialization and constitution creation",
               inputSchema: {
                 type: "object",
                 properties: {},
@@ -411,20 +426,23 @@ export class CortexMCPServer {
             },
             {
               name: "constitution",
-              description: "Create or update project constitution - AI guides through principles, governance, and versioning",
+              description:
+                "Create or update project constitution - AI guides through principles, governance, and versioning",
               inputSchema: {
                 type: "object",
                 properties: {
                   updates: {
                     type: "string",
-                    description: "Optional: specific updates to make (e.g., 'add testing principle')",
+                    description:
+                      "Optional: specific updates to make (e.g., 'add testing principle')",
                   },
                 },
               },
             },
             {
               name: "memory",
-              description: "Interact with project memory: learn (record experience/pattern/decision/solution/lesson) or context (retrieve relevant experiences based on query)",
+              description:
+                "Interact with project memory: learn (record experience/pattern/decision/solution/lesson) or context (retrieve relevant experiences based on query)",
               inputSchema: {
                 type: "object",
                 properties: {
@@ -435,11 +453,13 @@ export class CortexMCPServer {
                   },
                   title: {
                     type: "string",
-                    description: "[learn] Brief descriptive title (max 200 characters)",
+                    description:
+                      "[learn] Brief descriptive title (max 200 characters)",
                   },
                   content: {
                     type: "string",
-                    description: "[learn] Full markdown content of the experience",
+                    description:
+                      "[learn] Full markdown content of the experience",
                   },
                   type: {
                     type: "string",
@@ -453,7 +473,8 @@ export class CortexMCPServer {
                   },
                   query: {
                     type: "string",
-                    description: "[context] Search query to find relevant experiences",
+                    description:
+                      "[context] Search query to find relevant experiences",
                   },
                 },
                 required: ["action"],
@@ -461,7 +482,8 @@ export class CortexMCPServer {
             },
             {
               name: "correct",
-              description: "Record a correction to AI behavior - the AI will avoid repeating this mistake in future sessions",
+              description:
+                "Record a correction to AI behavior - the AI will avoid repeating this mistake in future sessions",
               inputSchema: {
                 type: "object",
                 properties: {
@@ -476,12 +498,14 @@ export class CortexMCPServer {
                   severity: {
                     type: "string",
                     enum: ["minor", "moderate", "major"],
-                    description: "How serious the mistake was (default: moderate)",
+                    description:
+                      "How serious the mistake was (default: moderate)",
                   },
                   filePatterns: {
                     type: "array",
                     items: { type: "string" },
-                    description: "File patterns where this applies (e.g., '*.tsx')",
+                    description:
+                      "File patterns where this applies (e.g., '*.tsx')",
                   },
                   triggerKeywords: {
                     type: "array",
@@ -490,6 +514,110 @@ export class CortexMCPServer {
                   },
                 },
                 required: ["wrongBehavior", "correctBehavior"],
+              },
+            },
+            {
+              name: "checkpoint-save",
+              description:
+                "Save current task progress as a checkpoint for resuming later",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  taskDescription: {
+                    type: "string",
+                    description:
+                      "Brief description of the task being checkpointed",
+                  },
+                  completed: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        path: { type: "string" },
+                        description: { type: "string" },
+                        status: {
+                          type: "string",
+                          enum: ["completed", "in-progress", "pending"],
+                        },
+                      },
+                      required: ["path", "description", "status"],
+                    },
+                    description: "List of completed files",
+                  },
+                  pending: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        path: { type: "string" },
+                        description: { type: "string" },
+                        status: {
+                          type: "string",
+                          enum: ["completed", "in-progress", "pending"],
+                        },
+                      },
+                      required: ["path", "description", "status"],
+                    },
+                    description: "List of pending files",
+                  },
+                  context: {
+                    type: "string",
+                    description: "Additional context about current progress",
+                  },
+                  nextStep: {
+                    type: "string",
+                    description: "Guidance for what to do next when resuming",
+                  },
+                  workflowId: {
+                    type: "string",
+                    description: "Associated workflow ID (optional)",
+                  },
+                },
+                required: ["taskDescription"],
+              },
+            },
+            {
+              name: "checkpoint-resume",
+              description: "Resume from a saved checkpoint (by ID or latest)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  checkpointId: {
+                    type: "string",
+                    description:
+                      "Checkpoint ID to resume from (optional, uses latest if not provided)",
+                  },
+                },
+              },
+            },
+            {
+              name: "checkpoint-list",
+              description: "List all saved checkpoints",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  limit: {
+                    type: "number",
+                    description:
+                      "Maximum number of checkpoints to return (default: 10)",
+                    default: 10,
+                  },
+                },
+              },
+            },
+            {
+              name: "checkpoint-clear",
+              description:
+                "Clear checkpoint(s) - specific ID or all checkpoints",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  checkpointId: {
+                    type: "string",
+                    description:
+                      "Specific checkpoint ID to clear (if not provided, clears all)",
+                  },
+                },
               },
             },
           ],
@@ -514,7 +642,16 @@ export class CortexMCPServer {
             break;
           case "workflow":
             result = await this.stableWorkflowHandler.handleWorkflow(
-              args as { phase: 'clarify' | 'plan' | 'review' | 'tasks' | 'implement' | 'status'; workflowId?: string }
+              args as {
+                phase:
+                  | "clarify"
+                  | "plan"
+                  | "review"
+                  | "tasks"
+                  | "implement"
+                  | "status";
+                workflowId?: string;
+              }
             );
             break;
           case "list":
@@ -548,6 +685,33 @@ export class CortexMCPServer {
                 filePatterns?: string[];
                 triggerKeywords?: string[];
               }
+            );
+            break;
+          case "checkpoint-save":
+            result = await this.stableWorkflowHandler.handleCheckpointSave(
+              args as {
+                taskDescription: string;
+                completed?: CheckpointFile[];
+                pending?: CheckpointFile[];
+                context?: string;
+                nextStep?: string;
+                workflowId?: string;
+              }
+            );
+            break;
+          case "checkpoint-resume":
+            result = await this.stableWorkflowHandler.handleCheckpointResume(
+              args as { checkpointId?: string }
+            );
+            break;
+          case "checkpoint-list":
+            result = await this.stableWorkflowHandler.handleCheckpointList(
+              args as { limit?: number }
+            );
+            break;
+          case "checkpoint-clear":
+            result = await this.stableWorkflowHandler.handleCheckpointClear(
+              args as { checkpointId?: string }
             );
             break;
           default:
@@ -677,7 +841,8 @@ export class CortexMCPServer {
             },
             {
               name: "clarify",
-              description: "Resolve specification ambiguities (max 5 questions)",
+              description:
+                "Resolve specification ambiguities (max 5 questions)",
               arguments: [
                 {
                   name: "workflowId",
@@ -721,7 +886,8 @@ export class CortexMCPServer {
             },
             {
               name: "implement",
-              description: "Execute implementation phase with Multi-Role coordination",
+              description:
+                "Execute implementation phase with Multi-Role coordination",
               arguments: [
                 {
                   name: "workflowId",
@@ -753,7 +919,8 @@ export class CortexMCPServer {
             },
             {
               name: "validate-implementation",
-              description: "Validate implementation for mocks, TODOs, unused code",
+              description:
+                "Validate implementation for mocks, TODOs, unused code",
               arguments: [
                 {
                   name: "changedFiles",
@@ -768,7 +935,8 @@ export class CortexMCPServer {
               arguments: [
                 {
                   name: "version",
-                  description: "Version number (optional, auto-detected if not provided)",
+                  description:
+                    "Version number (optional, auto-detected if not provided)",
                   required: false,
                 },
                 {
@@ -805,7 +973,8 @@ export class CortexMCPServer {
               arguments: [
                 {
                   name: "limit",
-                  description: "Maximum number of workflows to return (default: 10)",
+                  description:
+                    "Maximum number of workflows to return (default: 10)",
                   required: false,
                 },
               ],
@@ -824,8 +993,8 @@ export class CortexMCPServer {
         const { name, arguments: args } = request.params;
 
         // Map prompt names to tool calls
-        const toolName = name.replace('cortex-', 'cortex.');
-        
+        const toolName = name.replace("cortex-", "cortex.");
+
         let toolArgs: Record<string, unknown> = {};
         if (args) {
           // args is already a Record<string, string> from MCP SDK
@@ -836,44 +1005,67 @@ export class CortexMCPServer {
         let result;
         switch (toolName) {
           case "cortex.spec":
-            result = await this.stableWorkflowHandler.handleSpec(toolArgs as { description: string });
+            result = await this.stableWorkflowHandler.handleSpec(
+              toolArgs as { description: string }
+            );
             break;
           case "cortex.clarify":
-            result = await this.stableWorkflowHandler.handleClarify(toolArgs as { workflowId: string });
+            result = await this.stableWorkflowHandler.handleClarify(
+              toolArgs as { workflowId: string }
+            );
             break;
           case "cortex.plan":
-            result = await this.stableWorkflowHandler.handlePlan(toolArgs as { workflowId: string });
+            result = await this.stableWorkflowHandler.handlePlan(
+              toolArgs as { workflowId: string }
+            );
             break;
           case "cortex.review":
-            result = await this.stableWorkflowHandler.handleReview(toolArgs as { workflowId: string });
+            result = await this.stableWorkflowHandler.handleReview(
+              toolArgs as { workflowId: string }
+            );
             break;
           case "cortex.tasks":
-            result = await this.stableWorkflowHandler.handleTasks(toolArgs as { workflowId: string });
+            result = await this.stableWorkflowHandler.handleTasks(
+              toolArgs as { workflowId: string }
+            );
             break;
           case "cortex.implement":
-            result = await this.stableWorkflowHandler.handleImplement(toolArgs as { workflowId: string });
+            result = await this.stableWorkflowHandler.handleImplement(
+              toolArgs as { workflowId: string }
+            );
             break;
           case "cortex.decompose-task":
             result = await this.stableWorkflowHandler.handleTaskDecomposition(
-              toolArgs as { workflowId: string; taskId: string; taskDescription: string }
+              toolArgs as {
+                workflowId: string;
+                taskId: string;
+                taskDescription: string;
+              }
             );
             break;
           case "cortex.validate-implementation":
-            result = await this.stableWorkflowHandler.handleImplementationValidation(
-              toolArgs as { changedFiles: string[] }
-            );
+            result =
+              await this.stableWorkflowHandler.handleImplementationValidation(
+                toolArgs as { changedFiles: string[] }
+              );
             break;
           case "cortex.release":
-            result = await this.stableWorkflowHandler.handleRelease(toolArgs as { version?: string; tag?: boolean; push?: boolean });
+            result = await this.stableWorkflowHandler.handleRelease(
+              toolArgs as { version?: string; tag?: boolean; push?: boolean }
+            );
             break;
           case "cortex.onboard":
             result = await this.stableWorkflowHandler.handleOnboard();
             break;
           case "cortex.status":
-            result = await this.stableWorkflowHandler.handleStatus(toolArgs as { workflowId: string });
+            result = await this.stableWorkflowHandler.handleStatus(
+              toolArgs as { workflowId: string }
+            );
             break;
           case "cortex.list":
-            result = await this.stableWorkflowHandler.handleList(toolArgs as { limit?: number });
+            result = await this.stableWorkflowHandler.handleList(
+              toolArgs as { limit?: number }
+            );
             break;
           default:
             throw new Error(`Unknown prompt: ${name}`);
@@ -887,10 +1079,10 @@ export class CortexMCPServer {
               role: "user",
               content: {
                 type: "text",
-                text: result.content[0]?.text || "No content"
-              }
-            }
-          ]
+                text: result.content[0]?.text || "No content",
+              },
+            },
+          ],
         };
       } catch (error) {
         console.error("Error getting prompt:", error);
@@ -1117,4 +1309,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(1);
   });
 }
-

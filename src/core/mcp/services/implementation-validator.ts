@@ -48,7 +48,7 @@ export class ImplementationValidator {
 
   /**
    * Scan for Mock/Scaffold patterns in code
-   * 
+   *
    * Detects:
    * - TODO/FIXME comments
    * - mock data (mockData, MOCK_*, test fixtures in prod code)
@@ -60,7 +60,7 @@ export class ImplementationValidator {
 
     for (const file of files) {
       const fullPath = path.join(this.projectRoot, file);
-      
+
       // Skip if file doesn't exist
       if (!(await fs.pathExists(fullPath))) {
         continue;
@@ -136,7 +136,7 @@ export class ImplementationValidator {
 
   /**
    * Check for defined but unused code
-   * 
+   *
    * Uses Knip or similar tools to detect:
    * - Defined interfaces/types not referenced
    * - Defined functions not called
@@ -186,7 +186,7 @@ export class ImplementationValidator {
 
   /**
    * Validate against specification
-   * 
+   *
    * Compare spec.md requirements with actual implementation
    */
   async validateAgainstSpec(
@@ -203,20 +203,20 @@ export class ImplementationValidator {
 
     // Extract requirements from spec
     // Look for acceptance criteria or requirements sections
-    const requirementMatches = spec.matchAll(
-      /^-\s+\[[ x]\]\s+(.+)$/gim
-    );
+    const requirementMatches = spec.matchAll(/^-\s+\[[ x]\]\s+(.+)$/gim);
 
     for (const match of requirementMatches) {
       const requirement = match[1];
-      
+
       // Check if requirement mentions specific functionality
       // that we can validate (very basic check)
       if (requirement.toLowerCase().includes("must")) {
         // This is a simplified check
         // In real implementation, would need more sophisticated matching
         const hasImplementation = implementedFiles.some((file) =>
-          file.toLowerCase().includes(requirement.toLowerCase().substring(0, 10))
+          file
+            .toLowerCase()
+            .includes(requirement.toLowerCase().substring(0, 10))
         );
 
         if (!hasImplementation) {
@@ -261,4 +261,3 @@ export class ImplementationValidator {
     return tasks;
   }
 }
-

@@ -20,7 +20,7 @@ export interface Correction {
   context: CorrectionContext;
 
   /** Severity of the mistake */
-  severity: 'minor' | 'moderate' | 'major';
+  severity: "minor" | "moderate" | "major";
 
   /** Creation timestamp (ISO 8601) */
   createdAt: string;
@@ -46,7 +46,7 @@ export interface CorrectionContext {
   triggerKeywords: string[];
 
   /** Phases where this applies */
-  phases: ('spec' | 'plan' | 'tasks' | 'implement')[];
+  phases: ("spec" | "plan" | "tasks" | "implement")[];
 }
 
 export interface CorrectionWarning {
@@ -74,7 +74,7 @@ export interface CorrectionIndex {
   corrections: Array<{
     id: string;
     wrongBehavior: string;
-    severity: 'minor' | 'moderate' | 'major';
+    severity: "minor" | "moderate" | "major";
     createdAt: string;
   }>;
 }

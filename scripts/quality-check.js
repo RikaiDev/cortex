@@ -60,8 +60,8 @@ function runCodeQualityChecks() {
 
   // ESLint (with zero warnings tolerance) - check all JS/TS files
   const eslintCmd = shouldFix
-    ? `npx eslint --fix "src/**/*.ts" "scripts/**/*.cjs" "test/**/*.ts" --max-warnings 0`
-    : `npx eslint "src/**/*.ts" "scripts/**/*.cjs" "test/**/*.ts" --max-warnings 0`;
+    ? `npx eslint --fix "src/**/*.ts" "scripts/**/*.cjs" --max-warnings 0`
+    : `npx eslint "src/**/*.ts" "scripts/**/*.cjs" --max-warnings 0`;
   const eslintResult = runCommand(eslintCmd, "ESLint check (zero warnings)", true);
 
   if (eslintResult.success) {

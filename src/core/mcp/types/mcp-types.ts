@@ -10,7 +10,13 @@ export interface MCPToolResult {
 /**
  * Workflow phase types
  */
-export type WorkflowPhase = 'clarify' | 'plan' | 'review' | 'tasks' | 'implement' | 'status';
+export type WorkflowPhase =
+  | "clarify"
+  | "plan"
+  | "review"
+  | "tasks"
+  | "implement"
+  | "status";
 
 export interface WorkflowToolArgs {
   phase: WorkflowPhase;
@@ -22,14 +28,14 @@ export interface WorkflowToolArgs {
  */
 export type MemoryToolArgs =
   | {
-      action: 'learn';
+      action: "learn";
       title: string;
       content: string;
-      type: 'pattern' | 'decision' | 'solution' | 'lesson';
+      type: "pattern" | "decision" | "solution" | "lesson";
       tags?: string[];
     }
   | {
-      action: 'context';
+      action: "context";
       query: string;
     };
 

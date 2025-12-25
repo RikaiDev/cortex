@@ -1,7 +1,11 @@
-import fs from 'fs-extra';
-import * as path from 'path';
+import fs from "fs-extra";
+import * as path from "path";
 
-export type ChecklistType = 'requirements' | 'design' | 'tasks' | 'implementation';
+export type ChecklistType =
+  | "requirements"
+  | "design"
+  | "tasks"
+  | "implementation";
 
 export class ChecklistGenerator {
   private workflowDir: string;
@@ -9,37 +13,40 @@ export class ChecklistGenerator {
 
   constructor(workflowDir: string) {
     this.workflowDir = workflowDir;
-    this.checklistsDir = path.join(workflowDir, 'checklists');
+    this.checklistsDir = path.join(workflowDir, "checklists");
   }
 
   /**
    * Generate checklist based on phase
    */
-  async generateChecklist(type: ChecklistType, featureName: string): Promise<string> {
+  async generateChecklist(
+    type: ChecklistType,
+    featureName: string
+  ): Promise<string> {
     // Ensure checklists directory exists
     await this.ensureChecklistsDir();
 
     const checklistPath = path.join(this.checklistsDir, `${type}.md`);
 
-    let content = '';
+    let content = "";
     switch (type) {
-      case 'requirements':
+      case "requirements":
         content = this.generateRequirementsChecklist(featureName);
         break;
-      case 'design':
+      case "design":
         content = this.generateDesignChecklist(featureName);
         break;
-      case 'tasks':
+      case "tasks":
         content = this.generateTasksChecklist(featureName);
         break;
-      case 'implementation':
+      case "implementation":
         content = this.generateImplementationChecklist(featureName);
         break;
       default:
         throw new Error(`Unknown checklist type: ${type}`);
     }
 
-    await fs.writeFile(checklistPath, content, 'utf-8');
+    await fs.writeFile(checklistPath, content, "utf-8");
     console.log(`✓ Generated ${type} checklist at ${checklistPath}`);
 
     return checklistPath;
@@ -57,9 +64,9 @@ export class ChecklistGenerator {
     const checklistPath = path.join(this.checklistsDir, `${type}.md`);
 
     try {
-      const content = await fs.readFile(checklistPath, 'utf-8');
-      
-      const lines = content.split('\n');
+      const content = await fs.readFile(checklistPath, "utf-8");
+
+      const lines = content.split("\n");
       let total = 0;
       let completed = 0;
 
@@ -86,11 +93,22 @@ export class ChecklistGenerator {
    * Validate all checklists in workflow
    */
   async validateAllChecklists(): Promise<{
-    checklists: Record<string, { total: number; completed: number; incomplete: number; passed: boolean }>;
+    checklists: Record<
+      string,
+      { total: number; completed: number; incomplete: number; passed: boolean }
+    >;
     allPassed: boolean;
   }> {
-    const types: ChecklistType[] = ['requirements', 'design', 'tasks', 'implementation'];
-    const checklists: Record<string, { total: number; completed: number; incomplete: number; passed: boolean }> = {};
+    const types: ChecklistType[] = [
+      "requirements",
+      "design",
+      "tasks",
+      "implementation",
+    ];
+    const checklists: Record<
+      string,
+      { total: number; completed: number; incomplete: number; passed: boolean }
+    > = {};
     let allPassed = true;
 
     for (const type of types) {
@@ -110,8 +128,8 @@ export class ChecklistGenerator {
    * Generate Requirements Checklist (after spec generation)
    */
   private generateRequirementsChecklist(featureName: string): string {
-    const date = new Date().toISOString().split('T')[0];
-    
+    const date = new Date().toISOString().split("T")[0];
+
     return `# Specification Quality Checklist: ${featureName}
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
@@ -153,8 +171,8 @@ _Items marked incomplete require spec updates before proceeding to /cortex.plan_
    * Generate Design Checklist (after plan generation)
    */
   private generateDesignChecklist(featureName: string): string {
-    const date = new Date().toISOString().split('T')[0];
-    
+    const date = new Date().toISOString().split("T")[0];
+
     return `# Design Quality Checklist: ${featureName}
 
 **Purpose**: Validate technical design completeness before task breakdown
@@ -206,8 +224,8 @@ _Items marked incomplete require plan updates before proceeding to /cortex.tasks
    * Generate Tasks Checklist (after task generation)
    */
   private generateTasksChecklist(featureName: string): string {
-    const date = new Date().toISOString().split('T')[0];
-    
+    const date = new Date().toISOString().split("T")[0];
+
     return `# Tasks Quality Checklist: ${featureName}
 
 **Purpose**: Validate task breakdown completeness before implementation
@@ -258,8 +276,8 @@ _Items marked incomplete require tasks updates before proceeding to /cortex.impl
    * Generate Implementation Checklist (before starting implementation)
    */
   private generateImplementationChecklist(featureName: string): string {
-    const date = new Date().toISOString().split('T')[0];
-    
+    const date = new Date().toISOString().split("T")[0];
+
     return `# Implementation Checklist: ${featureName}
 
 **Purpose**: Track implementation progress and quality
@@ -335,4 +353,3 @@ _Track any issues, blockers, or decisions made during implementation_
     }
   }
 }
-

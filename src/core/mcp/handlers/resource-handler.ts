@@ -269,13 +269,22 @@ For complete documentation, see: docs/ide-integration.md`,
             {
               uri,
               mimeType: "application/json",
-              text: JSON.stringify({
-                version: "1.0",
-                lastUpdated: new Date().toISOString(),
-                totalExperiences: 0,
-                categories: { patterns: 0, decisions: 0, solutions: 0, lessons: 0 },
-                index: []
-              }, null, 2),
+              text: JSON.stringify(
+                {
+                  version: "1.0",
+                  lastUpdated: new Date().toISOString(),
+                  totalExperiences: 0,
+                  categories: {
+                    patterns: 0,
+                    decisions: 0,
+                    solutions: 0,
+                    lessons: 0,
+                  },
+                  index: [],
+                },
+                null,
+                2
+              ),
             },
           ],
         };

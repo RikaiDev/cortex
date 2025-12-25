@@ -131,7 +131,9 @@ export class ProjectDetector {
         // Extract commit types
         const types = new Set<string>();
         conventionalCommits.forEach((commit) => {
-          const match = commit.match(/\s+(feat|fix|docs|style|refactor|perf|test|chore|build|ci)/i);
+          const match = commit.match(
+            /\s+(feat|fix|docs|style|refactor|perf|test|chore|build|ci)/i
+          );
           if (match) {
             types.add(match[1].toLowerCase());
           }
@@ -147,9 +149,7 @@ export class ProjectDetector {
   /**
    * Check package.json scripts and devDependencies
    */
-  private async checkToolchain(
-    conventions: ProjectConventions
-  ): Promise<void> {
+  private async checkToolchain(conventions: ProjectConventions): Promise<void> {
     const packageJsonPath = path.join(this.projectRoot, "package.json");
     if (!(await fs.pathExists(packageJsonPath))) {
       return;
@@ -248,4 +248,3 @@ export class ProjectDetector {
     }
   }
 }
-

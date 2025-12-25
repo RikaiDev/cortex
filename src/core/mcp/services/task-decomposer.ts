@@ -17,7 +17,7 @@ export interface SubTask {
 export class TaskDecomposer {
   /**
    * Analyze if task needs decomposition
-   * 
+   *
    * Criteria:
    * - More than 3 files need modification
    * - More than 200 lines of code to write
@@ -53,7 +53,7 @@ export class TaskDecomposer {
 
   /**
    * Automatically decompose task into subtasks
-   * 
+   *
    * Principles:
    * - Each subtask modifies only 1-2 files
    * - Each subtask is independently testable
@@ -123,7 +123,7 @@ export class TaskDecomposer {
 
   /**
    * Validate if task is really complete
-   * 
+   *
    * Checks:
    * - No TODO/FIXME comments
    * - No mock data
@@ -271,4 +271,3 @@ export class TaskDecomposer {
     return components;
   }
 }
-

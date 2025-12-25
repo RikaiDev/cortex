@@ -6,14 +6,14 @@
  * when the AI recognizes user feedback as a correction.
  */
 
-import * as path from 'node:path';
-import fs from 'fs-extra';
-import { v4 as uuidv4 } from 'uuid';
+import * as path from "node:path";
+import fs from "fs-extra";
+import { v4 as uuidv4 } from "uuid";
 import type {
   Correction,
   CorrectionWarning,
   CorrectionIndex,
-} from '../types/correction.js';
+} from "../types/correction.js";
 
 export class CorrectionService {
   private correctionsPath: string;
@@ -21,9 +21,9 @@ export class CorrectionService {
   private cachedCorrections: Correction[] | null = null;
 
   constructor(private projectRoot: string) {
-    const memoryDir = path.join(projectRoot, '.cortex', 'memory');
-    this.correctionsPath = path.join(memoryDir, 'corrections');
-    this.indexPath = path.join(memoryDir, 'corrections-index.json');
+    const memoryDir = path.join(projectRoot, ".cortex", "memory");
+    this.correctionsPath = path.join(memoryDir, "corrections");
+    this.indexPath = path.join(memoryDir, "corrections-index.json");
   }
 
   /**
@@ -33,7 +33,7 @@ export class CorrectionService {
     await fs.ensureDir(this.correctionsPath);
     if (!(await fs.pathExists(this.indexPath))) {
       const emptyIndex: CorrectionIndex = {
-        version: '1.0',
+        version: "1.0",
         lastUpdated: new Date().toISOString(),
         totalCorrections: 0,
         corrections: [],
@@ -50,15 +50,15 @@ export class CorrectionService {
 
     const fullCorrection: Correction = {
       id: correction.id || uuidv4(),
-      wrongBehavior: correction.wrongBehavior || '',
-      correctBehavior: correction.correctBehavior || '',
+      wrongBehavior: correction.wrongBehavior || "",
+      correctBehavior: correction.correctBehavior || "",
       context: correction.context || {
         filePatterns: [],
         techStack: [],
         triggerKeywords: [],
         phases: [],
       },
-      severity: correction.severity || 'moderate',
+      severity: correction.severity || "moderate",
       createdAt: new Date().toISOString(),
       warnCount: 0,
       workflowIds: correction.workflowIds || [],
@@ -117,14 +117,14 @@ export class CorrectionService {
    * Format warnings as context injection
    */
   formatWarningsAsContext(warnings: CorrectionWarning[]): string {
-    if (warnings.length === 0) return '';
+    if (warnings.length === 0) return "";
 
     const lines = [
-      '',
-      '## ⚠️ Previous Corrections (IMPORTANT)',
-      '',
-      'The following corrections have been recorded from past sessions. **Avoid repeating these mistakes:**',
-      '',
+      "",
+      "## ⚠️ Previous Corrections (IMPORTANT)",
+      "",
+      "The following corrections have been recorded from past sessions. **Avoid repeating these mistakes:**",
+      "",
     ];
 
     for (let i = 0; i < warnings.length; i++) {
@@ -135,10 +135,10 @@ export class CorrectionService {
       if (warning.matchReason) {
         lines.push(`**Why this warning**: ${warning.matchReason}`);
       }
-      lines.push('');
+      lines.push("");
     }
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   /**
@@ -148,23 +148,23 @@ export class CorrectionService {
     const tags: string[] = [];
 
     // Extract from wrong/correct behavior
-    const text = `${correction.wrongBehavior || ''} ${correction.correctBehavior || ''}`;
+    const text = `${correction.wrongBehavior || ""} ${correction.correctBehavior || ""}`;
     const words = text.toLowerCase().split(/\s+/);
 
     // Common tech terms
     const techTerms = [
-      'lodash',
-      'react',
-      'typescript',
-      'javascript',
-      'node',
-      'npm',
-      'api',
-      'async',
-      'promise',
-      'error',
-      'test',
-      'component',
+      "lodash",
+      "react",
+      "typescript",
+      "javascript",
+      "node",
+      "npm",
+      "api",
+      "async",
+      "promise",
+      "error",
+      "test",
+      "component",
     ];
 
     for (const term of techTerms) {
@@ -250,7 +250,7 @@ export class CorrectionService {
     );
     if (tagMatches.length > 0) {
       score += tagMatches.length * 0.1;
-      reasons.push(`Tag matches: ${tagMatches.join(', ')}`);
+      reasons.push(`Tag matches: ${tagMatches.join(", ")}`);
     }
 
     // Check wrongBehavior similarity (simple keyword overlap)
@@ -265,7 +265,7 @@ export class CorrectionService {
 
     return {
       matches: score >= 0.25, // Lower threshold for better recall
-      reason: reasons.join('; ') || 'Low similarity',
+      reason: reasons.join("; ") || "Low similarity",
       confidence: Math.min(score, 1.0),
     };
   }
@@ -280,7 +280,7 @@ export class CorrectionService {
     if (await fs.pathExists(this.correctionsPath)) {
       const files = await fs.readdir(this.correctionsPath);
       for (const file of files) {
-        if (file.endsWith('.json')) {
+        if (file.endsWith(".json")) {
           const content = await fs.readJson(
             path.join(this.correctionsPath, file)
           );

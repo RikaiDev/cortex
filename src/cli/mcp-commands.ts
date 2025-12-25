@@ -44,7 +44,7 @@ export async function ensureCortexWorkspace(
 
 /**
  * Add MCP commands to the CLI
- * 
+ *
  * Note: Workflow commands (spec, plan, tasks, etc.) are now accessed via MCP prompts
  * in your AI assistant (e.g., /cortex.spec in Cursor). CLI only provides init and start.
  */

@@ -92,9 +92,7 @@ export class ChangeAnalyzer {
         encoding: "utf-8",
       });
 
-      const commitBlocks = log
-        .split("\n|||\n")
-        .filter((block) => block.trim());
+      const commitBlocks = log.split("\n|||\n").filter((block) => block.trim());
 
       for (const block of commitBlocks) {
         const [hash, subject, body] = block.split("|||");
@@ -120,10 +118,7 @@ export class ChangeAnalyzer {
         }
 
         // Check for breaking changes
-        if (
-          body?.includes("BREAKING CHANGE") ||
-          subject.includes("!")
-        ) {
+        if (body?.includes("BREAKING CHANGE") || subject.includes("!")) {
           commit.breaking = true;
         }
 
@@ -166,7 +161,7 @@ export class ChangeAnalyzer {
         const specPath = path.join(workflowDir, "spec.md");
         if (await fs.pathExists(specPath)) {
           const spec = await fs.readFile(specPath, "utf-8");
-          
+
           // Extract feature name from title
           const titleMatch = spec.match(/^#\s+(.+)$/m);
           if (titleMatch) {
@@ -184,7 +179,7 @@ export class ChangeAnalyzer {
         const tasksPath = path.join(workflowDir, "tasks.md");
         if (await fs.pathExists(tasksPath)) {
           const tasks = await fs.readFile(tasksPath, "utf-8");
-          
+
           // Extract completed tasks
           const taskMatches = tasks.matchAll(/^-\s+\[x\]\s+(.+)$/gim);
           for (const match of taskMatches) {
@@ -237,7 +232,9 @@ export class ChangeAnalyzer {
     for (const commit of commits) {
       // Skip if already covered by workflow
       const alreadyCovered = changes.some((change) =>
-        change.description.toLowerCase().includes(commit.description.toLowerCase().substring(0, 20))
+        change.description
+          .toLowerCase()
+          .includes(commit.description.toLowerCase().substring(0, 20))
       );
 
       if (!alreadyCovered) {
@@ -299,4 +296,3 @@ export class ChangeAnalyzer {
     }
   }
 }
-

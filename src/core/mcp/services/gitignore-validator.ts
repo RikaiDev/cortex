@@ -1,7 +1,7 @@
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import * as fs from 'fs-extra';
-import * as path from 'path';
+import { exec } from "child_process";
+import { promisify } from "util";
+import * as fs from "fs-extra";
+import * as path from "path";
 
 const execAsync = promisify(exec);
 
@@ -51,14 +51,14 @@ export class GitignoreValidator {
    */
   private async extractTechStack(planPath: string): Promise<TechStack> {
     try {
-      const content = await fs.readFile(planPath, 'utf-8');
-      
+      const content = await fs.readFile(planPath, "utf-8");
+
       const extractField = (fieldName: string): string | undefined => {
-        const regex = new RegExp(`\\*\\*${fieldName}\\*\\*:\\s*(.+)`, 'i');
+        const regex = new RegExp(`\\*\\*${fieldName}\\*\\*:\\s*(.+)`, "i");
         const match = content.match(regex);
         if (match && match[1]) {
           const value = match[1].trim();
-          if (value === 'NEEDS CLARIFICATION' || value === 'N/A') {
+          if (value === "NEEDS CLARIFICATION" || value === "N/A") {
             return undefined;
           }
           return value;
@@ -67,10 +67,10 @@ export class GitignoreValidator {
       };
 
       return {
-        language: extractField('Language/Version'),
-        framework: extractField('Primary Dependencies'),
-        storage: extractField('Storage'),
-        projectType: extractField('Project Type'),
+        language: extractField("Language/Version"),
+        framework: extractField("Primary Dependencies"),
+        storage: extractField("Storage"),
+        projectType: extractField("Project Type"),
       };
     } catch (error) {
       console.warn(`Failed to extract tech stack from plan: ${error}`);
@@ -83,7 +83,7 @@ export class GitignoreValidator {
    */
   private async hasGitRepo(): Promise<boolean> {
     try {
-      await execAsync('git rev-parse --git-dir', { cwd: this.projectRoot });
+      await execAsync("git rev-parse --git-dir", { cwd: this.projectRoot });
       return true;
     } catch {
       return false;
@@ -102,7 +102,7 @@ export class GitignoreValidator {
     // .gitignore
     if (hasGit) {
       configs.push({
-        file: '.gitignore',
+        file: ".gitignore",
         detector: async () => true,
         patterns: this.getGitignorePatterns(techStack),
       });
@@ -110,39 +110,41 @@ export class GitignoreValidator {
 
     // .dockerignore
     configs.push({
-      file: '.dockerignore',
-      detector: async () => await this.fileExists('Dockerfile') || 
-                             await this.fileExists('Dockerfile.*') ||
-                             (techStack.projectType?.toLowerCase().includes('docker') ?? false),
+      file: ".dockerignore",
+      detector: async () =>
+        (await this.fileExists("Dockerfile")) ||
+        (await this.fileExists("Dockerfile.*")) ||
+        (techStack.projectType?.toLowerCase().includes("docker") ?? false),
       patterns: this.getDockerignorePatterns(),
     });
 
     // .eslintignore
     configs.push({
-      file: '.eslintignore',
-      detector: async () => await this.fileExists('.eslintrc*') || 
-                             await this.fileExists('eslint.config.*'),
+      file: ".eslintignore",
+      detector: async () =>
+        (await this.fileExists(".eslintrc*")) ||
+        (await this.fileExists("eslint.config.*")),
       patterns: this.getEslintignorePatterns(),
     });
 
     // .prettierignore
     configs.push({
-      file: '.prettierignore',
-      detector: async () => await this.fileExists('.prettierrc*'),
+      file: ".prettierignore",
+      detector: async () => await this.fileExists(".prettierrc*"),
       patterns: this.getPrettierignorePatterns(),
     });
 
     // .npmignore
     configs.push({
-      file: '.npmignore',
-      detector: async () => await this.fileExists('package.json'),
+      file: ".npmignore",
+      detector: async () => await this.fileExists("package.json"),
       patterns: this.getNpmignorePatterns(),
     });
 
     // .terraformignore
     configs.push({
-      file: '.terraformignore',
-      detector: async () => await this.hasFilesMatching('*.tf'),
+      file: ".terraformignore",
+      detector: async () => await this.hasFilesMatching("*.tf"),
       patterns: this.getTerraformignorePatterns(),
     });
 
@@ -154,164 +156,160 @@ export class GitignoreValidator {
    */
   private getGitignorePatterns(techStack: TechStack): string[] {
     const patterns: string[] = [];
-    const lang = techStack.language?.toLowerCase() || '';
+    const lang = techStack.language?.toLowerCase() || "";
 
     // Universal patterns
     patterns.push(
-      '# OS files',
-      '.DS_Store',
-      'Thumbs.db',
-      '*.tmp',
-      '*.swp',
-      '',
-      '# IDE',
-      '.vscode/',
-      '.idea/',
-      '*.iml',
-      '',
-      '# Environment',
-      '.env',
-      '.env.local',
-      '.env*.local',
-      '',
-      '# Logs',
-      '*.log',
-      'logs/',
-      ''
+      "# OS files",
+      ".DS_Store",
+      "Thumbs.db",
+      "*.tmp",
+      "*.swp",
+      "",
+      "# IDE",
+      ".vscode/",
+      ".idea/",
+      "*.iml",
+      "",
+      "# Environment",
+      ".env",
+      ".env.local",
+      ".env*.local",
+      "",
+      "# Logs",
+      "*.log",
+      "logs/",
+      ""
     );
 
     // Language-specific patterns
-    if (lang.includes('python')) {
+    if (lang.includes("python")) {
       patterns.push(
-        '# Python',
-        '__pycache__/',
-        '*.py[cod]',
-        '*$py.class',
-        '*.so',
-        '.Python',
-        'build/',
-        'develop-eggs/',
-        'dist/',
-        'downloads/',
-        'eggs/',
-        '.eggs/',
-        'lib/',
-        'lib64/',
-        'parts/',
-        'sdist/',
-        'var/',
-        'wheels/',
-        '*.egg-info/',
-        '.installed.cfg',
-        '*.egg',
-        'venv/',
-        'ENV/',
-        'env/',
-        '.venv/',
-        ''
+        "# Python",
+        "__pycache__/",
+        "*.py[cod]",
+        "*$py.class",
+        "*.so",
+        ".Python",
+        "build/",
+        "develop-eggs/",
+        "dist/",
+        "downloads/",
+        "eggs/",
+        ".eggs/",
+        "lib/",
+        "lib64/",
+        "parts/",
+        "sdist/",
+        "var/",
+        "wheels/",
+        "*.egg-info/",
+        ".installed.cfg",
+        "*.egg",
+        "venv/",
+        "ENV/",
+        "env/",
+        ".venv/",
+        ""
       );
-    } else if (lang.includes('javascript') || lang.includes('typescript') || lang.includes('node')) {
+    } else if (
+      lang.includes("javascript") ||
+      lang.includes("typescript") ||
+      lang.includes("node")
+    ) {
       patterns.push(
-        '# Node.js',
-        'node_modules/',
-        'dist/',
-        'build/',
-        '.next/',
-        'out/',
-        '*.tsbuildinfo',
-        'npm-debug.log*',
-        'yarn-debug.log*',
-        'yarn-error.log*',
-        '.pnpm-debug.log*',
-        ''
+        "# Node.js",
+        "node_modules/",
+        "dist/",
+        "build/",
+        ".next/",
+        "out/",
+        "*.tsbuildinfo",
+        "npm-debug.log*",
+        "yarn-debug.log*",
+        "yarn-error.log*",
+        ".pnpm-debug.log*",
+        ""
       );
-    } else if (lang.includes('rust')) {
+    } else if (lang.includes("rust")) {
       patterns.push(
-        '# Rust',
-        'target/',
-        'debug/',
-        'release/',
-        '*.rs.bk',
-        '*.rlib',
-        '*.prof*',
-        'Cargo.lock',
-        ''
+        "# Rust",
+        "target/",
+        "debug/",
+        "release/",
+        "*.rs.bk",
+        "*.rlib",
+        "*.prof*",
+        "Cargo.lock",
+        ""
       );
-    } else if (lang.includes('go')) {
+    } else if (lang.includes("go")) {
       patterns.push(
-        '# Go',
-        '*.exe',
-        '*.test',
-        '*.out',
-        'vendor/',
-        'go.work',
-        ''
+        "# Go",
+        "*.exe",
+        "*.test",
+        "*.out",
+        "vendor/",
+        "go.work",
+        ""
       );
-    } else if (lang.includes('java')) {
+    } else if (lang.includes("java")) {
       patterns.push(
-        '# Java',
-        'target/',
-        '*.class',
-        '*.jar',
-        '*.war',
-        '*.ear',
-        '.gradle/',
-        'build/',
-        ''
+        "# Java",
+        "target/",
+        "*.class",
+        "*.jar",
+        "*.war",
+        "*.ear",
+        ".gradle/",
+        "build/",
+        ""
       );
-    } else if (lang.includes('c#') || lang.includes('csharp') || lang.includes('.net')) {
+    } else if (
+      lang.includes("c#") ||
+      lang.includes("csharp") ||
+      lang.includes(".net")
+    ) {
       patterns.push(
-        '# C#/.NET',
-        'bin/',
-        'obj/',
-        '*.user',
-        '*.suo',
-        '*.userosscache',
-        '*.sln.docstates',
-        'packages/',
-        ''
+        "# C#/.NET",
+        "bin/",
+        "obj/",
+        "*.user",
+        "*.suo",
+        "*.userosscache",
+        "*.sln.docstates",
+        "packages/",
+        ""
       );
-    } else if (lang.includes('ruby')) {
+    } else if (lang.includes("ruby")) {
       patterns.push(
-        '# Ruby',
-        '.bundle/',
-        'log/',
-        'tmp/',
-        '*.gem',
-        'vendor/bundle/',
-        '.ruby-version',
-        ''
+        "# Ruby",
+        ".bundle/",
+        "log/",
+        "tmp/",
+        "*.gem",
+        "vendor/bundle/",
+        ".ruby-version",
+        ""
       );
-    } else if (lang.includes('php')) {
+    } else if (lang.includes("php")) {
+      patterns.push("# PHP", "vendor/", "composer.lock", "*.cache", "");
+    } else if (lang.includes("swift")) {
       patterns.push(
-        '# PHP',
-        'vendor/',
-        'composer.lock',
-        '*.cache',
-        ''
-      );
-    } else if (lang.includes('swift')) {
-      patterns.push(
-        '# Swift',
-        '.build/',
-        'DerivedData/',
-        '*.swiftpm/',
-        'Packages/',
-        '*.xcodeproj/',
-        '*.xcworkspace/',
-        ''
+        "# Swift",
+        ".build/",
+        "DerivedData/",
+        "*.swiftpm/",
+        "Packages/",
+        "*.xcodeproj/",
+        "*.xcworkspace/",
+        ""
       );
     }
 
     // Database-specific
     if (techStack.storage) {
-      patterns.push(
-        '# Database',
-        '*.sqlite',
-        '*.sqlite3',
-        '*.db',
-        ''
-      );
+      patterns.push("# Database", "*.sqlite", "*.sqlite3", "*.db", "");
     }
 
     return patterns;
@@ -322,27 +320,27 @@ export class GitignoreValidator {
    */
   private getDockerignorePatterns(): string[] {
     return [
-      'node_modules/',
-      '.git/',
-      '.gitignore',
-      'Dockerfile*',
-      '.dockerignore',
-      '*.log',
-      '.env*',
-      'coverage/',
-      'dist/',
-      'build/',
-      '.next/',
-      'out/',
-      '__pycache__/',
-      '*.pyc',
-      '.pytest_cache/',
-      'target/',
-      '*.md',
-      'README*',
-      'LICENSE',
-      '.vscode/',
-      '.idea/',
+      "node_modules/",
+      ".git/",
+      ".gitignore",
+      "Dockerfile*",
+      ".dockerignore",
+      "*.log",
+      ".env*",
+      "coverage/",
+      "dist/",
+      "build/",
+      ".next/",
+      "out/",
+      "__pycache__/",
+      "*.pyc",
+      ".pytest_cache/",
+      "target/",
+      "*.md",
+      "README*",
+      "LICENSE",
+      ".vscode/",
+      ".idea/",
     ];
   }
 
@@ -351,14 +349,14 @@ export class GitignoreValidator {
    */
   private getEslintignorePatterns(): string[] {
     return [
-      'node_modules/',
-      'dist/',
-      'build/',
-      'coverage/',
-      '*.min.js',
-      '*.config.js',
-      '.next/',
-      'out/',
+      "node_modules/",
+      "dist/",
+      "build/",
+      "coverage/",
+      "*.min.js",
+      "*.config.js",
+      ".next/",
+      "out/",
     ];
   }
 
@@ -367,15 +365,15 @@ export class GitignoreValidator {
    */
   private getPrettierignorePatterns(): string[] {
     return [
-      'node_modules/',
-      'dist/',
-      'build/',
-      'coverage/',
-      'package-lock.json',
-      'yarn.lock',
-      'pnpm-lock.yaml',
-      '.next/',
-      'out/',
+      "node_modules/",
+      "dist/",
+      "build/",
+      "coverage/",
+      "package-lock.json",
+      "yarn.lock",
+      "pnpm-lock.yaml",
+      ".next/",
+      "out/",
     ];
   }
 
@@ -384,19 +382,19 @@ export class GitignoreValidator {
    */
   private getNpmignorePatterns(): string[] {
     return [
-      'node_modules/',
-      'src/',
-      'test/',
-      'tests/',
-      '*.test.js',
-      '*.test.ts',
-      '*.spec.js',
-      '*.spec.ts',
-      'coverage/',
-      '.nyc_output/',
-      '.vscode/',
-      '.idea/',
-      '.DS_Store',
+      "node_modules/",
+      "src/",
+      "test/",
+      "tests/",
+      "*.test.js",
+      "*.test.ts",
+      "*.spec.js",
+      "*.spec.ts",
+      "coverage/",
+      ".nyc_output/",
+      ".vscode/",
+      ".idea/",
+      ".DS_Store",
     ];
   }
 
@@ -405,20 +403,23 @@ export class GitignoreValidator {
    */
   private getTerraformignorePatterns(): string[] {
     return [
-      '.terraform/',
-      '*.tfstate',
-      '*.tfstate.backup',
-      '*.tfvars',
-      '.terraform.lock.hcl',
-      'override.tf',
-      'override.tf.json',
+      ".terraform/",
+      "*.tfstate",
+      "*.tfstate.backup",
+      "*.tfvars",
+      ".terraform.lock.hcl",
+      "override.tf",
+      "override.tf.json",
     ];
   }
 
   /**
    * Ensure ignore file exists with patterns
    */
-  private async ensureIgnoreFile(filename: string, patterns: string[]): Promise<void> {
+  private async ensureIgnoreFile(
+    filename: string,
+    patterns: string[]
+  ): Promise<void> {
     const filepath = path.join(this.projectRoot, filename);
 
     try {
@@ -427,23 +428,30 @@ export class GitignoreValidator {
 
       if (exists) {
         // File exists, append missing patterns
-        const content = await fs.readFile(filepath, 'utf-8');
-        const existingLines = new Set(content.split('\n').map(line => line.trim()));
-        
-        const missingPatterns = patterns.filter(pattern => {
+        const content = await fs.readFile(filepath, "utf-8");
+        const existingLines = new Set(
+          content.split("\n").map((line) => line.trim())
+        );
+
+        const missingPatterns = patterns.filter((pattern) => {
           const trimmed = pattern.trim();
-          return trimmed && !trimmed.startsWith('#') && !existingLines.has(trimmed);
+          return (
+            trimmed && !trimmed.startsWith("#") && !existingLines.has(trimmed)
+          );
         });
 
         if (missingPatterns.length > 0) {
-          const appendContent = '\n\n# Added by Cortex AI\n' + missingPatterns.join('\n') + '\n';
-          await fs.appendFile(filepath, appendContent, 'utf-8');
-          console.log(`✓ Updated ${filename} with ${missingPatterns.length} new patterns`);
+          const appendContent =
+            "\n\n# Added by Cortex AI\n" + missingPatterns.join("\n") + "\n";
+          await fs.appendFile(filepath, appendContent, "utf-8");
+          console.log(
+            `✓ Updated ${filename} with ${missingPatterns.length} new patterns`
+          );
         }
       } else {
         // File doesn't exist, create it
-        const content = `# Generated by Cortex AI\n\n${patterns.join('\n')}\n`;
-        await fs.writeFile(filepath, content, 'utf-8');
+        const content = `# Generated by Cortex AI\n\n${patterns.join("\n")}\n`;
+        await fs.writeFile(filepath, content, "utf-8");
         console.log(`✓ Created ${filename}`);
       }
     } catch (error) {
@@ -457,9 +465,9 @@ export class GitignoreValidator {
   private async fileExists(pattern: string): Promise<boolean> {
     try {
       const files = await fs.readdir(this.projectRoot);
-      if (pattern.includes('*')) {
-        const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
-        return files.some(file => regex.test(file));
+      if (pattern.includes("*")) {
+        const regex = new RegExp("^" + pattern.replace(/\*/g, ".*") + "$");
+        return files.some((file) => regex.test(file));
       }
       return files.includes(pattern);
     } catch {
@@ -484,13 +492,15 @@ export class GitignoreValidator {
    */
   private async hasFilesMatching(pattern: string): Promise<boolean> {
     try {
-      const { stdout } = await execAsync(`find . -maxdepth 2 -name "${pattern}"`, {
-        cwd: this.projectRoot,
-      });
+      const { stdout } = await execAsync(
+        `find . -maxdepth 2 -name "${pattern}"`,
+        {
+          cwd: this.projectRoot,
+        }
+      );
       return stdout.trim().length > 0;
     } catch {
       return false;
     }
   }
 }
-
