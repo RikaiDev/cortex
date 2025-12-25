@@ -90,21 +90,19 @@ export class TemplateGenerator {
   }
 
   /**
-   * Generate specification prompt (command + template)
-   * Returns prompt for AI to execute, not filled content
+   * Enrich content with memory and corrections context
    */
-  async generateSpecPrompt(description: string): Promise<string> {
-    // 1. Load command (AI execution guide)
-    const command = await this.loadTemplate('commands/spec.md');
-    
-    // 2. Load template (structure framework)
-    const template = await this.loadTemplate('spec-template.md');
-    
-    // 3. Add relevant experiences from memory if available
+  private async enrichPromptWithContext(
+    baseContent: string,
+    searchQuery: string,
+    phase: string,
+    correctionsQuery?: string
+  ): Promise<string> {
+    // 1. Add memory context
     let memoryContext = '';
     if (this.memoryService) {
       try {
-        const context = await this.memoryService.enhanceContext(description);
+        const context = await this.memoryService.enhanceContext(searchQuery);
         if (context) {
           memoryContext = `\n\n## Relevant Past Experiences\n\n${context}`;
         }
@@ -113,14 +111,30 @@ export class TemplateGenerator {
       }
     }
 
-    // 4. Add corrections/warnings from previous sessions
+    // 2. Add corrections context
     const correctionsContext = await this.getCorrectionsContext(
-      description,
-      'spec'
+      correctionsQuery || searchQuery,
+      phase
     );
 
-    // 5. Combine into complete prompt
-    return `${command}\n\n## Template to Fill\n\n${template}${memoryContext}${correctionsContext}`;
+    // 3. Combine all parts
+    return `${baseContent}${memoryContext}${correctionsContext}`;
+  }
+
+  /**
+   * Generate specification prompt (command + template)
+   * Returns prompt for AI to execute, not filled content
+   */
+  async generateSpecPrompt(description: string): Promise<string> {
+    // 1. Load command (AI execution guide)
+    const command = await this.loadTemplate('commands/spec.md');
+
+    // 2. Load template (structure framework)
+    const template = await this.loadTemplate('spec-template.md');
+
+    // 3. Enrich with memory and corrections
+    const basePrompt = `${command}\n\n## Template to Fill\n\n${template}`;
+    return this.enrichPromptWithContext(basePrompt, description, 'spec');
   }
 
   /**
@@ -166,34 +180,21 @@ export class TemplateGenerator {
     // 4. Get workflow context for memory search
     const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', workflowId);
     const specPath = path.join(workflowPath, 'spec.md');
-    let memoryContext = '';
 
-    if (this.memoryService && (await fs.pathExists(specPath))) {
-      try {
-        const specContent = await fs.readFile(specPath, 'utf-8');
-        // Extract feature name or use first 200 chars for search
-        const featureMatch = specContent.match(/Feature:\s*(.+)/i);
-        const searchQuery = featureMatch ? featureMatch[1] : specContent.slice(0, 200);
-        const context = await this.memoryService.enhanceContext(searchQuery);
-        if (context) {
-          memoryContext = `\n\n## Relevant Past Experiences\n\n${context}`;
-        }
-      } catch (error) {
-        console.warn('Failed to enhance context from memory:', error);
-      }
+    let searchQuery = '';
+    let correctionsQuery = '';
+
+    if (await fs.pathExists(specPath)) {
+      const specContent = await fs.readFile(specPath, 'utf-8');
+      // Extract feature name or use first 200 chars for search
+      const featureMatch = specContent.match(/Feature:\s*(.+)/i);
+      searchQuery = featureMatch ? featureMatch[1] : specContent.slice(0, 200);
+      correctionsQuery = specContent.slice(0, 200);
     }
 
-    // 5. Add corrections/warnings from previous sessions
-    const specContent = (await fs.pathExists(specPath))
-      ? await fs.readFile(specPath, 'utf-8')
-      : '';
-    const correctionsContext = await this.getCorrectionsContext(
-      specContent.slice(0, 200),
-      'plan'
-    );
-
-    // 6. Combine into complete prompt
-    return `${commandWithId}\n\n## Template to Fill\n\n${template}${memoryContext}${correctionsContext}`;
+    // 5. Enrich with memory and corrections
+    const basePrompt = `${commandWithId}\n\n## Template to Fill\n\n${template}`;
+    return this.enrichPromptWithContext(basePrompt, searchQuery, 'plan', correctionsQuery);
   }
 
   /**
@@ -239,33 +240,20 @@ export class TemplateGenerator {
     // 4. Get workflow context for memory search
     const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', workflowId);
     const planPath = path.join(workflowPath, 'plan.md');
-    let memoryContext = '';
 
-    if (this.memoryService && (await fs.pathExists(planPath))) {
-      try {
-        const planContent = await fs.readFile(planPath, 'utf-8');
-        // Use plan content for search (task decomposition patterns)
-        const searchQuery = `task decomposition ${planContent.slice(0, 150)}`;
-        const context = await this.memoryService.enhanceContext(searchQuery);
-        if (context) {
-          memoryContext = `\n\n## Relevant Past Experiences (Task Decomposition)\n\n${context}`;
-        }
-      } catch (error) {
-        console.warn('Failed to enhance context from memory:', error);
-      }
+    let searchQuery = '';
+    let correctionsQuery = '';
+
+    if (await fs.pathExists(planPath)) {
+      const planContent = await fs.readFile(planPath, 'utf-8');
+      // Use plan content for search (task decomposition patterns)
+      searchQuery = `task decomposition ${planContent.slice(0, 150)}`;
+      correctionsQuery = planContent.slice(0, 200);
     }
 
-    // 5. Add corrections/warnings from previous sessions
-    const planContent = (await fs.pathExists(planPath))
-      ? await fs.readFile(planPath, 'utf-8')
-      : '';
-    const correctionsContext = await this.getCorrectionsContext(
-      planContent.slice(0, 200),
-      'tasks'
-    );
-
-    // 6. Combine into complete prompt
-    return `${commandWithId}\n\n## Template to Fill\n\n${template}${memoryContext}${correctionsContext}`;
+    // 5. Enrich with memory and corrections
+    const basePrompt = `${commandWithId}\n\n## Template to Fill\n\n${template}`;
+    return this.enrichPromptWithContext(basePrompt, searchQuery, 'tasks', correctionsQuery);
   }
 
   /**
@@ -282,33 +270,19 @@ export class TemplateGenerator {
     // 3. Get workflow context for memory search
     const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', workflowId);
     const tasksPath = path.join(workflowPath, 'tasks.md');
-    let memoryContext = '';
 
-    if (this.memoryService && (await fs.pathExists(tasksPath))) {
-      try {
-        const tasksContent = await fs.readFile(tasksPath, 'utf-8');
-        // Search for implementation patterns, solutions, and lessons
-        const searchQuery = `implementation patterns ${tasksContent.slice(0, 150)}`;
-        const context = await this.memoryService.enhanceContext(searchQuery);
-        if (context) {
-          memoryContext = `\n\n## Relevant Past Experiences (Implementation)\n\n${context}`;
-        }
-      } catch (error) {
-        console.warn('Failed to enhance context from memory:', error);
-      }
+    let searchQuery = '';
+    let correctionsQuery = '';
+
+    if (await fs.pathExists(tasksPath)) {
+      const tasksContent = await fs.readFile(tasksPath, 'utf-8');
+      // Search for implementation patterns, solutions, and lessons
+      searchQuery = `implementation patterns ${tasksContent.slice(0, 150)}`;
+      correctionsQuery = tasksContent.slice(0, 200);
     }
 
-    // 4. Add corrections/warnings from previous sessions
-    const tasksContent = (await fs.pathExists(tasksPath))
-      ? await fs.readFile(tasksPath, 'utf-8')
-      : '';
-    const correctionsContext = await this.getCorrectionsContext(
-      tasksContent.slice(0, 200),
-      'implement'
-    );
-
-    // 5. Combine command with memory context and corrections
-    return `${commandWithId}${memoryContext}${correctionsContext}`;
+    // 4. Enrich with memory and corrections
+    return this.enrichPromptWithContext(commandWithId, searchQuery, 'implement', correctionsQuery);
   }
 
   /**

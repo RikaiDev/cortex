@@ -10,13 +10,12 @@ import fs from 'fs-extra';
 import { MemoryService } from '../services/memory-service.js';
 import { CorrectionService } from '../services/correction-service.js';
 import { TemplateGenerator } from '../services/template-generator.js';
-import { ConstitutionValidator } from '../services/constitution-validator.js';
 import { WorkflowService } from '../services/workflow-service.js';
 import { ProjectDetector } from '../services/project-detector.js';
 import { ChangeAnalyzer } from '../services/change-analyzer.js';
 import { TaskDecomposer } from '../services/task-decomposer.js';
 import { ImplementationValidator } from '../services/implementation-validator.js';
-import type { MCPToolResult } from '../types/mcp-types.js';
+import type { MCPToolResult, WorkflowToolArgs, MemoryToolArgs } from '../types/mcp-types.js';
 
 // These are used in template strings for AI execution, not directly in code
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -30,15 +29,101 @@ export class StableWorkflowHandler {
   private memoryService: MemoryService;
   private correctionService: CorrectionService;
   private templateGenerator: TemplateGenerator;
-  private constitutionValidator: ConstitutionValidator;
   private workflowService: WorkflowService;
 
   constructor(private projectRoot: string) {
     this.memoryService = new MemoryService(projectRoot);
     this.correctionService = new CorrectionService(projectRoot);
     this.templateGenerator = new TemplateGenerator(projectRoot, this.memoryService);
-    this.constitutionValidator = new ConstitutionValidator(projectRoot);
     this.workflowService = new WorkflowService(projectRoot);
+  }
+
+  /**
+   * Ensure workflow ID exists (use provided or get latest)
+   * @throws Error if no workflow found
+   */
+  private async ensureWorkflowId(providedId?: string): Promise<string> {
+    const workflowId = providedId || await this.workflowService.getLatestWorkflow();
+    if (!workflowId) {
+      throw new Error('No workflow found. Create one first with `spec`.');
+    }
+    return workflowId;
+  }
+
+  /**
+   * Generate checklist instruction block for AI to execute
+   */
+  private generateChecklistInstruction(
+    checklistType: string,
+    workflowPath: string,
+    featureName: string,
+    workflowId?: string
+  ): string {
+    const workflowLookup = workflowId
+      ? `const workflowData = await workflowService.getWorkflowStatus('${workflowId}');\n`
+      : '';
+    const featureNameVar = workflowId ? 'workflowData.workflow.title' : `'${featureName}'`;
+
+    return `**Generate ${checklistType.charAt(0).toUpperCase() + checklistType.slice(1)} Checklist**:
+\`\`\`typescript
+const checklistGenerator = new ChecklistGenerator('${workflowPath}');
+${workflowLookup}await checklistGenerator.generateChecklist('${checklistType}', ${featureNameVar});
+\`\`\``;
+  }
+
+  /**
+   * Unified workflow handler - routes to phase-specific handlers
+   */
+  async handleWorkflow(args: WorkflowToolArgs): Promise<MCPToolResult> {
+    const { phase, workflowId } = args;
+
+    switch (phase) {
+      case 'clarify':
+        return this.handleClarify({ workflowId });
+      case 'plan':
+        return this.handlePlan({ workflowId });
+      case 'review':
+        return this.handleReview({ workflowId });
+      case 'tasks':
+        return this.handleTasks({ workflowId });
+      case 'implement':
+        return this.handleImplement({ workflowId });
+      case 'status':
+        return this.handleStatus({ workflowId });
+      default:
+        return {
+          content: [{
+            type: 'text',
+            text: `Unknown workflow phase: ${phase}. Valid phases: clarify, plan, review, tasks, implement, status`
+          }],
+          isError: true
+        };
+    }
+  }
+
+  /**
+   * Unified memory handler - routes to action-specific handlers
+   */
+  async handleMemory(args: MemoryToolArgs): Promise<MCPToolResult> {
+    switch (args.action) {
+      case 'learn':
+        return this.handleLearn({
+          title: args.title,
+          content: args.content,
+          type: args.type,
+          tags: args.tags
+        });
+      case 'context':
+        return this.handleContext({ query: args.query });
+      default:
+        return {
+          content: [{
+            type: 'text',
+            text: `Unknown memory action. Valid actions: learn, context`
+          }],
+          isError: true
+        };
+    }
   }
 
   /**
@@ -73,11 +158,7 @@ After generating the specification, save it to:
 
 **THEN immediately execute this automated step**:
 
-1. **Generate Requirements Checklist**:
-\`\`\`typescript
-const checklistGenerator = new ChecklistGenerator('${workflowPath}');
-await checklistGenerator.generateChecklist('requirements', '${args.description}');
-\`\`\`
+1. ${this.generateChecklistInstruction('requirements', workflowPath, args.description)}
 
 2. **Report completion**:
 ✓ spec.md created
@@ -107,14 +188,7 @@ await checklistGenerator.generateChecklist('requirements', '${args.description}'
    */
   async handleClarify(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      // Get workflow ID (use provided or latest)
-      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
-      if (!workflowId) {
-        return {
-          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
-          isError: true,
-        };
-      }
+      const workflowId = await this.ensureWorkflowId(args.workflowId);
 
       // 1. Generate prompt (command + current spec)
       const prompt = await this.templateGenerator.generateClarifyPrompt(workflowId);
@@ -160,15 +234,7 @@ This command will:
    */
   async handlePlan(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      // Get workflow ID (use provided or latest)
-      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
-      if (!workflowId) {
-        return {
-          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
-          isError: true,
-        };
-      }
-
+      const workflowId = await this.ensureWorkflowId(args.workflowId);
       const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', workflowId);
       
       // 1. Generate prompt (command + template)
@@ -198,11 +264,7 @@ const contextManager = new ContextManager('${workflowPath}');
 await contextManager.updateContext('${workflowId}');
 \`\`\`
 
-2. **Generate Design Checklist**:
-\`\`\`typescript
-const checklistGenerator = new ChecklistGenerator('${workflowPath}');
-await checklistGenerator.generateChecklist('design', workflowTitle);
-\`\`\`
+2. ${this.generateChecklistInstruction('design', workflowPath, '', workflowId)}
 
 3. **Report completion**:
 ✓ plan.md created
@@ -233,14 +295,7 @@ await checklistGenerator.generateChecklist('design', workflowTitle);
    */
   async handleReview(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      // Get workflow ID (use provided or latest)
-      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
-      if (!workflowId) {
-        return {
-          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
-          isError: true,
-        };
-      }
+      const workflowId = await this.ensureWorkflowId(args.workflowId);
 
       // 1. Generate prompt (command + plan to review)
       const prompt = await this.templateGenerator.generateReviewPrompt(workflowId);
@@ -290,15 +345,7 @@ This command will:
    */
   async handleTasks(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      // Get workflow ID (use provided or latest)
-      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
-      if (!workflowId) {
-        return {
-          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
-          isError: true,
-        };
-      }
-
+      const workflowId = await this.ensureWorkflowId(args.workflowId);
       const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', workflowId);
       
       // 1. Generate prompt (command + template)
@@ -322,12 +369,7 @@ After generating the task breakdown, save it to:
 
 **THEN immediately execute this automated step**:
 
-1. **Generate Tasks Checklist**:
-\`\`\`typescript
-const checklistGenerator = new ChecklistGenerator('${workflowPath}');
-const workflowData = await workflowService.getWorkflowStatus('${workflowId}');
-await checklistGenerator.generateChecklist('tasks', workflowData.workflow.title);
-\`\`\`
+1. ${this.generateChecklistInstruction('tasks', workflowPath, '', workflowId)}
 
 2. **Report completion**:
 ✓ tasks.md created
@@ -357,15 +399,7 @@ await checklistGenerator.generateChecklist('tasks', workflowData.workflow.title)
    */
   async handleImplement(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      // Get workflow ID (use provided or latest)
-      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
-      if (!workflowId) {
-        return {
-          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
-          isError: true,
-        };
-      }
-
+      const workflowId = await this.ensureWorkflowId(args.workflowId);
       const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', workflowId);
       const planPath = path.join(workflowPath, 'plan.md');
       
@@ -385,12 +419,7 @@ const validator = new GitignoreValidator('${this.projectRoot}');
 await validator.validateIgnoreFiles('${planPath}');
 \`\`\`
 
-2. **Generate Implementation Checklist**:
-\`\`\`typescript
-const checklistGenerator = new ChecklistGenerator('${workflowPath}');
-const workflowData = await workflowService.getWorkflowStatus('${workflowId}');
-await checklistGenerator.generateChecklist('implementation', workflowData.workflow.title);
-\`\`\`
+2. ${this.generateChecklistInstruction('implementation', workflowPath, '', workflowId)}
 
 3. **Report pre-checks**:
 ✓ Gitignore files validated (based on tech stack from plan.md)
@@ -704,15 +733,7 @@ This experience is now searchable via \`cortex.context\`.`,
    */
   async handleStatus(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      // Get workflow ID (use provided or latest)
-      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
-      if (!workflowId) {
-        return {
-          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
-          isError: true,
-        };
-      }
-
+      const workflowId = await this.ensureWorkflowId(args.workflowId);
       const status = await this.workflowService.getWorkflowStatus(workflowId);
 
       return {

@@ -346,81 +346,22 @@ export class CortexMCPServer {
               },
             },
             {
-              name: "clarify",
-              description: "Resolve specification ambiguities (max 5 questions). Uses latest workflow if workflowId not provided.",
+              name: "workflow",
+              description: "Execute workflow phases: clarify (resolve ambiguities), plan (create implementation plan), review (technical review), tasks (generate task breakdown), implement (execute with Multi-Role coordination), status (get workflow progress). Uses latest workflow if workflowId not provided.",
               inputSchema: {
                 type: "object",
                 properties: {
+                  phase: {
+                    type: "string",
+                    enum: ["clarify", "plan", "review", "tasks", "implement", "status"],
+                    description: "Workflow phase to execute",
+                  },
                   workflowId: {
                     type: "string",
                     description: "Workflow ID (optional, defaults to latest)",
                   },
                 },
-              },
-            },
-            {
-              name: "plan",
-              description: "Create implementation plan from specification. Uses latest workflow if workflowId not provided.",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  workflowId: {
-                    type: "string",
-                    description: "Workflow ID (optional, defaults to latest)",
-                  },
-                },
-              },
-            },
-            {
-              name: "review",
-              description: "Conduct technical review (Architecture, Security, Performance, etc.). Uses latest workflow if workflowId not provided.",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  workflowId: {
-                    type: "string",
-                    description: "Workflow ID (optional, defaults to latest)",
-                  },
-                },
-              },
-            },
-            {
-              name: "tasks",
-              description: "Generate task breakdown from implementation plan. Uses latest workflow if workflowId not provided.",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  workflowId: {
-                    type: "string",
-                    description: "Workflow ID (optional, defaults to latest)",
-                  },
-                },
-              },
-            },
-            {
-              name: "implement",
-              description: "Execute implementation with Multi-Role coordination. Uses latest workflow if workflowId not provided.",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  workflowId: {
-                    type: "string",
-                    description: "Workflow ID (optional, defaults to latest)",
-                  },
-                },
-              },
-            },
-            {
-              name: "status",
-              description: "Get workflow status and progress. Uses latest workflow if workflowId not provided.",
-              inputSchema: {
-                type: "object",
-                properties: {
-                  workflowId: {
-                    type: "string",
-                    description: "Workflow ID (optional, defaults to latest)",
-                  },
-                },
+                required: ["phase"],
               },
             },
             {
@@ -482,45 +423,40 @@ export class CortexMCPServer {
               },
             },
             {
-              name: "learn",
-              description: "Record an experience (pattern, decision, solution, or lesson) to project memory for future reference across sessions",
+              name: "memory",
+              description: "Interact with project memory: learn (record experience/pattern/decision/solution/lesson) or context (retrieve relevant experiences based on query)",
               inputSchema: {
                 type: "object",
                 properties: {
+                  action: {
+                    type: "string",
+                    enum: ["learn", "context"],
+                    description: "Memory action to perform",
+                  },
                   title: {
                     type: "string",
-                    description: "Brief descriptive title (max 200 characters)",
+                    description: "[learn] Brief descriptive title (max 200 characters)",
                   },
                   content: {
                     type: "string",
-                    description: "Full markdown content of the experience",
+                    description: "[learn] Full markdown content of the experience",
                   },
                   type: {
                     type: "string",
                     enum: ["pattern", "decision", "solution", "lesson"],
-                    description: "Experience category",
+                    description: "[learn] Experience category",
                   },
                   tags: {
                     type: "array",
                     items: { type: "string" },
-                    description: "Searchable keywords (1-10 tags)",
+                    description: "[learn] Searchable keywords (1-10 tags)",
                   },
-                },
-                required: ["title", "content", "type"],
-              },
-            },
-            {
-              name: "context",
-              description: "Retrieve relevant experiences from project memory based on current task or query - provides historical insights",
-              inputSchema: {
-                type: "object",
-                properties: {
                   query: {
                     type: "string",
-                    description: "Search query to find relevant experiences",
+                    description: "[context] Search query to find relevant experiences",
                   },
                 },
-                required: ["query"],
+                required: ["action"],
               },
             },
             {
@@ -576,34 +512,9 @@ export class CortexMCPServer {
               args as { description: string }
             );
             break;
-          case "clarify":
-            result = await this.stableWorkflowHandler.handleClarify(
-              args as { workflowId?: string }
-            );
-            break;
-          case "plan":
-            result = await this.stableWorkflowHandler.handlePlan(
-              args as { workflowId?: string }
-            );
-            break;
-          case "review":
-            result = await this.stableWorkflowHandler.handleReview(
-              args as { workflowId?: string }
-            );
-            break;
-          case "tasks":
-            result = await this.stableWorkflowHandler.handleTasks(
-              args as { workflowId?: string }
-            );
-            break;
-          case "implement":
-            result = await this.stableWorkflowHandler.handleImplement(
-              args as { workflowId?: string }
-            );
-            break;
-          case "status":
-            result = await this.stableWorkflowHandler.handleStatus(
-              args as { workflowId?: string }
+          case "workflow":
+            result = await this.stableWorkflowHandler.handleWorkflow(
+              args as { phase: 'clarify' | 'plan' | 'review' | 'tasks' | 'implement' | 'status'; workflowId?: string }
             );
             break;
           case "list":
@@ -624,15 +535,9 @@ export class CortexMCPServer {
               args as { updates?: string }
             );
             break;
-          case "learn":
-            result = await this.stableWorkflowHandler.handleLearn(
-              args as { title: string; content: string; type: string; tags?: string[] }
-            );
-            break;
-          case "context":
-            result = await this.stableWorkflowHandler.handleContext(
-              args as { query: string }
-            );
+          case "memory":
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            result = await this.stableWorkflowHandler.handleMemory(args as any);
             break;
           case "correct":
             result = await this.stableWorkflowHandler.handleCorrect(
