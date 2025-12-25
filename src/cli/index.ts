@@ -1,11 +1,21 @@
 #!/usr/bin/env node
 
+/**
+ * Cortex CLI
+ *
+ * Main entry point for the Cortex command-line interface.
+ * Commands are organized by domain in the commands/ directory.
+ */
+
 import { Command } from "commander";
 import fs from "fs-extra";
 import path from "path";
 import { fileURLToPath } from "url";
-import chalk from "chalk";
-import { addMCPCommands } from "./mcp-commands.js";
+import {
+  registerInitCommand,
+  registerServerCommand,
+  registerTaskCommand,
+} from "./commands/index.js";
 
 const program = new Command();
 
@@ -41,46 +51,10 @@ program
     "Project path (default: current directory)"
   );
 
-addMCPCommands(program);
-
-// Main task command - simplified interface
-program
-  .command("task <description>")
-  .description(
-    " Execute a development task with full AI collaboration workflow"
-  )
-  .option("--draft-pr", "Create PR as draft")
-  .option(
-    "--base-branch <branch>",
-    "Base branch for PR (default: main)",
-    "main"
-  )
-  .option(
-    "-p, --project-path <path>",
-    "Project path (default: current directory)"
-  )
-  .action(
-    async (
-      description: string,
-      options: { draftPr?: boolean; baseBranch?: string; projectPath?: string }
-    ) => {
-      try {
-        const projectPath = options.projectPath || process.cwd();
-        const { executeTask } = await import("./mcp-commands.js");
-        await executeTask(description, projectPath, options);
-      } catch {
-        console.log(
-          chalk.yellow("  Attempting to initialize workspace due to error...")
-        );
-        const projectPath = options.projectPath || process.cwd();
-        const { ensureCortexWorkspace, executeTask } = await import(
-          "./mcp-commands.js"
-        );
-        await ensureCortexWorkspace(projectPath);
-        await executeTask(description, projectPath, options);
-      }
-    }
-  );
+// Register all commands from domain modules
+registerInitCommand(program);
+registerServerCommand(program);
+registerTaskCommand(program);
 
 // Handle unknown commands
 program.on("command:*", () => {
