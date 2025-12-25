@@ -31,6 +31,7 @@ import { MCPToolRegistry } from "./registry/index.js";
 import { CheckpointHandler } from "./handlers/checkpoint/checkpoint-handler.js";
 import { MemoryHandler } from "./handlers/memory/memory-handler.js";
 import { TeamKnowledgeHandler } from "./handlers/collaboration/team-knowledge-handler.js";
+import { PRReviewHandler } from "./handlers/collaboration/pr-review-handler.js";
 import { DependencyHandler } from "./handlers/project/dependency-handler.js";
 import { EnvironmentHandler } from "./handlers/project/environment-handler.js";
 import { ImpactAnalysisHandler } from "./handlers/analysis/impact-analysis-handler.js";
@@ -120,6 +121,7 @@ export class CortexMCPServer {
     this.registry.registerHandler(new CheckpointHandler(this.projectRoot));
     this.registry.registerHandler(new MemoryHandler(this.projectRoot));
     this.registry.registerHandler(new TeamKnowledgeHandler(this.projectRoot));
+    this.registry.registerHandler(new PRReviewHandler(this.projectRoot));
     this.registry.registerHandler(new DependencyHandler(this.projectRoot));
     this.registry.registerHandler(new EnvironmentHandler(this.projectRoot));
     this.registry.registerHandler(new ImpactAnalysisHandler(this.projectRoot));
