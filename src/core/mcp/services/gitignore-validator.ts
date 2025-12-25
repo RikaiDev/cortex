@@ -1,6 +1,6 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import * as fs from 'fs/promises';
+import * as fs from 'fs-extra';
 import * as path from 'path';
 
 const execAsync = promisify(exec);
@@ -114,7 +114,7 @@ export class GitignoreValidator {
       detector: async () => await this.fileExists('Dockerfile') || 
                              await this.fileExists('Dockerfile.*') ||
                              (techStack.projectType?.toLowerCase().includes('docker') ?? false),
-      patterns: this.getDockerignorePatterns(techStack),
+      patterns: this.getDockerignorePatterns(),
     });
 
     // .eslintignore
@@ -320,7 +320,7 @@ export class GitignoreValidator {
   /**
    * Get .dockerignore patterns
    */
-  private getDockerignorePatterns(techStack: TechStack): string[] {
+  private getDockerignorePatterns(): string[] {
     return [
       'node_modules/',
       '.git/',

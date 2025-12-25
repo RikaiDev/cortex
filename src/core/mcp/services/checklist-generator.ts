@@ -1,15 +1,5 @@
-import * as fs from 'fs/promises';
+import fs from 'fs-extra';
 import * as path from 'path';
-
-interface ChecklistItem {
-  checked: boolean;
-  label: string;
-}
-
-interface ChecklistSection {
-  title: string;
-  items: ChecklistItem[];
-}
 
 export type ChecklistType = 'requirements' | 'design' | 'tasks' | 'implementation';
 
@@ -86,7 +76,7 @@ export class ChecklistGenerator {
       const passed = incomplete === 0;
 
       return { total, completed, incomplete, passed };
-    } catch (error) {
+    } catch {
       // Checklist doesn't exist or can't be read
       return { total: 0, completed: 0, incomplete: 0, passed: true };
     }
@@ -100,7 +90,7 @@ export class ChecklistGenerator {
     allPassed: boolean;
   }> {
     const types: ChecklistType[] = ['requirements', 'design', 'tasks', 'implementation'];
-    const checklists: Record<string, any> = {};
+    const checklists: Record<string, { total: number; completed: number; incomplete: number; passed: boolean }> = {};
     let allPassed = true;
 
     for (const type of types) {

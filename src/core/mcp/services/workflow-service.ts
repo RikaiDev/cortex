@@ -5,8 +5,10 @@
  */
 
 import * as path from 'node:path';
-import * as fs from 'fs-extra';
-import type { Workflow, WorkflowPhase, PhaseResult } from '../types/workflow.js';
+import fs from 'fs-extra';
+import type { Workflow, PhaseResult } from '../types/workflow.js';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { WorkflowPhase } from '../types/workflow.js';
 
 export class WorkflowService {
   private workflowsPath: string;
@@ -107,6 +109,17 @@ export class WorkflowService {
     workflow.currentRole = this.getRoleForPhase(workflow.status);
 
     await this.saveWorkflow(workflow);
+
+    // Trigger learning extraction when workflow completes
+    if (workflow.status === 'completed') {
+      try {
+        const { MemoryService } = await import('./memory-service.js');
+        const memoryService = new MemoryService(this.projectRoot);
+        await memoryService.extractLearnings(workflowId);
+      } catch (error) {
+        console.error(`Failed to extract learnings for workflow ${workflowId}:`, error);
+      }
+    }
   }
 
   /**
@@ -163,6 +176,14 @@ export class WorkflowService {
     workflows.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
     return workflows;
+  }
+
+  /**
+   * Get the most recent workflow ID
+   */
+  async getLatestWorkflow(): Promise<string | null> {
+    const workflows = await this.listWorkflows(1);
+    return workflows.length > 0 ? workflows[0].id : null;
   }
 
   /**

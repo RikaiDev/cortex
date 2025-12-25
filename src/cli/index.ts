@@ -21,12 +21,12 @@ try {
   const __dirname = path.dirname(__filename);
   const packageJsonPath = path.join(__dirname, "..", "..", "package.json");
   packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-} catch (error) {
+} catch {
   // Fallback: try to read from current working directory
   try {
     const packageJsonPath = path.join(process.cwd(), "package.json");
     packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
-  } catch (fallbackError) {
+  } catch {
     // Final fallback: use a default version
     packageJson = { version: "0.7.2" };
   }
@@ -68,7 +68,7 @@ program
         const projectPath = options.projectPath || process.cwd();
         const { executeTask } = await import("./mcp-commands.js");
         await executeTask(description, projectPath, options);
-      } catch (error) {
+      } catch {
         console.log(
           chalk.yellow("  Attempting to initialize workspace due to error...")
         );

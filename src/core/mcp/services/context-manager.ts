@@ -1,4 +1,4 @@
-import * as fs from 'fs/promises';
+import fs from 'fs-extra';
 import * as path from 'path';
 
 interface TechInfo {

@@ -44,7 +44,7 @@ export class FileAnalyzer {
             };
           }
         }
-      } catch (error) {
+      } catch {
         // Directory doesn't exist or can't be read
       }
 
@@ -83,7 +83,7 @@ export class FileAnalyzer {
             createdAt: workflow.createdAt,
             updatedAt: workflow.updatedAt,
           });
-        } catch (error) {
+        } catch {
           // Skip invalid workflow files
         }
       }

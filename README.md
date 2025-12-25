@@ -75,7 +75,7 @@ claude mcp add cortex npx -y @rikaidev/cortex@latest start
 
 ```bash
 # In your AI assistant
-cortex spec "Add user authentication with email and password"
+spec "Add user authentication with email and password"
 ```
 
 Output: Workflow `001-add-user-auth` created
@@ -83,21 +83,26 @@ Output: Workflow `001-add-user-auth` created
 ### 5. Follow the Workflow
 
 ```bash
+# Commands automatically use the latest workflow
+# (workflowId is optional - omit to use latest)
+
 # Optional: Clarify ambiguities
-cortex clarify 001-add-user-auth
+clarify
 
 # Generate implementation plan
-cortex plan 001-add-user-auth
+plan
 
 # Optional: Technical review
-cortex review 001-add-user-auth
+review
 
 # Break down into tasks
-cortex tasks 001-add-user-auth
+tasks
 
 # Execute implementation
-cortex implement 001-add-user-auth
+implement
 ```
+
+> **Note**: All commands default to the most recent workflow. You can still specify a workflow ID if needed: `plan 001-add-user-auth`
 
 ---
 
@@ -105,7 +110,11 @@ cortex implement 001-add-user-auth
 
 ```mermaid
 flowchart LR
-    Start([User Request]) --> Constitution
+    Start([User Request]) --> FirstTime{First<br/>Time?}
+    
+    FirstTime -->|Yes| Onboard[Onboard<br/>Interactive Setup]
+    Onboard --> Constitution
+    FirstTime -->|No| Constitution
     
     Constitution[Constitution<br/>Setup Principles] -->|Auto-apply| Spec
     
@@ -126,7 +135,11 @@ flowchart LR
     Decision3 -->|No| Tasks
     Decision3 -->|Yes| Implement
     
-    Implement[Implement<br/>Execute Tasks] --> Done([Feature Complete])
+    Implement[Implement<br/>Execute Tasks] --> Done{Release?}
+    
+    Done -->|Yes| Release[Release<br/>Analyze & Commit]
+    Release --> Complete([Released])
+    Done -->|No| Complete
     
     style Constitution fill:#e1f5ff
     style Spec fill:#e1f5ff
@@ -135,33 +148,39 @@ flowchart LR
     style Review fill:#fff4e1
     style Tasks fill:#e1f5ff
     style Implement fill:#e1f5ff
+    style Onboard fill:#d4f1d4
+    style Release fill:#d4f1d4
+    style FirstTime fill:#2b2b2b,color:#fff
     style Decision1 fill:#2b2b2b,color:#fff
     style Decision2 fill:#2b2b2b,color:#fff
     style Decision3 fill:#2b2b2b,color:#fff
+    style Done fill:#2b2b2b,color:#fff
 ```
 
 **Legend:**
 - 🔵 **Blue boxes** - AI execution phases
 - 🟡 **Yellow boxes** - Optional user interaction phases
+- 🟢 **Green boxes** - Setup & release phases
 - ⚫ **Black diamonds** - User decision checkpoints
 
 ---
 
 ## 🔧 Available Commands
 
+All commands automatically use the latest workflow. Optionally specify a workflow ID: `plan 001-feature-name`
+
 | Command | Description | Automatic Actions | User Confirmation |
 |---------|-------------|-------------------|-------------------|
-| `cortex.constitution` | Create/update project principles | Auto-apply to all phases | No |
-| `cortex.spec` | Define feature requirements | Generate requirements checklist | Yes - before plan |
-| `cortex.clarify` | Resolve specification ambiguities | Update spec.md, save clarifications.md | Yes - iterative Q&A |
-| `cortex.plan` | Create technical implementation plan | Update CONTEXT.md, generate design checklist | Yes - before tasks |
-| `cortex.review` | Perform technical review of plan | Save review.md with action items | Yes - approve/revise |
-| `cortex.tasks` | Break down plan into actionable tasks | Generate tasks checklist | Yes - before implement |
-| `cortex.implement` | Execute implementation with role coordination | Validate gitignore, generate implementation checklist, execute tasks | Progress monitoring |
-| `cortex.status` | Check workflow status and progress | - | No |
-| `cortex.list` | List all workflows | - | No |
-| `cortex.learn` | Extract lessons to memory | Update memory index | No |
-| `cortex.context` | Enhance context from memory | - | No |
+| `spec <description>` | Define feature requirements | Generate requirements checklist, create workflow | Yes - before plan |
+| `clarify` | Resolve specification ambiguities | Update spec.md, save clarifications.md | Yes - iterative Q&A |
+| `plan` | Create technical implementation plan | Update CONTEXT.md, generate design checklist | Yes - before tasks |
+| `review` | Perform technical review of plan | Save review.md with action items | Yes - approve/revise |
+| `tasks` | Break down plan into actionable tasks | Generate tasks checklist | Yes - before implement |
+| `implement` | Execute implementation with role coordination | Validate gitignore, generate implementation checklist, execute tasks | Progress monitoring |
+| `status` | Check workflow status and progress | - | No |
+| `list` | List all workflows | - | No |
+| `release` | Analyze changes and generate release docs | Auto-detect conventions, validate quality (no TODOs/mocks), generate CHANGELOG/RELEASE_NOTES | Yes - before commit |
+| `onboard` | Interactive setup for first-time users | Q&A to create constitution, initialize structure | Yes - sequential questions |
 
 ---
 
@@ -173,6 +192,7 @@ flowchart LR
 | **Plan** | Context memory update, Design checklist generation | After plan.md created | `CONTEXT.md`, `checklists/design.md` |
 | **Tasks** | Tasks checklist generation | After tasks.md created | `checklists/tasks.md` |
 | **Implement** | Gitignore validation, Implementation checklist, Tech stack detection | Before execution starts | `.gitignore` (updated), `checklists/implementation.md` |
+| **Completion** | Automatic learning extraction from all phases | Workflow status becomes 'completed' | `.cortex/memory/experiences/*` |
 
 **No manual tool calls needed** - These validations and checks happen automatically at the right workflow points.
 
@@ -297,9 +317,27 @@ cortex implement 001-task-management
 
 ### ✅ Learning System
 
-- Extract lessons learned from completed workflows
-- Memory system stores successful patterns
+- **Automatic Learning Extraction** - Workflows automatically extract patterns, decisions, solutions, and lessons when completed
+- Memory system stores successful patterns with searchable tags
 - Constitution evolves with project needs
+- Context enhancement from past experiences
+
+### ✅ Smart Release Management
+
+- Auto-detect project conventions (CHANGELOG vs RELEASE_NOTES)
+- Analyze changes from git commits AND Cortex workflows
+- Generate professional release documentation automatically
+- Quality validation with zero-tolerance for incomplete code
+- Automatic commit message generation following conventions
+
+### ✅ Zero-Tolerance Quality
+
+- NO TODO comments in production code
+- NO mock data or scaffolding
+- NO unused code (enforced by Knip)
+- NO asking "continue or simplify?" - always decompose tasks
+- Task decomposition over shortcuts - break large tasks into completable units
+- Validation repeats until perfect - no attempt limits
 
 ---
 

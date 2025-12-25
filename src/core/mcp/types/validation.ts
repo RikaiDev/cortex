@@ -4,31 +4,6 @@
  * Defines types for constitution-based quality validation.
  */
 
-import type { ValidationResult } from './workflow.js';
-
-export interface ValidationCheckpoint {
-  /** Checkpoint identifier */
-  id: string;
-  
-  /** Which phase this applies to */
-  phase: 'spec' | 'plan' | 'tasks' | 'implement';
-  
-  /** Constitution principle being checked */
-  principle: string;
-  
-  /** Specific validation rule */
-  rule: string;
-  
-  /** Failure impact */
-  severity: 'error' | 'warning' | 'info';
-  
-  /** Can be checked automatically */
-  autoCheck: boolean;
-  
-  /** Validation logic */
-  checkFunction: (content: string) => ValidationResult;
-}
-
 export interface ConstitutionPrinciple {
   /** Principle identifier */
   id: string;

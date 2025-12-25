@@ -10,7 +10,6 @@ import * as fs from 'fs-extra';
 import type { 
   Constitution, 
   ConstitutionPrinciple,
-  ValidationCheckpoint,
   ValidationReport
 } from '../types/validation.js';
 import type { ValidationResult } from '../types/workflow.js';
@@ -137,7 +136,6 @@ export class ConstitutionValidator {
     phase: 'spec' | 'plan' | 'tasks' | 'implement',
     output: string
   ): Promise<ValidationReport> {
-    const principles = await this.loadPrinciples();
     const relevantPrinciples = this.getPrinciplesForPhase(phase);
 
     const checks: ValidationReport['checks'] = [];

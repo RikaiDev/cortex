@@ -8,8 +8,11 @@
     "cortex": "dist/cli/index.js"
   },
   "scripts": {
-    "build": "npm run knip || exit 1; tsc || exit 1",
+    "build": "npm run lint && npm run knip && npm run compile",
+    "compile": "tsc",
     "dev": "tsc --watch",
+    "lint": "eslint \"src/**/*.ts\" \"scripts/**/*.js\" --max-warnings 0",
+    "lint:fix": "eslint \"src/**/*.ts\" \"scripts/**/*.js\" --fix",
     "quality": "node scripts/quality-check.js",
     "knip": "knip",
     "prepublishOnly": "node -e \"console.error('❌ RELEASE WORKFLOW VIOLATION!\\n\\nYou must use the proper release workflow:\\n  npm run release:patch    # for patch releases\\n  npm run release:minor    # for minor releases\\n  npm run release:major    # for major releases\\n\\nDirect npm publish is blocked to ensure quality and consistency.\\n'); process.exit(1);\"",
@@ -53,9 +56,10 @@
   "devDependencies": {
     "@types/fs-extra": "^11.0.0",
     "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^8.0.0",
-    "knip": "^5.64.1"
+    "knip": "^5.64.1",
+    "prettier": "^3.0.0"
   }
 }

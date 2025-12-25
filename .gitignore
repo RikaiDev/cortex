@@ -118,3 +118,6 @@ internal/
 
 # Release process files
 .release-check-passed
+
+# Reference repositories (for development reference only)
+.references/

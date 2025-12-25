@@ -6,23 +6,36 @@
  */
 
 import * as path from 'node:path';
+import fs from 'fs-extra';
 import { MemoryService } from '../services/memory-service.js';
+import { CorrectionService } from '../services/correction-service.js';
 import { TemplateGenerator } from '../services/template-generator.js';
 import { ConstitutionValidator } from '../services/constitution-validator.js';
 import { WorkflowService } from '../services/workflow-service.js';
-import { GitignoreValidator } from '../services/gitignore-validator.js';
-import { ContextManager } from '../services/context-manager.js';
-import { ChecklistGenerator } from '../services/checklist-generator.js';
+import { ProjectDetector } from '../services/project-detector.js';
+import { ChangeAnalyzer } from '../services/change-analyzer.js';
+import { TaskDecomposer } from '../services/task-decomposer.js';
+import { ImplementationValidator } from '../services/implementation-validator.js';
 import type { MCPToolResult } from '../types/mcp-types.js';
+
+// These are used in template strings for AI execution, not directly in code
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { GitignoreValidator } from '../services/gitignore-validator.js';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { ContextManager } from '../services/context-manager.js';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import type { ChecklistGenerator } from '../services/checklist-generator.js';
 
 export class StableWorkflowHandler {
   private memoryService: MemoryService;
+  private correctionService: CorrectionService;
   private templateGenerator: TemplateGenerator;
   private constitutionValidator: ConstitutionValidator;
   private workflowService: WorkflowService;
 
   constructor(private projectRoot: string) {
     this.memoryService = new MemoryService(projectRoot);
+    this.correctionService = new CorrectionService(projectRoot);
     this.templateGenerator = new TemplateGenerator(projectRoot, this.memoryService);
     this.constitutionValidator = new ConstitutionValidator(projectRoot);
     this.workflowService = new WorkflowService(projectRoot);
@@ -90,12 +103,21 @@ await checklistGenerator.generateChecklist('requirements', '${args.description}'
   }
 
   /**
-   * Handle cortex.clarify - Resolve specification ambiguities
+   * Handle clarify - Resolve specification ambiguities
    */
-  async handleClarify(args: { workflowId: string }): Promise<MCPToolResult> {
+  async handleClarify(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
+      // Get workflow ID (use provided or latest)
+      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
+      if (!workflowId) {
+        return {
+          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
+          isError: true,
+        };
+      }
+
       // 1. Generate prompt (command + current spec)
-      const prompt = await this.templateGenerator.generateClarifyPrompt(args.workflowId);
+      const prompt = await this.templateGenerator.generateClarifyPrompt(workflowId);
 
       // 2. Return prompt to AI for execution
       return {
@@ -114,7 +136,7 @@ This command will:
 1. Scan the specification for ambiguities (11 categories)
 2. Ask up to 5 targeted questions sequentially
 3. Update spec.md after each answer
-4. Save clarifications to \`.cortex/workflows/${args.workflowId}/clarifications.md\`
+4. Save clarifications to \`.cortex/workflows/${workflowId}/clarifications.md\`
 
 **Note**: Questions are asked ONE AT A TIME. Answer each before the next is presented.`,
           },
@@ -134,14 +156,23 @@ This command will:
   }
 
   /**
-   * Handle cortex.plan - Create implementation plan
+   * Handle plan - Create implementation plan
    */
-  async handlePlan(args: { workflowId: string }): Promise<MCPToolResult> {
+  async handlePlan(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', args.workflowId);
+      // Get workflow ID (use provided or latest)
+      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
+      if (!workflowId) {
+        return {
+          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
+          isError: true,
+        };
+      }
+
+      const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', workflowId);
       
       // 1. Generate prompt (command + template)
-      const prompt = await this.templateGenerator.generatePlanPrompt(args.workflowId);
+      const prompt = await this.templateGenerator.generatePlanPrompt(workflowId);
 
       // 2. Return prompt to AI for execution
       return {
@@ -157,14 +188,14 @@ ${prompt}
 ---
 
 After generating the plan, save it to:
-\`.cortex/workflows/${args.workflowId}/plan.md\`
+\`.cortex/workflows/${workflowId}/plan.md\`
 
 **THEN immediately execute these automated steps**:
 
 1. **Update Context Memory**:
 \`\`\`typescript
 const contextManager = new ContextManager('${workflowPath}');
-await contextManager.updateContext('${args.workflowId}');
+await contextManager.updateContext('${workflowId}');
 \`\`\`
 
 2. **Generate Design Checklist**:
@@ -179,8 +210,8 @@ await checklistGenerator.generateChecklist('design', workflowTitle);
 ✓ Design checklist generated → checklists/design.md
 
 **Next steps**:
-- Review (optional): \`cortex.review ${args.workflowId}\`
-- Or proceed to tasks: \`cortex.tasks ${args.workflowId}\``,
+- Review (optional): \`review\`
+- Or proceed to tasks: \`tasks\``,
           },
         ],
       };
@@ -198,12 +229,21 @@ await checklistGenerator.generateChecklist('design', workflowTitle);
   }
 
   /**
-   * Handle cortex.review - Technical review of implementation plan
+   * Handle review - Technical review of implementation plan
    */
-  async handleReview(args: { workflowId: string }): Promise<MCPToolResult> {
+  async handleReview(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
+      // Get workflow ID (use provided or latest)
+      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
+      if (!workflowId) {
+        return {
+          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
+          isError: true,
+        };
+      }
+
       // 1. Generate prompt (command + plan to review)
-      const prompt = await this.templateGenerator.generateReviewPrompt(args.workflowId);
+      const prompt = await this.templateGenerator.generateReviewPrompt(workflowId);
 
       // 2. Return prompt to AI for execution
       return {
@@ -223,10 +263,10 @@ This command will:
 2. Check constitution compliance
 3. Categorize action items (Must Fix, Should Fix, Consider)
 4. Make overall decision (Approved, Approved with Changes, Needs Major Revision)
-5. Save review to \`.cortex/workflows/${args.workflowId}/review.md\`
+5. Save review to \`.cortex/workflows/${workflowId}/review.md\`
 
 **After review**:
-- If APPROVED: Proceed to \`cortex.tasks ${args.workflowId}\`
+- If APPROVED: Proceed to \`tasks\`
 - If APPROVED WITH CHANGES: Address action items, update plan.md, then proceed
 - If NEEDS MAJOR REVISION: Make substantial changes and re-run review`,
           },
@@ -246,14 +286,23 @@ This command will:
   }
 
   /**
-   * Handle cortex.tasks - Generate task breakdown
+   * Handle tasks - Generate task breakdown
    */
-  async handleTasks(args: { workflowId: string }): Promise<MCPToolResult> {
+  async handleTasks(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', args.workflowId);
+      // Get workflow ID (use provided or latest)
+      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
+      if (!workflowId) {
+        return {
+          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
+          isError: true,
+        };
+      }
+
+      const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', workflowId);
       
       // 1. Generate prompt (command + template)
-      const prompt = await this.templateGenerator.generateTasksPrompt(args.workflowId);
+      const prompt = await this.templateGenerator.generateTasksPrompt(workflowId);
 
       // 2. Return prompt to AI for execution
       return {
@@ -269,14 +318,14 @@ ${prompt}
 ---
 
 After generating the task breakdown, save it to:
-\`.cortex/workflows/${args.workflowId}/tasks.md\`
+\`.cortex/workflows/${workflowId}/tasks.md\`
 
 **THEN immediately execute this automated step**:
 
 1. **Generate Tasks Checklist**:
 \`\`\`typescript
 const checklistGenerator = new ChecklistGenerator('${workflowPath}');
-const workflowData = await workflowService.getWorkflowStatus('${args.workflowId}');
+const workflowData = await workflowService.getWorkflowStatus('${workflowId}');
 await checklistGenerator.generateChecklist('tasks', workflowData.workflow.title);
 \`\`\`
 
@@ -286,7 +335,7 @@ await checklistGenerator.generateChecklist('tasks', workflowData.workflow.title)
 
 **Next steps**:
 - Review task breakdown
-- When ready: \`cortex.implement ${args.workflowId}\``,
+- When ready: \`implement\``,
           },
         ],
       };
@@ -304,15 +353,24 @@ await checklistGenerator.generateChecklist('tasks', workflowData.workflow.title)
   }
 
   /**
-   * Handle cortex.implement - Execute implementation
+   * Handle implement - Execute implementation
    */
-  async handleImplement(args: { workflowId: string }): Promise<MCPToolResult> {
+  async handleImplement(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', args.workflowId);
+      // Get workflow ID (use provided or latest)
+      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
+      if (!workflowId) {
+        return {
+          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
+          isError: true,
+        };
+      }
+
+      const workflowPath = path.join(this.projectRoot, '.cortex', 'workflows', workflowId);
       const planPath = path.join(workflowPath, 'plan.md');
       
       // 1. Generate prompt (implementation coordinator)
-      const prompt = await this.templateGenerator.generateImplementPrompt(args.workflowId);
+      const prompt = await this.templateGenerator.generateImplementPrompt(workflowId);
 
       // 2. Return prompt to AI for execution
       return {
@@ -330,7 +388,7 @@ await validator.validateIgnoreFiles('${planPath}');
 2. **Generate Implementation Checklist**:
 \`\`\`typescript
 const checklistGenerator = new ChecklistGenerator('${workflowPath}');
-const workflowData = await workflowService.getWorkflowStatus('${args.workflowId}');
+const workflowData = await workflowService.getWorkflowStatus('${workflowId}');
 await checklistGenerator.generateChecklist('implementation', workflowData.workflow.title);
 \`\`\`
 
@@ -350,7 +408,11 @@ ${prompt}
 ---
 
 This command will coordinate task execution using the Multi-Role system.
-Progress will be logged to: \`.cortex/workflows/${args.workflowId}/execution/\``,
+Progress will be logged to: \`.cortex/workflows/${args.workflowId}/execution/\`
+
+**NOTE**: TaskDecomposer and ImplementationValidator services are available for:
+- Breaking down large tasks: \`new TaskDecomposer('${this.projectRoot}').decomposeTask(...)\`
+- Validating implementation: \`new ImplementationValidator('${this.projectRoot}').validate([...files])\``,
           },
         ],
       };
@@ -365,6 +427,142 @@ Progress will be logged to: \`.cortex/workflows/${args.workflowId}/execution/\``
         isError: true,
       };
     }
+  }
+
+  /**
+   * Handle task decomposition - Break down a large task into smaller subtasks
+   */
+  async handleTaskDecomposition(args: {
+    workflowId: string;
+    taskId: string;
+    taskDescription: string;
+  }): Promise<MCPToolResult> {
+    try {
+      const decomposer = new TaskDecomposer();
+      
+      // Analyze the task
+      const analysis = decomposer.analyzeTask(args.taskDescription);
+
+      if (!analysis.isTooLarge) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Task ${args.taskId} does not need decomposition.\nComplexity is manageable - proceed with implementation.`,
+            },
+          ],
+        };
+      }
+
+      // Task needs decomposition
+      const breakdown = analysis.suggestedBreakdown || [];
+      const subtasksText = breakdown.map((st, i) => 
+        `${args.taskId}-${i + 1}: ${st.description}\n  Dependencies: ${st.dependencies.join(', ') || 'none'}\n  Acceptance: ${st.acceptanceCriteria.join(', ')}`
+      ).join('\n\n');
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `⚠️ Task ${args.taskId} is TOO LARGE and must be decomposed.\n\n**Reason**: ${analysis.reason}\n**Estimated tokens**: ${analysis.estimatedTokens}\n\n**Suggested Breakdown**:\n\n${subtasksText}\n\n**REQUIRED ACTION**: Update tasks.md with these subtasks before proceeding.`,
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Failed to decompose task: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
+  /**
+   * Handle implementation validation - Check for mocks, TODOs, unused code
+   */
+  async handleImplementationValidation(args: {
+    changedFiles: string[];
+  }): Promise<MCPToolResult> {
+    try {
+      const validator = new ImplementationValidator(this.projectRoot);
+      const result = await validator.validateImplementation(args.changedFiles);
+
+      if (result.isComplete) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: '✅ Implementation validation passed:\n- No TODO/FIXME comments\n- No mock data or placeholders\n- No unused code (Knip)\n- No scaffold patterns\n\nReady to proceed.',
+            },
+          ],
+        };
+      } else {
+        // Format issues
+        const issuesText = result.issues.map(issue => 
+          `**${issue.severity.toUpperCase()}** [${issue.type}] ${issue.file}:${issue.line}\n  ${issue.description}`
+        ).join('\n\n');
+
+        // Generate fix tasks
+        const fixTasks = validator.generateFixTasks(result.issues);
+        const fixTasksText = fixTasks.map(task =>
+          `- [ ] ${task.id} (${task.priority}): ${task.description}`
+        ).join('\n');
+
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `❌ Implementation validation FAILED:\n\n**Issues Found**:\n${issuesText}\n\n**Fix Tasks Required**:\n${fixTasksText}\n\n**REQUIRED ACTION**: Fix all blocker issues before proceeding.\n- Mock detected: ${result.mockDetected}\n- Scaffold detected: ${result.scaffoldDetected}\n- Unused code: ${result.unusedCodeDetected}`,
+            },
+          ],
+          isError: true,
+        };
+      }
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Failed to validate implementation: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
+  /**
+   * Simple task parser from markdown (can be improved)
+   */
+  private parseTasksFromMarkdown(content: string): Array<{
+    id: string;
+    description: string;
+    status: 'pending' | 'completed' | 'blocked';
+  }> {
+    const tasks: Array<{
+      id: string;
+      description: string;
+      status: 'pending' | 'completed' | 'blocked';
+    }> = [];
+    
+    const lines = content.split('\n');
+    for (const line of lines) {
+      const match = line.match(/^- \[([ xX])\] (T-[\w-]+): (.+)$/);
+      if (match) {
+        const status = match[1] === ' ' ? 'pending' : 'completed';
+        tasks.push({
+          id: match[2],
+          description: match[3],
+          status,
+        });
+      }
+    }
+    
+    return tasks;
   }
 
   /**
@@ -399,6 +597,57 @@ Progress will be logged to: \`.cortex/workflows/${args.workflowId}/execution/\``
           {
             type: 'text',
             text: `Failed to enhance context: ${error instanceof Error ? error.message : String(error)}`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+
+  /**
+   * Handle cortex.correct - Record correction to prevent future mistakes
+   */
+  async handleCorrect(args: {
+    wrongBehavior: string;
+    correctBehavior: string;
+    severity?: string;
+    filePatterns?: string[];
+    triggerKeywords?: string[];
+  }): Promise<MCPToolResult> {
+    try {
+      const correctionId = await this.correctionService.recordCorrection({
+        wrongBehavior: args.wrongBehavior,
+        correctBehavior: args.correctBehavior,
+        severity: (args.severity as 'minor' | 'moderate' | 'major' | undefined) || 'moderate',
+        context: {
+          filePatterns: args.filePatterns || [],
+          techStack: [],
+          triggerKeywords: args.triggerKeywords || [],
+          phases: [],
+        },
+      });
+
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `✅ Correction recorded successfully!
+
+**ID**: ${correctionId}
+**Wrong**: ${args.wrongBehavior}
+**Correct**: ${args.correctBehavior}
+**Severity**: ${args.severity || 'moderate'}
+
+This correction has been saved to project memory. The AI will be warned before repeating similar mistakes in future sessions.`,
+          },
+        ],
+      };
+    } catch (error) {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `Failed to record correction: ${error instanceof Error ? error.message : String(error)}`,
           },
         ],
         isError: true,
@@ -451,11 +700,20 @@ This experience is now searchable via \`cortex.context\`.`,
   }
 
   /**
-   * Handle cortex.status - Get workflow status
+   * Handle status - Get workflow status
    */
-  async handleStatus(args: { workflowId: string }): Promise<MCPToolResult> {
+  async handleStatus(args: { workflowId?: string }): Promise<MCPToolResult> {
     try {
-      const status = await this.workflowService.getWorkflowStatus(args.workflowId);
+      // Get workflow ID (use provided or latest)
+      const workflowId = args.workflowId || await this.workflowService.getLatestWorkflow();
+      if (!workflowId) {
+        return {
+          content: [{ type: 'text', text: 'No workflow found. Create one first with `spec`.' }],
+          isError: true,
+        };
+      }
+
+      const status = await this.workflowService.getWorkflowStatus(workflowId);
 
       return {
         content: [
@@ -493,7 +751,7 @@ ${status.workflow.currentRole || 'None assigned'}`,
   }
 
   /**
-   * Handle cortex.list - List workflows
+   * Handle list - List workflows
    */
   async handleList(args: { limit?: number }): Promise<MCPToolResult> {
     try {
@@ -504,7 +762,7 @@ ${status.workflow.currentRole || 'None assigned'}`,
           content: [
             {
               type: 'text',
-              text: 'No workflows found. Create one with `cortex.spec <description>`.',
+              text: 'No workflows found. Create one with `spec <description>`.',
             },
           ],
         };
@@ -536,6 +794,220 @@ ${status.workflow.currentRole || 'None assigned'}`,
           },
         ],
         isError: true,
+      };
+    }
+  }
+
+  /**
+   * Handle release - Analyze changes and generate release documentation
+   */
+  async handleRelease(args: { version?: string; tag?: boolean; push?: boolean }): Promise<MCPToolResult> {
+    try {
+      // 1. Detect project conventions
+      const detector = new ProjectDetector(this.projectRoot);
+      const conventions = await detector.analyze();
+
+      // 2. Analyze changes
+      const analyzer = new ChangeAnalyzer(this.projectRoot);
+      const analysis = await analyzer.analyze(conventions);
+
+      // 3. Load release command template
+      const commandPath = path.join(this.projectRoot, '.cortex', 'templates', 'commands', 'release.md');
+      if (!(await fs.pathExists(commandPath))) {
+        return {
+          content: [{
+            type: 'text',
+            text: 'Error: release.md command template not found. Run cortex init to set up templates.'
+          }],
+          isError: true
+        };
+      }
+
+      const command = await fs.readFile(commandPath, 'utf-8');
+
+      // 4. Build context for AI
+      const context = `
+## Release Context
+
+**Project Conventions**:
+- Has CHANGELOG: ${conventions.hasChangelog}
+- Has RELEASE_NOTES: ${conventions.hasReleaseNotes}
+- Uses Conventional Commits: ${conventions.usesConventionalCommits}
+- Commit Types: ${conventions.commitTypes.join(', ')}
+- Has Cortex Workflows: ${conventions.hasCortexWorkflows} (${conventions.workflowCount} workflows)
+
+**Change Analysis**:
+- Git Commits: ${analysis.gitCommits.length}
+- Workflow Changes: ${analysis.workflowChanges.length}
+- Merged Changes: ${analysis.mergedChanges.length}
+
+**Changes Summary**:
+${analysis.mergedChanges.map((c, i) => `${i + 1}. [${c.type}] ${c.description}`).slice(0, 20).join('\n')}
+${analysis.mergedChanges.length > 20 ? `\n... and ${analysis.mergedChanges.length - 20} more changes` : ''}
+
+**Arguments**:
+- Version: ${args.version || 'auto-detect'}
+- Create Tag: ${args.tag || false}
+- Push to Remote: ${args.push || false}
+`;
+
+      // 5. Return command + context to AI
+      return {
+        content: [{
+          type: 'text',
+          text: `${command}\n\n${context}\n\nPlease execute the release process as specified in the command above.`
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Failed to prepare release: ${error instanceof Error ? error.message : String(error)}`
+        }],
+        isError: true
+      };
+    }
+  }
+
+  /**
+   * Handle onboard - Interactive onboarding for first-time users
+   */
+  async handleOnboard(): Promise<MCPToolResult> {
+    try {
+      // 1. Check current state
+      const cortexDir = path.join(this.projectRoot, '.cortex');
+      const needsInit = !(await fs.pathExists(cortexDir));
+      const needsConstitution = !(await fs.pathExists(
+        path.join(cortexDir, 'templates', 'constitution.md')
+      ));
+
+      // 2. Load onboard command template
+      const commandPath = path.join(this.projectRoot, '.cortex', 'templates', 'commands', 'onboard.md');
+      
+      // If command doesn't exist yet (first time), use built-in
+      let command: string;
+      if (await fs.pathExists(commandPath)) {
+        command = await fs.readFile(commandPath, 'utf-8');
+      } else {
+        // Return instructions to run cortex init first
+        return {
+          content: [{
+            type: 'text',
+            text: `
+## Welcome to Cortex AI!
+
+It looks like this is your first time using Cortex in this project.
+
+**Initial Setup Required:**
+
+Please run the following command first to initialize the basic structure:
+\`\`\`bash
+cortex init
+\`\`\`
+
+This will create:
+- .cortex/ directory structure
+- Template files
+- Command files
+
+After initialization completes, run \`cortex.onboard\` again to continue with the interactive setup.
+`
+          }]
+        };
+      }
+
+      // 3. Build context for AI
+      const context = `
+## Onboarding Context
+
+**Current State**:
+- .cortex/ exists: ${!needsInit}
+- Constitution exists: ${!needsConstitution}
+- Project root: ${this.projectRoot}
+
+**Detected Files**:
+- package.json: ${await fs.pathExists(path.join(this.projectRoot, 'package.json'))}
+- requirements.txt: ${await fs.pathExists(path.join(this.projectRoot, 'requirements.txt'))}
+- go.mod: ${await fs.pathExists(path.join(this.projectRoot, 'go.mod'))}
+- README.md: ${await fs.pathExists(path.join(this.projectRoot, 'README.md'))}
+- .git/: ${await fs.pathExists(path.join(this.projectRoot, '.git'))}
+
+**What needs to be done**:
+${needsInit ? '- Initialize .cortex/ structure' : '✓ .cortex/ already initialized'}
+${needsConstitution ? '- Create constitution via Q&A' : '✓ Constitution already exists'}
+`;
+
+      // 4. Return command + context to AI
+      return {
+        content: [{
+          type: 'text',
+          text: `${command}\n\n${context}\n\nPlease execute the onboarding process as specified above.`
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Failed to start onboarding: ${error instanceof Error ? error.message : String(error)}`
+        }],
+        isError: true
+      };
+    }
+  }
+
+  /**
+   * Handle constitution - Create or update project constitution
+   */
+  async handleConstitution(args: { updates?: string }): Promise<MCPToolResult> {
+    try {
+      const constitutionPath = path.join(this.projectRoot, '.cortex', 'constitution.md');
+      
+      // Load constitution command template
+      const commandPath = path.join(this.projectRoot, '.cortex', 'templates', 'commands', 'constitution.md');
+      
+      if (!(await fs.pathExists(commandPath))) {
+        return {
+          content: [{
+            type: 'text',
+            text: `Constitution command template not found. Please run \`cortex init\` first.
+
+The constitution command template should be at: ${commandPath}`
+          }],
+          isError: true
+        };
+      }
+
+      const command = await fs.readFile(commandPath, 'utf-8');
+
+      // Build context for AI
+      const context = `
+## Current State
+
+**Constitution Path**: ${constitutionPath}
+**Constitution Exists**: ${await fs.pathExists(constitutionPath) ? 'Yes' : 'No (will be created)'}
+
+${args.updates ? `**Requested Updates**: ${args.updates}\n` : '**Mode**: Interactive (AI will guide through constitution creation/update)\n'}
+
+## Your Task
+
+You are helping the user create or update their project constitution. Follow the instructions in the command template above.
+
+${args.updates ? 'Focus on the specific updates requested by the user.' : 'Guide the user through the constitution creation/update process interactively.'}
+`;
+
+      return {
+        content: [{
+          type: 'text',
+          text: `${command}\n\n${context}\n\nPlease execute the constitution management process as specified above.`
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: 'text',
+          text: `Failed to manage constitution: ${error instanceof Error ? error.message : String(error)}`
+        }],
+        isError: true
       };
     }
   }

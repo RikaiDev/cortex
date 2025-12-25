@@ -6,15 +6,18 @@ import * as path from "path";
 import fs from "fs-extra";
 import { SnapshotService } from "../services/snapshot-service.js";
 import { TasksReader } from "../utils/tasks-reader.js";
+import { MemoryService } from "../services/memory-service.js";
 import { MCPResourceResult } from "../types/mcp-types.js";
 
 export class ResourceHandler {
   private snapshotService: SnapshotService;
   private tasksReader: TasksReader;
+  private memoryService: MemoryService;
 
   constructor(private projectRoot: string) {
     this.snapshotService = new SnapshotService(projectRoot);
     this.tasksReader = new TasksReader(projectRoot);
+    this.memoryService = new MemoryService(projectRoot);
   }
 
   /**
@@ -233,6 +236,77 @@ Create \`.vscode/tasks.json\`:
 \`\`\`
 
 For complete documentation, see: docs/ide-integration.md`,
+            },
+          ],
+        };
+      }
+
+      // Handle memory resources
+      if (uri === "cortex://memory/index") {
+        const indexPath = path.join(
+          this.projectRoot,
+          ".cortex",
+          "memory",
+          "index.json"
+        );
+
+        if (fs.existsSync(indexPath)) {
+          const index = await fs.readJson(indexPath);
+          return {
+            contents: [
+              {
+                uri,
+                mimeType: "application/json",
+                text: JSON.stringify(index, null, 2),
+              },
+            ],
+          };
+        }
+
+        // Return empty index if doesn't exist
+        return {
+          contents: [
+            {
+              uri,
+              mimeType: "application/json",
+              text: JSON.stringify({
+                version: "1.0",
+                lastUpdated: new Date().toISOString(),
+                totalExperiences: 0,
+                categories: { patterns: 0, decisions: 0, solutions: 0, lessons: 0 },
+                index: []
+              }, null, 2),
+            },
+          ],
+        };
+      }
+
+      if (uri.startsWith("cortex://memory/experiences/")) {
+        const type = uri.split("/").pop() as string;
+        const result = await this.memoryService.searchExperiences(type, 50);
+        return {
+          contents: [
+            {
+              uri,
+              mimeType: "application/json",
+              text: JSON.stringify(result.experiences, null, 2),
+            },
+          ],
+        };
+      }
+
+      if (uri.startsWith("cortex://memory/search")) {
+        const urlParts = uri.split("?");
+        const params = new URLSearchParams(urlParts[1] || "");
+        const query = params.get("query") || "";
+
+        const result = await this.memoryService.searchExperiences(query, 10);
+        return {
+          contents: [
+            {
+              uri,
+              mimeType: "application/json",
+              text: JSON.stringify(result, null, 2),
             },
           ],
         };

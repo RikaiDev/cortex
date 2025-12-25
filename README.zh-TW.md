@@ -74,7 +74,7 @@ claude mcp add cortex npx -y @rikaidev/cortex@latest start
 
 ```bash
 # 在您的 AI 助理中
-cortex spec "新增使用電子郵件和密碼的用戶驗證"
+spec "新增使用電子郵件和密碼的用戶驗證"
 ```
 
 輸出：工作流程 `001-add-user-auth` 已建立
@@ -82,21 +82,26 @@ cortex spec "新增使用電子郵件和密碼的用戶驗證"
 ### 5. 遵循工作流程
 
 ```bash
+# 命令會自動使用最新的工作流程
+# （workflowId 為可選 - 省略則使用最新）
+
 # 可選：釐清模糊之處
-cortex clarify 001-add-user-auth
+clarify
 
 # 生成實施計畫
-cortex plan 001-add-user-auth
+plan
 
 # 可選：技術審查
-cortex review 001-add-user-auth
+review
 
 # 分解為任務
-cortex tasks 001-add-user-auth
+tasks
 
 # 執行實施
-cortex implement 001-add-user-auth
+implement
 ```
+
+> **注意**：所有命令預設使用最新的工作流程。如有需要仍可指定工作流程 ID：`plan 001-add-user-auth`
 
 ---
 
@@ -104,7 +109,11 @@ cortex implement 001-add-user-auth
 
 ```mermaid
 flowchart LR
-    Start([用戶請求]) --> Constitution
+    Start([用戶請求]) --> FirstTime{首次<br/>使用？}
+    
+    FirstTime -->|是| Onboard[引導<br/>互動式設置]
+    Onboard --> Constitution
+    FirstTime -->|否| Constitution
     
     Constitution[憲章<br/>設定原則] -->|自動套用| Spec
     
@@ -125,7 +134,11 @@ flowchart LR
     Decision3 -->|否| Tasks
     Decision3 -->|是| Implement
     
-    Implement[實施<br/>執行任務] --> Done([功能完成])
+    Implement[實施<br/>執行任務] --> Done{發布？}
+    
+    Done -->|是| Release[發布<br/>分析與提交]
+    Release --> Complete([已發布])
+    Done -->|否| Complete
     
     style Constitution fill:#e1f5ff
     style Spec fill:#e1f5ff
@@ -134,33 +147,39 @@ flowchart LR
     style Review fill:#fff4e1
     style Tasks fill:#e1f5ff
     style Implement fill:#e1f5ff
+    style Onboard fill:#d4f1d4
+    style Release fill:#d4f1d4
+    style FirstTime fill:#2b2b2b,color:#fff
     style Decision1 fill:#2b2b2b,color:#fff
     style Decision2 fill:#2b2b2b,color:#fff
     style Decision3 fill:#2b2b2b,color:#fff
+    style Done fill:#2b2b2b,color:#fff
 ```
 
 **圖例：**
 - 🔵 **藍色方框** - AI 執行階段
 - 🟡 **黃色方框** - 可選用戶互動階段
+- 🟢 **綠色方框** - 設置與發布階段
 - ⚫ **黑色菱形** - 用戶決策檢查點
 
 ---
 
 ## 🔧 可用命令
 
+所有命令會自動使用最新的工作流程。可選擇性指定工作流程 ID：`plan 001-feature-name`
+
 | 命令 | 描述 | 自動動作 | 用戶確認 |
 |------|------|----------|---------|
-| `cortex.constitution` | 建立/更新專案原則 | 自動套用到所有階段 | 否 |
-| `cortex.spec` | 定義功能需求 | 生成需求檢查清單 | 是 - 計畫前 |
-| `cortex.clarify` | 解決規格模糊 | 更新 spec.md，儲存 clarifications.md | 是 - 迭代問答 |
-| `cortex.plan` | 建立技術實施計畫 | 更新 CONTEXT.md，生成設計檢查清單 | 是 - 任務前 |
-| `cortex.review` | 執行計畫技術審查 | 儲存 review.md 與行動項目 | 是 - 批准/修改 |
-| `cortex.tasks` | 將計畫分解為可執行任務 | 生成任務檢查清單 | 是 - 實施前 |
-| `cortex.implement` | 執行角色協調實施 | 驗證 gitignore，生成實施檢查清單，執行任務 | 進度監控 |
-| `cortex.status` | 檢查工作流程狀態和進度 | - | 否 |
-| `cortex.list` | 列出所有工作流程 | - | 否 |
-| `cortex.learn` | 提取經驗教訓到記憶 | 更新記憶索引 | 否 |
-| `cortex.context` | 從記憶增強上下文 | - | 否 |
+| `spec <描述>` | 定義功能需求 | 生成需求檢查清單、建立工作流程 | 是 - 計畫前 |
+| `clarify` | 解決規格模糊 | 更新 spec.md，儲存 clarifications.md | 是 - 迭代問答 |
+| `plan` | 建立技術實施計畫 | 更新 CONTEXT.md，生成設計檢查清單 | 是 - 任務前 |
+| `review` | 執行計畫技術審查 | 儲存 review.md 與行動項目 | 是 - 批准/修改 |
+| `tasks` | 將計畫分解為可執行任務 | 生成任務檢查清單 | 是 - 實施前 |
+| `implement` | 執行角色協調實施 | 驗證 gitignore，生成實施檢查清單，執行任務 | 進度監控 |
+| `status` | 檢查工作流程狀態和進度 | - | 否 |
+| `list` | 列出所有工作流程 | - | 否 |
+| `release` | 分析變更並生成發布文檔 | 自動偵測慣例、驗證品質（無 TODO/mock）、生成 CHANGELOG/RELEASE_NOTES | 是 - 提交前 |
+| `onboard` | 首次使用者互動式設置 | 問答建立憲章、初始化結構 | 是 - 順序問答 |
 
 ---
 
@@ -172,6 +191,7 @@ flowchart LR
 | **計畫** | 上下文記憶更新, 設計檢查清單生成 | plan.md 建立後 | `CONTEXT.md`, `checklists/design.md` |
 | **任務** | 任務檢查清單生成 | tasks.md 建立後 | `checklists/tasks.md` |
 | **實施** | Gitignore 驗證, 實施檢查清單, 技術棧檢測 | 執行開始前 | `.gitignore`（更新）, `checklists/implementation.md` |
+| **完成** | 從所有階段自動學習提取 | 工作流程狀態變為「已完成」 | `.cortex/memory/experiences/*` |
 
 **無需手動工具呼叫** - 這些驗證和檢查會在正確的工作流程點自動執行。
 
@@ -296,9 +316,27 @@ cortex implement 001-task-management
 
 ### ✅ 學習系統
 
-- 從完成的工作流程提取經驗教訓
-- 記憶系統儲存成功模式
+- **自動學習提取** - 工作流程完成時自動提取模式、決策、解決方案和經驗教訓
+- 記憶系統儲存成功模式，可搜尋標籤
 - 憲章隨專案需求演化
+- 從過去經驗增強上下文
+
+### ✅ 智能發布管理
+
+- 自動偵測專案慣例（CHANGELOG vs RELEASE_NOTES）
+- 從 git commits 和 Cortex workflows 分析變更
+- 自動生成專業發布文檔
+- 零容忍品質驗證（無不完整代碼）
+- 按慣例自動生成提交訊息
+
+### ✅ 零容忍品質
+
+- 生產代碼中禁止 TODO 註解
+- 禁止 mock 數據或腳手架
+- 禁止未使用代碼（Knip 強制執行）
+- 禁止詢問「繼續或簡化？」- 始終拆解任務
+- 任務拆解優於捷徑 - 將大任務分解為可完成單元
+- 驗證重複直到完美 - 無嘗試次數限制
 
 ---
 

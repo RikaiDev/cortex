@@ -147,7 +147,7 @@ async function runVersionConsistencyCheck(versionType) {
       const npmInfo = execSync('npm view @rikaidev/cortex version', { encoding: 'utf8' }).trim();
       latestPublishedVersion = npmInfo;
       print(BLUE, `📦 Latest published version: ${latestPublishedVersion}`);
-    } catch (error) {
+    } catch {
       // If package doesn't exist on NPM yet, use 0.0.0 as base
       latestPublishedVersion = "0.0.0";
       print(BLUE, `📦 No published version found, using base: ${latestPublishedVersion}`);
@@ -485,7 +485,7 @@ function getLatestPublishedVersion() {
     const { execSync } = require('child_process');
     const npmInfo = execSync('npm view @rikaidev/cortex version', { encoding: 'utf8' }).trim();
     return npmInfo;
-  } catch (error) {
+  } catch {
     // If package doesn't exist on NPM yet, use 0.0.0 as base
     return "0.0.0";
   }
@@ -715,7 +715,7 @@ async function createVersionTag(newVersion) {
       print(BLUE, `📦 Tag v${newVersion} already exists, skipping creation`);
       return;
     }
-  } catch (error) {
+  } catch {
     // Tag doesn't exist, proceed with creation
   }
   
