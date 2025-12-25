@@ -90,12 +90,44 @@ export class ImplementationValidatorHandler {
         };
       }
 
+      // Check for dependency issues (third priority)
+      if (result.dependencyIssuesDetected) {
+        const criticalDeprecations = result.deprecationWarnings.filter(
+          (d) => d.removedIn
+        );
+
+        const deprecationsList = result.deprecationWarnings
+          .map((d) => {
+            const icon = d.removedIn ? "❌" : "⚠️";
+            const location = d.file ? `\n     File: ${d.file}:${d.line}` : "";
+            const replacement = d.replacement
+              ? `\n     💡 Use: ${d.replacement}`
+              : "";
+            const removal = d.removedIn
+              ? ` (will be removed in v${d.removedIn})`
+              : "";
+
+            return `  ${icon} **${d.package}**: ${d.api}\n     Deprecated in v${d.deprecatedIn}${removal}${location}${replacement}`;
+          })
+          .join("\n\n");
+
+        return {
+          content: [
+            {
+              type: "text",
+              text: `⚠️  **Deprecated API Usage Detected**\n\n${deprecationsList}\n\n**Summary:**\n- Total deprecations: ${result.deprecationWarnings.length}\n- Critical (will be removed): ${criticalDeprecations.length}\n\n${criticalDeprecations.length > 0 ? "**REQUIRED ACTION**: Replace deprecated APIs that will be removed." : "**Warnings found**: Plan to update deprecated APIs."}`,
+            },
+          ],
+          isError: criticalDeprecations.length > 0,
+        };
+      }
+
       if (result.isComplete) {
         return {
           content: [
             {
               type: "text",
-              text: "✅ Implementation validation passed:\n- No TODO/FIXME comments\n- No mock data or placeholders\n- No unused code (Knip)\n- No scaffold patterns\n- No danger zones affected\n- No environment compatibility issues\n\nReady to proceed.",
+              text: "✅ Implementation validation passed:\n- No TODO/FIXME comments\n- No mock data or placeholders\n- No unused code (Knip)\n- No scaffold patterns\n- No danger zones affected\n- No environment compatibility issues\n- No deprecated API usage\n\nReady to proceed.",
             },
           ],
         };

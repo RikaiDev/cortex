@@ -763,6 +763,65 @@ export class CortexMCPServer {
                 required: ["files"],
               },
             },
+            {
+              name: "dependency-analyze",
+              description:
+                "Analyze all project dependencies from package.json, requirements.txt, go.mod",
+              inputSchema: {
+                type: "object",
+                properties: {},
+              },
+            },
+            {
+              name: "dependency-check",
+              description:
+                "Check dependency compatibility (detect deprecated APIs, version conflicts)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  files: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "Files to check for deprecated API usage",
+                  },
+                },
+                required: ["files"],
+              },
+            },
+            {
+              name: "dependency-version",
+              description: "Get the installed version of a specific package",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  package: {
+                    type: "string",
+                    description: "Package name to query",
+                  },
+                },
+                required: ["package"],
+              },
+            },
+            {
+              name: "dependency-suggest",
+              description:
+                "Check compatibility before adding a new dependency (detect potential conflicts)",
+              inputSchema: {
+                type: "object",
+                properties: {
+                  package: {
+                    type: "string",
+                    description: "Package name to add",
+                  },
+                  version: {
+                    type: "string",
+                    description:
+                      "Target version (optional, checks latest if not provided)",
+                  },
+                },
+                required: ["package"],
+              },
+            },
           ],
         };
       } catch (error) {
@@ -902,6 +961,25 @@ export class CortexMCPServer {
           case "environment-check":
             result = await this.stableWorkflowHandler.handleEnvironmentCheck(
               args as { files: string[] }
+            );
+            break;
+          case "dependency-analyze":
+            result =
+              await this.stableWorkflowHandler.handleDependencyAnalyze();
+            break;
+          case "dependency-check":
+            result = await this.stableWorkflowHandler.handleDependencyCheck(
+              args as { files: string[] }
+            );
+            break;
+          case "dependency-version":
+            result = await this.stableWorkflowHandler.handleDependencyVersion(
+              args as { package: string }
+            );
+            break;
+          case "dependency-suggest":
+            result = await this.stableWorkflowHandler.handleDependencySuggest(
+              args as { package: string; version?: string }
             );
             break;
           default:

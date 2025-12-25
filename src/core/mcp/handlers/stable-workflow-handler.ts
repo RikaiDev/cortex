@@ -29,6 +29,7 @@ import { OnboardHandler } from "./project/onboard-handler.js";
 import { ConstitutionHandler } from "./project/constitution-handler.js";
 import { DangerZoneHandler } from "./project/danger-zone-handler.js";
 import { EnvironmentHandler } from "./project/environment-handler.js";
+import { DependencyHandler } from "./project/dependency-handler.js";
 import type {
   MCPToolResult,
   WorkflowToolArgs,
@@ -51,6 +52,7 @@ export class StableWorkflowHandler {
   private constitutionHandler: ConstitutionHandler;
   private dangerZoneHandler: DangerZoneHandler;
   private environmentHandler: EnvironmentHandler;
+  private dependencyHandler: DependencyHandler;
 
   constructor(private projectRoot: string) {
     // Initialize delegated handlers
@@ -69,6 +71,7 @@ export class StableWorkflowHandler {
     this.constitutionHandler = new ConstitutionHandler(projectRoot);
     this.dangerZoneHandler = new DangerZoneHandler(projectRoot);
     this.environmentHandler = new EnvironmentHandler(projectRoot);
+    this.dependencyHandler = new DependencyHandler(projectRoot);
   }
 
   /**
@@ -359,6 +362,45 @@ export class StableWorkflowHandler {
     files: string[];
   }): Promise<MCPToolResult> {
     return this.environmentHandler.handleCheckCompatibility(args);
+  }
+
+  /**
+   * Handle dependency-analyze - Analyze all project dependencies
+   * @deprecated Delegated to DependencyHandler
+   */
+  async handleDependencyAnalyze(): Promise<MCPToolResult> {
+    return this.dependencyHandler.handleAnalyzeDependencies();
+  }
+
+  /**
+   * Handle dependency-check - Check dependency compatibility
+   * @deprecated Delegated to DependencyHandler
+   */
+  async handleDependencyCheck(args: {
+    files: string[];
+  }): Promise<MCPToolResult> {
+    return this.dependencyHandler.handleCheckCompatibility(args);
+  }
+
+  /**
+   * Handle dependency-version - Get version of a specific dependency
+   * @deprecated Delegated to DependencyHandler
+   */
+  async handleDependencyVersion(args: {
+    package: string;
+  }): Promise<MCPToolResult> {
+    return this.dependencyHandler.handleGetVersion(args);
+  }
+
+  /**
+   * Handle dependency-suggest - Suggest compatibility for adding new dependency
+   * @deprecated Delegated to DependencyHandler
+   */
+  async handleDependencySuggest(args: {
+    package: string;
+    version?: string;
+  }): Promise<MCPToolResult> {
+    return this.dependencyHandler.handleSuggestDependency(args);
   }
 
   /**

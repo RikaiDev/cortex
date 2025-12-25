@@ -3,8 +3,10 @@ import * as path from "path";
 import { execSync } from "child_process";
 import { DangerZoneService } from "./danger-zone-service.js";
 import { EnvironmentService } from "./environment-service.js";
+import { DependencyService } from "./dependency-service.js";
 import type { DangerZone } from "../types/danger-zone.js";
 import type { EnvironmentWarning } from "../types/environment.js";
+import type { DeprecationWarning } from "../types/dependency.js";
 
 export interface ValidationResult {
   isComplete: boolean;
@@ -16,6 +18,8 @@ export interface ValidationResult {
   dangerZones: DangerZone[];
   environmentIssuesDetected: boolean;
   environmentWarnings: EnvironmentWarning[];
+  dependencyIssuesDetected: boolean;
+  deprecationWarnings: DeprecationWarning[];
 }
 
 export interface ValidationIssue {
@@ -29,10 +33,12 @@ export interface ValidationIssue {
 export class ImplementationValidator {
   private dangerZoneService: DangerZoneService;
   private environmentService: EnvironmentService;
+  private dependencyService: DependencyService;
 
   constructor(private projectRoot: string) {
     this.dangerZoneService = new DangerZoneService(projectRoot);
     this.environmentService = new EnvironmentService(projectRoot);
+    this.dependencyService = new DependencyService(projectRoot);
   }
 
   /**
@@ -52,6 +58,13 @@ export class ImplementationValidator {
       (w) => w.severity === "error"
     );
 
+    // Check dependency compatibility
+    const dependencyCheck =
+      await this.dependencyService.checkCompatibility(files);
+    const criticalDeprecations = dependencyCheck.deprecations.filter(
+      (d) => d.removedIn
+    ); // APIs that will be removed
+
     // Scan for mocks/scaffolds
     const mockIssues = await this.scanForMocks(files);
     issues.push(...mockIssues);
@@ -64,7 +77,9 @@ export class ImplementationValidator {
       isComplete:
         issues.length === 0 &&
         !dangerZoneCheck.hasDangerZones &&
-        environmentErrors.length === 0,
+        environmentErrors.length === 0 &&
+        criticalDeprecations.length === 0 &&
+        dependencyCheck.conflicts.length === 0,
       issues,
       mockDetected: mockIssues.some((i) => i.type === "mock"),
       scaffoldDetected: mockIssues.some((i) => i.type === "scaffold"),
@@ -73,6 +88,10 @@ export class ImplementationValidator {
       dangerZones: dangerZoneCheck.zones,
       environmentIssuesDetected: environmentCheck.warnings.length > 0,
       environmentWarnings: environmentCheck.warnings,
+      dependencyIssuesDetected:
+        dependencyCheck.deprecations.length > 0 ||
+        dependencyCheck.conflicts.length > 0,
+      deprecationWarnings: dependencyCheck.deprecations,
     };
 
     return result;
