@@ -824,11 +824,12 @@ export class ArchitectureService {
    * Match file path against glob pattern
    */
   private matchPattern(filePath: string, pattern: string): boolean {
-    // Simple glob matching
+    // Use placeholder for ** to prevent single * replacement from affecting it
     const regex = pattern
-      .replace(/\*\*/g, ".*")
-      .replace(/\*/g, "[^/]*")
-      .replace(/\//g, "\\/");
+      .replace(/\*\*/g, "<<<GLOBSTAR>>>")   // Temporarily replace **
+      .replace(/\*/g, "[^/]*")               // Replace single *
+      .replace(/<<<GLOBSTAR>>>/g, ".*")      // Replace ** placeholder with .*
+      .replace(/\//g, "\\/");                // Escape slashes
 
     return new RegExp(`^${regex}$`).test(filePath);
   }
@@ -837,7 +838,9 @@ export class ArchitectureService {
    * Match filename against glob pattern
    */
   private matchGlobPattern(fileName: string, pattern: string): boolean {
-    const regex = pattern.replace(/\*/g, ".*").replace(/\./g, "\\.");
+    // Escape dots FIRST, then convert wildcards
+    // Order matters: if we do * -> .* first, then . -> \. breaks .*
+    const regex = pattern.replace(/\./g, "\\.").replace(/\*/g, ".*");
     return new RegExp(`^${regex}$`).test(fileName);
   }
 
