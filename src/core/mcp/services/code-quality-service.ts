@@ -94,7 +94,8 @@ export class CodeQualityService {
     const overallScore = this.calculateOverallScore(
       fileMetrics,
       filteredSmells,
-      allComplexity
+      allComplexity,
+      totalLines
     );
     const grade = this.scoreToGrade(overallScore);
 
@@ -1244,34 +1245,59 @@ export class CodeQualityService {
   }
 
   /**
-   * Calculate overall score
+   * Calculate overall score using density-based approach
+   *
+   * Uses issues per 1000 lines of code (KLOC) to fairly score
+   * codebases of different sizes. Weights severity appropriately
+   * and uses a gradual curve that doesn't bottom out quickly.
    */
   private calculateOverallScore(
     fileMetrics: FileQualityMetrics[],
     smells: CodeSmell[],
-    complexity: ComplexityMetrics[]
+    complexity: ComplexityMetrics[],
+    totalLines: number
   ): number {
-    if (fileMetrics.length === 0) return 100;
+    if (fileMetrics.length === 0 || totalLines === 0) return 100;
 
-    // Start with 100 and subtract for issues
-    let score = 100;
+    // Calculate weighted smell score per KLOC (1000 lines)
+    const kloc = totalLines / 1000;
 
-    // Deduct for smells
-    const smellDeductions: Record<SmellSeverity, number> = {
+    // Weight smells by severity (info barely counts)
+    const weights: Record<SmellSeverity, number> = {
       critical: 10,
-      major: 5,
-      minor: 2,
-      info: 0.5,
+      major: 4,
+      minor: 1,
+      info: 0.1, // Magic numbers etc barely affect score
     };
+
+    let weightedSmellCount = 0;
     for (const smell of smells) {
-      score -= smellDeductions[smell.severity];
+      weightedSmellCount += weights[smell.severity];
     }
 
-    // Deduct for high complexity
+    // Calculate density (weighted smells per KLOC)
+    const smellDensity = weightedSmellCount / kloc;
+
+    // High complexity functions penalty (per KLOC)
     const highComplexity = complexity.filter(
       (c) => c.cyclomaticComplexity > this.thresholds.maxComplexity
     );
-    score -= highComplexity.length * 3;
+    const complexityDensity = (highComplexity.length / kloc) * 5;
+
+    // Total issue density
+    const totalDensity = smellDensity + complexityDensity;
+
+    // Convert density to score using logarithmic curve
+    // This provides a gradual decline rather than immediate 0
+    // Density of 0 = 100, density of 50 = ~70, density of 100 = ~50
+    // density of 200 = ~30, density of 500 = ~10
+    let score: number;
+    if (totalDensity <= 0) {
+      score = 100;
+    } else {
+      // Logarithmic decay: score = 100 - 15 * ln(1 + density/10)
+      score = 100 - 15 * Math.log(1 + totalDensity / 10);
+    }
 
     // Ensure score is between 0 and 100
     return Math.max(0, Math.min(100, Math.round(score)));
