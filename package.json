@@ -15,6 +15,9 @@
     "lint:fix": "eslint \"src/**/*.ts\" \"scripts/**/*.js\" --fix",
     "quality": "node scripts/quality-check.js",
     "knip": "knip",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "prepublishOnly": "node -e \"console.error('❌ RELEASE WORKFLOW VIOLATION!\\n\\nYou must use the proper release workflow:\\n  npm run release:patch    # for patch releases\\n  npm run release:minor    # for minor releases\\n  npm run release:major    # for major releases\\n\\nDirect npm publish is blocked to ensure quality and consistency.\\n'); process.exit(1);\"",
     "release:patch": "node scripts/publish-workflow.cjs patch",
     "release:minor": "node scripts/publish-workflow.cjs minor",
@@ -59,8 +62,10 @@
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^4.0.16",
     "eslint": "^8.0.0",
     "knip": "^5.64.1",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "vitest": "^4.0.16"
   }
 }
