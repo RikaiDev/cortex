@@ -62,7 +62,11 @@ function runCodeQualityChecks() {
   const eslintCmd = shouldFix
     ? `npx eslint --fix "src/**/*.ts" "scripts/**/*.cjs" --max-warnings 0`
     : `npx eslint "src/**/*.ts" "scripts/**/*.cjs" --max-warnings 0`;
-  const eslintResult = runCommand(eslintCmd, "ESLint check (zero warnings)", true);
+  const eslintResult = runCommand(
+    eslintCmd,
+    "ESLint check (zero warnings)",
+    true
+  );
 
   if (eslintResult.success) {
     print(GREEN, "✅ ESLint passed");
@@ -81,7 +85,10 @@ function runCodeQualityChecks() {
     print(BLUE, "=====================");
     print(BLUE, "");
     print(BLUE, "CRITICAL: Analyze each unused variable/function carefully:");
-    print(BLUE, "1. Check if the function should be implemented (missing functionality)");
+    print(
+      BLUE,
+      "1. Check if the function should be implemented (missing functionality)"
+    );
     print(BLUE, "2. Check if the function should be removed (obsolete code)");
     print(BLUE, "3. Check if the function is used elsewhere but not detected");
     print(BLUE, "4. NEVER use eslint-disable comments to ignore warnings");
@@ -94,12 +101,18 @@ function runCodeQualityChecks() {
     print(BLUE, "- NEVER add eslint-disable comments");
     print(BLUE, "- Ensure all code is either implemented or removed");
     print(BLUE, "");
-    print(YELLOW, "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to analyze and fix code");
+    print(
+      YELLOW,
+      "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to analyze and fix code"
+    );
     print(YELLOW, "");
     print(YELLOW, "Please fix the issues and then run:");
     print(YELLOW, "npm run quality");
     print(YELLOW, "");
-    print(RED, "🚫 QUALITY CHECKS STOPPED - Cannot proceed until ESLint issues are fixed");
+    print(
+      RED,
+      "🚫 QUALITY CHECKS STOPPED - Cannot proceed until ESLint issues are fixed"
+    );
     print(RED, "");
     process.exit(1);
   }
@@ -121,7 +134,10 @@ function runCodeQualityChecks() {
     print(BLUE, "================================");
     print(YELLOW, "\n📋 TypeScript Specialist Role Required");
     print(YELLOW, "");
-    print(YELLOW, "TypeScript compilation has failed. Following Cortex AI principles,");
+    print(
+      YELLOW,
+      "TypeScript compilation has failed. Following Cortex AI principles,"
+    );
     print(YELLOW, "we're delegating the type fixing task to Cursor AI.");
     print(YELLOW, "");
     print(BLUE, "🎯 TASK FOR CURSOR AI:");
@@ -139,12 +155,18 @@ function runCodeQualityChecks() {
     print(BLUE, "- Resolve type conflicts and mismatches");
     print(BLUE, "- Ensure type safety throughout the codebase");
     print(BLUE, "");
-    print(YELLOW, "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to fix TypeScript issues");
+    print(
+      YELLOW,
+      "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to fix TypeScript issues"
+    );
     print(YELLOW, "");
     print(YELLOW, "Please fix the issues and then run:");
     print(YELLOW, "npm run quality");
     print(YELLOW, "");
-    print(RED, "🚫 QUALITY CHECKS STOPPED - Cannot proceed until TypeScript issues are fixed");
+    print(
+      RED,
+      "🚫 QUALITY CHECKS STOPPED - Cannot proceed until TypeScript issues are fixed"
+    );
     print(RED, "");
     process.exit(1);
   }
@@ -165,7 +187,10 @@ function runCodeQualityChecks() {
     print(BLUE, "================================");
     print(YELLOW, "\n📋 Code Formatter Role Required");
     print(YELLOW, "");
-    print(YELLOW, "Prettier formatting has failed. Following Cortex AI principles,");
+    print(
+      YELLOW,
+      "Prettier formatting has failed. Following Cortex AI principles,"
+    );
     print(YELLOW, "we're delegating the formatting task to Cursor AI.");
     print(YELLOW, "");
     print(BLUE, "🎯 TASK FOR CURSOR AI:");
@@ -183,12 +208,18 @@ function runCodeQualityChecks() {
     print(BLUE, "- Verify indentation and spacing");
     print(BLUE, "- Run formatting check again to verify fixes");
     print(BLUE, "");
-    print(YELLOW, "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to fix formatting issues");
+    print(
+      YELLOW,
+      "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to fix formatting issues"
+    );
     print(YELLOW, "");
     print(YELLOW, "Please fix the issues and then run:");
     print(YELLOW, "npm run quality");
     print(YELLOW, "");
-    print(RED, "🚫 QUALITY CHECKS STOPPED - Cannot proceed until formatting issues are fixed");
+    print(
+      RED,
+      "🚫 QUALITY CHECKS STOPPED - Cannot proceed until formatting issues are fixed"
+    );
     print(RED, "");
     process.exit(1);
   }
@@ -196,14 +227,18 @@ function runCodeQualityChecks() {
   // Markdown Lint (with zero warnings tolerance)
   const markdownFiles = [
     "README.md",
-    "README.zh-TW.md", 
+    "README.zh-TW.md",
     "CHANGELOG.md",
     "ROADMAP.md",
     "RELEASE-PROTECTION.md",
-    "templates/**/*.md"
+    "templates/**/*.md",
   ];
-  const markdownCmd = `npx markdownlint "${markdownFiles.join(' ')}" --config .markdownlint.json --ignore node_modules`;
-  const markdownResult = runCommand(markdownCmd, "Markdown lint check (zero warnings)", true);
+  const markdownCmd = `npx markdownlint "${markdownFiles.join(" ")}" --config .markdownlint.json --ignore node_modules`;
+  const markdownResult = runCommand(
+    markdownCmd,
+    "Markdown lint check (zero warnings)",
+    true
+  );
 
   if (markdownResult.success) {
     print(GREEN, "✅ Markdown lint passed");
@@ -215,14 +250,23 @@ function runCodeQualityChecks() {
     print(BLUE, "================================");
     print(YELLOW, "\n📋 Documentation Specialist Role Required");
     print(YELLOW, "");
-    print(YELLOW, "Markdown linting has failed. Following Cortex AI principles,");
-    print(YELLOW, "we're delegating the documentation fixing task to Cursor AI.");
+    print(
+      YELLOW,
+      "Markdown linting has failed. Following Cortex AI principles,"
+    );
+    print(
+      YELLOW,
+      "we're delegating the documentation fixing task to Cursor AI."
+    );
     print(YELLOW, "");
     print(BLUE, "🎯 TASK FOR CURSOR AI:");
     print(BLUE, "=====================");
     print(BLUE, "");
     print(BLUE, "CRITICAL: Fix Markdown formatting issues:");
-    print(BLUE, "1. Fix MD012: Remove multiple consecutive blank lines (max 1)");
+    print(
+      BLUE,
+      "1. Fix MD012: Remove multiple consecutive blank lines (max 1)"
+    );
     print(BLUE, "2. Fix MD022: Add blank lines around headings");
     print(BLUE, "3. Fix MD013: Break long lines (max 200 characters)");
     print(BLUE, "4. Ensure all markdown files follow best practices");
@@ -233,17 +277,28 @@ function runCodeQualityChecks() {
     print(BLUE, "- Maintain consistent formatting across all docs");
     print(BLUE, "- Verify all markdown files pass linting");
     print(BLUE, "");
-    print(YELLOW, "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to fix Markdown issues");
+    print(
+      YELLOW,
+      "⚠️  WORKFLOW PAUSED - Waiting for Cursor AI to fix Markdown issues"
+    );
     print(YELLOW, "");
     print(YELLOW, "Please fix the issues and then run:");
     print(YELLOW, "npm run quality");
     print(YELLOW, "");
-    print(RED, "🚫 QUALITY CHECKS STOPPED - Cannot proceed until Markdown issues are fixed");
+    print(
+      RED,
+      "🚫 QUALITY CHECKS STOPPED - Cannot proceed until Markdown issues are fixed"
+    );
     print(RED, "");
     process.exit(1);
   }
 
-  return eslintResult.success && tsResult.success && prettierResult.success && markdownResult.success;
+  return (
+    eslintResult.success &&
+    tsResult.success &&
+    prettierResult.success &&
+    markdownResult.success
+  );
 }
 
 // ===== DEPENDENCY CHECKS =====
@@ -356,17 +411,20 @@ function runSecurityChecks() {
     "api[_-]?key\\s*=\\s*['\"][^'\"]+['\"]",
     "secret\\s*=\\s*['\"][^'\"]+['\"]",
     "token\\s*=\\s*['\"][^'\"]+['\"]",
-    "private[_-]?key\\s*=\\s*['\"][^'\"]+['\"]"
+    "private[_-]?key\\s*=\\s*['\"][^'\"]+['\"]",
   ];
 
   let secretsFound = false;
   for (const pattern of secretPatterns) {
     try {
-      const result = execSync(`grep -r -E "${pattern}" src/ scripts/ test/ --exclude-dir=node_modules || true`, {
-        encoding: "utf-8",
-        stdio: "pipe"
-      });
-      
+      const result = execSync(
+        `grep -r -E "${pattern}" src/ scripts/ test/ --exclude-dir=node_modules || true`,
+        {
+          encoding: "utf-8",
+          stdio: "pipe",
+        }
+      );
+
       if (result.trim()) {
         if (!secretsFound) {
           print(RED, "❌ Potential secrets found:");

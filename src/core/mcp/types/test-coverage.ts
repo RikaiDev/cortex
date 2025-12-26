@@ -138,7 +138,6 @@ export interface TestAnalysisResult {
   analyzedAt: string;
 }
 
-
 /**
  * Options for test analysis
  */

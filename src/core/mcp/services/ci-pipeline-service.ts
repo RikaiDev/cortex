@@ -78,7 +78,9 @@ export class CIPipelineService {
       return result.trim();
     } catch (error) {
       if (error instanceof Error && "stderr" in error) {
-        throw new Error(`GitHub CLI error: ${(error as { stderr: string }).stderr}`);
+        throw new Error(
+          `GitHub CLI error: ${(error as { stderr: string }).stderr}`
+        );
       }
       throw error;
     }
@@ -215,9 +217,7 @@ export class CIPipelineService {
       // Check if any of the files were modified in this commit
       const changedFiles = this.getCommitFiles(run.headSha);
       const isRelevant = files.some((f) =>
-        changedFiles.some(
-          (cf) => cf.includes(f) || f.includes(cf)
-        )
+        changedFiles.some((cf) => cf.includes(f) || f.includes(cf))
       );
 
       if (isRelevant || files.length === 0) {
@@ -298,7 +298,9 @@ export class CIPipelineService {
     // Add general suggestions
     if (riskLevel !== "low") {
       suggestions.push("Run tests locally before pushing: npm test");
-      suggestions.push("Consider running the full CI workflow locally if available");
+      suggestions.push(
+        "Consider running the full CI workflow locally if available"
+      );
     }
 
     return {

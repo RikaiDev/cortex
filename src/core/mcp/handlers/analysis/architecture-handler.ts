@@ -71,14 +71,18 @@ export class ArchitectureHandler {
       const statusEmoji = result.isValid ? "✅" : "❌";
       sections.push(`## Architecture Validation ${statusEmoji}`);
       sections.push(`\n**Status:** ${result.isValid ? "PASSED" : "FAILED"}`);
-      sections.push(`**Validated:** ${new Date(result.validatedAt).toLocaleString()}`);
+      sections.push(
+        `**Validated:** ${new Date(result.validatedAt).toLocaleString()}`
+      );
 
       // Summary metrics
       sections.push(`\n### Summary`);
       sections.push(`| Metric | Value |`);
       sections.push(`|--------|-------|`);
       sections.push(`| Total Files | ${result.totalFiles} |`);
-      sections.push(`| Files with Violations | ${result.filesWithViolations} |`);
+      sections.push(
+        `| Files with Violations | ${result.filesWithViolations} |`
+      );
       sections.push(`| Total Violations | ${result.violations.length} |`);
 
       // Violations by severity
@@ -169,7 +173,9 @@ export class ArchitectureHandler {
         );
       }
       if (result.isValid) {
-        sections.push(`Architecture validation passed - no critical issues found.`);
+        sections.push(
+          `Architecture validation passed - no critical issues found.`
+        );
       }
 
       return {
@@ -220,7 +226,9 @@ export class ArchitectureHandler {
       // Basic info
       sections.push(`\n### File Info`);
       sections.push(`- **Layer:** ${result.layer || "Unknown"}`);
-      sections.push(`- **Status:** ${result.isValid ? "Valid" : "Has violations"}`);
+      sections.push(
+        `- **Status:** ${result.isValid ? "Valid" : "Has violations"}`
+      );
       sections.push(`- **Imports:** ${result.imports.length}`);
 
       // Naming status
@@ -264,11 +272,15 @@ export class ArchitectureHandler {
         for (const imp of result.imports.slice(0, 15)) {
           const layerInfo = imp.targetLayer || "external";
           const status = this.getImportStatus(result.layer, imp.targetLayer);
-          sections.push(`| ${imp.line} | \`${this.truncate(imp.module, 30)}\` | ${layerInfo} | ${status} |`);
+          sections.push(
+            `| ${imp.line} | \`${this.truncate(imp.module, 30)}\` | ${layerInfo} | ${status} |`
+          );
         }
 
         if (result.imports.length > 15) {
-          sections.push(`\n*...and ${result.imports.length - 15} more imports*`);
+          sections.push(
+            `\n*...and ${result.imports.length - 15} more imports*`
+          );
         }
       }
 
@@ -343,7 +355,9 @@ export class ArchitectureHandler {
       sections.push(`- **Suggested Layer:** ${suggestion.suggestedLayer}`);
       sections.push(`- **Suggested Path:** \`${suggestion.suggestedPath}\``);
       sections.push(`- **Suggested Name:** \`${suggestion.suggestedName}\``);
-      sections.push(`- **Confidence:** ${this.formatConfidence(suggestion.confidence)}`);
+      sections.push(
+        `- **Confidence:** ${this.formatConfidence(suggestion.confidence)}`
+      );
 
       // Reason
       sections.push(`\n### Reasoning`);
@@ -376,9 +390,7 @@ export class ArchitectureHandler {
 
       // Notes
       sections.push(`\n### Notes`);
-      sections.push(
-        `- Ensure imports are updated after moving the file`
-      );
+      sections.push(`- Ensure imports are updated after moving the file`);
       sections.push(
         `- Run \`arch-validate\` after moving to verify architecture compliance`
       );

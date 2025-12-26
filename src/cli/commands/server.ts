@@ -6,7 +6,10 @@
 
 import chalk from "chalk";
 import type { Command } from "commander";
-import { ensureCortexWorkspace, resolveWorkspaceRoot } from "../utils/workspace.js";
+import {
+  ensureCortexWorkspace,
+  resolveWorkspaceRoot,
+} from "../utils/workspace.js";
 
 /**
  * Register server command

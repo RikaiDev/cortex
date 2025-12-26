@@ -148,17 +148,13 @@ export class TestParser {
       const lineNumber = i + 1;
 
       // Track describe blocks
-      const describeMatch = line.match(
-        /describe\s*\(\s*['"`](.+?)['"`]/
-      );
+      const describeMatch = line.match(/describe\s*\(\s*['"`](.+?)['"`]/);
       if (describeMatch) {
         currentDescribe = describeMatch[1];
       }
 
       // Match test/it blocks
-      const testMatch = line.match(
-        /(?:it|test)\s*\(\s*['"`](.+?)['"`]/
-      );
+      const testMatch = line.match(/(?:it|test)\s*\(\s*['"`](.+?)['"`]/);
       if (testMatch) {
         const isSkipped =
           line.includes(".skip") ||

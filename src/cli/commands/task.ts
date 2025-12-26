@@ -31,7 +31,11 @@ export function registerTaskCommand(program: Command): void {
     .action(
       async (
         description: string,
-        options: { draftPr?: boolean; baseBranch?: string; projectPath?: string }
+        options: {
+          draftPr?: boolean;
+          baseBranch?: string;
+          projectPath?: string;
+        }
       ) => {
         try {
           const projectPath = options.projectPath || process.cwd();

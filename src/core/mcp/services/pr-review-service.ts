@@ -55,9 +55,8 @@ export class PRReviewService {
     const pr = await this.getPRInfo(prNumber);
 
     // Load team patterns
-    const patterns = options.useTeamPatterns !== false
-      ? await this.loadTeamPatterns()
-      : [];
+    const patterns =
+      options.useTeamPatterns !== false ? await this.loadTeamPatterns() : [];
 
     // Analyze PR
     const findings: ReviewFinding[] = [];
@@ -239,14 +238,19 @@ export class PRReviewService {
         baseBranch: data.baseRefName,
         headBranch: data.headRefName,
         state: data.state.toLowerCase() as PRInfo["state"],
-        files: data.files.map((f: { path: string; additions: number; deletions: number }) => ({
-          path: f.path,
-          status: this.inferFileStatus(f),
-          additions: f.additions,
-          deletions: f.deletions,
-        })),
+        files: data.files.map(
+          (f: { path: string; additions: number; deletions: number }) => ({
+            path: f.path,
+            status: this.inferFileStatus(f),
+            additions: f.additions,
+            deletions: f.deletions,
+          })
+        ),
         labels: data.labels.map((l: { name: string }) => l.name),
-        reviewers: data.reviewRequests?.map((r: { login?: string; name?: string }) => r.login || r.name) || [],
+        reviewers:
+          data.reviewRequests?.map(
+            (r: { login?: string; name?: string }) => r.login || r.name
+          ) || [],
         url: data.url,
         createdAt: data.createdAt,
         commits: data.commits.length,
@@ -263,7 +267,10 @@ export class PRReviewService {
   /**
    * Infer file status from additions/deletions
    */
-  private inferFileStatus(file: { additions: number; deletions: number }): PRFile["status"] {
+  private inferFileStatus(file: {
+    additions: number;
+    deletions: number;
+  }): PRFile["status"] {
     if (file.additions > 0 && file.deletions === 0) {
       return "added";
     }
@@ -342,18 +349,15 @@ export class PRReviewService {
     const checkMap: Record<string, () => ReviewFinding | null> = {
       "missing-error-handling": () =>
         this.checkMissingErrorHandling(file, content, pattern),
-      "missing-tests": () =>
-        this.checkMissingTests(file, content, pattern),
+      "missing-tests": () => this.checkMissingTests(file, content, pattern),
       "missing-validation": () =>
         this.checkMissingValidation(file, content, pattern),
-      "security-issue": () =>
-        this.checkSecurityIssues(file, content, pattern),
+      "security-issue": () => this.checkSecurityIssues(file, content, pattern),
       "performance-concern": () =>
         this.checkPerformanceIssues(file, content, pattern),
       "naming-improvement": () =>
         this.checkNamingIssues(file, content, pattern),
-      "code-duplication": () =>
-        this.checkDuplication(file, content, pattern),
+      "code-duplication": () => this.checkDuplication(file, content, pattern),
     };
 
     const check = checkMap[pattern.pattern];
@@ -392,7 +396,8 @@ export class PRReviewService {
         category: "error-handling",
         file: file.path,
         message: pattern.description,
-        suggestion: "Add try-catch blocks or .catch() handlers for async operations",
+        suggestion:
+          "Add try-catch blocks or .catch() handlers for async operations",
         matchedPattern: pattern.pattern,
       };
     }
@@ -472,9 +477,18 @@ export class PRReviewService {
   ): ReviewFinding | null {
     const securityPatterns = [
       { regex: /eval\s*\(/, issue: "Use of eval() is a security risk" },
-      { regex: /innerHTML\s*=/, issue: "innerHTML can lead to XSS vulnerabilities" },
-      { regex: /password\s*=\s*['"][^'"]+['"]/, issue: "Hardcoded password detected" },
-      { regex: /api[_-]?key\s*=\s*['"][^'"]+['"]/, issue: "Hardcoded API key detected" },
+      {
+        regex: /innerHTML\s*=/,
+        issue: "innerHTML can lead to XSS vulnerabilities",
+      },
+      {
+        regex: /password\s*=\s*['"][^'"]+['"]/,
+        issue: "Hardcoded password detected",
+      },
+      {
+        regex: /api[_-]?key\s*=\s*['"][^'"]+['"]/,
+        issue: "Hardcoded API key detected",
+      },
     ];
 
     for (const { regex, issue } of securityPatterns) {
@@ -502,9 +516,18 @@ export class PRReviewService {
     pattern: PRReviewPattern
   ): ReviewFinding | null {
     const perfPatterns = [
-      { regex: /\.forEach\(.*await/, issue: "Sequential awaits in forEach loop" },
-      { regex: /for\s*\(.*\)\s*\{[^}]*await/, issue: "Sequential awaits in for loop" },
-      { regex: /JSON\.parse\(.*JSON\.stringify/, issue: "Inefficient deep clone pattern" },
+      {
+        regex: /\.forEach\(.*await/,
+        issue: "Sequential awaits in forEach loop",
+      },
+      {
+        regex: /for\s*\(.*\)\s*\{[^}]*await/,
+        issue: "Sequential awaits in for loop",
+      },
+      {
+        regex: /JSON\.parse\(.*JSON\.stringify/,
+        issue: "Inefficient deep clone pattern",
+      },
     ];
 
     for (const { regex, issue } of perfPatterns) {
@@ -576,7 +599,8 @@ export class PRReviewService {
         category: "duplication",
         file: file.path,
         message: `Found ${duplicates.length} repeated code pattern(s)`,
-        suggestion: "Consider extracting duplicated code into reusable functions",
+        suggestion:
+          "Consider extracting duplicated code into reusable functions",
         matchedPattern: pattern.pattern,
       };
     }
@@ -618,7 +642,9 @@ export class PRReviewService {
     }
 
     // Check for large functions
-    const functionMatches = content.match(/(?:function|=>)\s*[^{]*\{[^}]{500,}\}/g);
+    const functionMatches = content.match(
+      /(?:function|=>)\s*[^{]*\{[^}]{500,}\}/g
+    );
     if (functionMatches) {
       findings.push({
         severity: "suggestion",
@@ -650,10 +676,7 @@ export class PRReviewService {
     }
 
     // Suggest JSDoc for exported functions
-    if (
-      content.includes("export function") &&
-      !content.includes("/**")
-    ) {
+    if (content.includes("export function") && !content.includes("/**")) {
       suggestions.push({
         severity: "suggestion",
         category: "documentation",
@@ -928,10 +951,7 @@ export class PRReviewService {
   /**
    * Calculate review statistics
    */
-  private calculateStats(
-    findings: ReviewFinding[],
-    pr: PRInfo
-  ): ReviewStats {
+  private calculateStats(findings: ReviewFinding[], pr: PRInfo): ReviewStats {
     const bySeverity: Record<ReviewSeverity, number> = {
       critical: 0,
       warning: 0,

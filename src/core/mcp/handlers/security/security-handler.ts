@@ -7,7 +7,10 @@
 import { MCPTool } from "../../decorators/index.js";
 import { SecurityService } from "../../services/security-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
-import type { SecuritySeverity, SecurityCategory } from "../../types/security.js";
+import type {
+  SecuritySeverity,
+  SecurityCategory,
+} from "../../types/security.js";
 
 /**
  * MCP handler for security scanning and vulnerability detection tools.
@@ -43,7 +46,8 @@ export class SecurityHandler {
         categories: {
           type: "array",
           items: { type: "string" },
-          description: "Security categories to check (injection, xss, crypto, auth, etc.)",
+          description:
+            "Security categories to check (injection, xss, crypto, auth, etc.)",
         },
         minSeverity: {
           type: "string",
@@ -85,7 +89,9 @@ export class SecurityHandler {
       sections.push(`|--------|-------|`);
       sections.push(`| Files Scanned | ${result.filesScanned} |`);
       sections.push(`| Total Issues | ${result.totalIssues} |`);
-      sections.push(`| Scan Time | ${new Date(result.scannedAt).toLocaleString()} |`);
+      sections.push(
+        `| Scan Time | ${new Date(result.scannedAt).toLocaleString()} |`
+      );
 
       // Issues by severity
       if (result.totalIssues > 0) {
@@ -159,10 +165,14 @@ export class SecurityHandler {
       // Recommendations
       sections.push(`\n### Recommendations`);
       if (result.bySeverity.critical > 0 || result.bySeverity.high > 0) {
-        sections.push(`1. 🚨 **URGENT:** Fix critical and high severity issues immediately`);
+        sections.push(
+          `1. 🚨 **URGENT:** Fix critical and high severity issues immediately`
+        );
       }
       if (result.totalIssues > 0) {
-        sections.push(`2. Review each finding and apply the suggested remediation`);
+        sections.push(
+          `2. Review each finding and apply the suggested remediation`
+        );
         sections.push(`3. Add security linting rules to prevent future issues`);
         sections.push(`4. Consider a security code review for sensitive areas`);
       } else {
@@ -193,8 +203,7 @@ export class SecurityHandler {
    */
   @MCPTool({
     name: "security-check-deps",
-    description:
-      "Check dependencies for known vulnerabilities using npm audit",
+    description: "Check dependencies for known vulnerabilities using npm audit",
     inputSchema: {
       type: "object",
       properties: {
@@ -209,7 +218,8 @@ export class SecurityHandler {
         },
         includeOutdated: {
           type: "boolean",
-          description: "Include outdated (non-vulnerable) packages (default: false)",
+          description:
+            "Include outdated (non-vulnerable) packages (default: false)",
         },
       },
     },
@@ -242,7 +252,9 @@ export class SecurityHandler {
       if (args.includeOutdated) {
         sections.push(`| Outdated | ${result.outdatedCount} |`);
       }
-      sections.push(`| Checked At | ${new Date(result.checkedAt).toLocaleString()} |`);
+      sections.push(
+        `| Checked At | ${new Date(result.checkedAt).toLocaleString()} |`
+      );
 
       // Vulnerabilities by severity
       if (result.vulnerableCount > 0) {
@@ -259,7 +271,9 @@ export class SecurityHandler {
 
         // Sort by severity
         const sorted = [...result.vulnerabilities].sort(
-          (a, b) => this.severityToNumber(b.severity) - this.severityToNumber(a.severity)
+          (a, b) =>
+            this.severityToNumber(b.severity) -
+            this.severityToNumber(a.severity)
         );
 
         for (const vuln of sorted.slice(0, 20)) {
@@ -279,7 +293,9 @@ export class SecurityHandler {
         }
 
         if (result.vulnerabilities.length > 20) {
-          sections.push(`\n*...and ${result.vulnerabilities.length - 20} more vulnerabilities*`);
+          sections.push(
+            `\n*...and ${result.vulnerabilities.length - 20} more vulnerabilities*`
+          );
         }
       }
 
@@ -370,7 +386,9 @@ export class SecurityHandler {
       sections.push(`| Files Scanned | ${result.filesScanned} |`);
       sections.push(`| Secrets Found | ${result.totalSecrets} |`);
       sections.push(`| High Entropy Strings | ${result.highEntropyCount} |`);
-      sections.push(`| Detected At | ${new Date(result.detectedAt).toLocaleString()} |`);
+      sections.push(
+        `| Detected At | ${new Date(result.detectedAt).toLocaleString()} |`
+      );
 
       // Secrets by type
       if (result.totalSecrets > 0) {
@@ -428,7 +446,9 @@ export class SecurityHandler {
         sections.push(`\n### Immediate Actions Required`);
         sections.push(`1. 🔑 **Rotate** all detected credentials immediately`);
         sections.push(`2. 🗑️ **Remove** secrets from source code`);
-        sections.push(`3. 📦 **Move** secrets to environment variables or a secrets manager`);
+        sections.push(
+          `3. 📦 **Move** secrets to environment variables or a secrets manager`
+        );
         sections.push(`4. 📜 **Check** git history for exposed secrets`);
 
         sections.push(`\n### Environment Variable Example`);

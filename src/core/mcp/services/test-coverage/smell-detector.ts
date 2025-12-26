@@ -67,7 +67,10 @@ export class SmellDetector {
           const describeGroups = new Map<string, number>();
           for (const tc of testFile.testCases) {
             const describe = tc.describe || "default";
-            describeGroups.set(describe, (describeGroups.get(describe) || 0) + 1);
+            describeGroups.set(
+              describe,
+              (describeGroups.get(describe) || 0) + 1
+            );
           }
 
           for (const [describe, count] of describeGroups) {
@@ -168,8 +171,7 @@ export class SmellDetector {
               category: "unclear-name" as TestSmellCategory,
               severity: "info" as TestIssueSeverity,
               description: `Test name '${tc.name}' could be more descriptive`,
-              suggestion:
-                "Use pattern: 'should [action] when [condition]'",
+              suggestion: "Use pattern: 'should [action] when [condition]'",
             }));
         }) as DetectFunction,
       },
@@ -219,8 +221,7 @@ export class SmellDetector {
                   category: "flaky-test",
                   severity: "error",
                   description: `${pattern.desc} may cause flaky tests`,
-                  suggestion:
-                    "Use deterministic values or mock time functions",
+                  suggestion: "Use deterministic values or mock time functions",
                 });
               }
             }
@@ -239,7 +240,8 @@ export class SmellDetector {
           const lines = content.split("\n");
 
           // Look for suspicious hardcoded values in assertions
-          const hardcodedPattern = /expect\s*\([^)]+\)\s*\.(?:toBe|toEqual)\s*\(\s*(\d{4,}|['"][^'"]{50,}['"])/;
+          const hardcodedPattern =
+            /expect\s*\([^)]+\)\s*\.(?:toBe|toEqual)\s*\(\s*(\d{4,}|['"][^'"]{50,}['"])/;
 
           for (let i = 0; i < lines.length; i++) {
             if (hardcodedPattern.test(lines[i])) {
@@ -323,9 +325,7 @@ export class SmellDetector {
   /**
    * Check quality for a specific test file
    */
-  async checkQuality(
-    testFile: TestFile
-  ): Promise<{
+  async checkQuality(testFile: TestFile): Promise<{
     score: number;
     issues: TestSmell[];
     summary: string;

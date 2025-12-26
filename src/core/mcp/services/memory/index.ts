@@ -4,10 +4,7 @@
  * Manages long-term knowledge storage and retrieval
  */
 
-import type {
-  Experience,
-  MemorySearchResult,
-} from "../../types/memory.js";
+import type { Experience, MemorySearchResult } from "../../types/memory.js";
 import { MemoryStorage } from "./memory-storage.js";
 import { LearningExtractor } from "./learning-extractor.js";
 

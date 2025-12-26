@@ -66,7 +66,8 @@ export class SecurityService {
         name: "SQL Injection",
         category: "injection",
         severity: "critical",
-        pattern: /(\$\{.*\}|['"`]\s*\+\s*\w+|\w+\s*\+\s*['"`]).*(?:SELECT|INSERT|UPDATE|DELETE|DROP|UNION)/gi,
+        pattern:
+          /(\$\{.*\}|['"`]\s*\+\s*\w+|\w+\s*\+\s*['"`]).*(?:SELECT|INSERT|UPDATE|DELETE|DROP|UNION)/gi,
         fileTypes: [".ts", ".js", ".tsx", ".jsx"],
         description: "Potential SQL injection vulnerability",
         remediation: "Use parameterized queries or prepared statements",
@@ -78,10 +79,12 @@ export class SecurityService {
         name: "Command Injection",
         category: "injection",
         severity: "critical",
-        pattern: /(?:exec|spawn|execSync|spawnSync)\s*\(\s*(?:\$\{|`.*\$\{|['"`]\s*\+)/gi,
+        pattern:
+          /(?:exec|spawn|execSync|spawnSync)\s*\(\s*(?:\$\{|`.*\$\{|['"`]\s*\+)/gi,
         fileTypes: [".ts", ".js"],
         description: "Potential command injection vulnerability",
-        remediation: "Avoid executing user input as commands. Use allowlists and sanitization",
+        remediation:
+          "Avoid executing user input as commands. Use allowlists and sanitization",
         owasp: "A03:2021-Injection",
         cweId: "CWE-78",
       },
@@ -90,10 +93,12 @@ export class SecurityService {
         name: "Path Traversal",
         category: "injection",
         severity: "high",
-        pattern: /(?:readFile|writeFile|readdir|unlink|rmdir)\s*\([^)]*(?:req\.|params\.|query\.|body\.)/gi,
+        pattern:
+          /(?:readFile|writeFile|readdir|unlink|rmdir)\s*\([^)]*(?:req\.|params\.|query\.|body\.)/gi,
         fileTypes: [".ts", ".js"],
         description: "Potential path traversal vulnerability",
-        remediation: "Validate and sanitize file paths. Use path.resolve() and check against base directory",
+        remediation:
+          "Validate and sanitize file paths. Use path.resolve() and check against base directory",
         owasp: "A01:2021-Broken-Access-Control",
         cweId: "CWE-22",
       },
@@ -118,7 +123,8 @@ export class SecurityService {
         severity: "high",
         pattern: /dangerouslySetInnerHTML\s*=\s*\{\s*\{\s*__html\s*:/gi,
         fileTypes: [".tsx", ".jsx"],
-        description: "dangerouslySetInnerHTML can lead to XSS if not properly sanitized",
+        description:
+          "dangerouslySetInnerHTML can lead to XSS if not properly sanitized",
         remediation: "Sanitize HTML content with DOMPurify before using",
         owasp: "A03:2021-Injection",
         cweId: "CWE-79",
@@ -144,7 +150,8 @@ export class SecurityService {
         severity: "medium",
         pattern: /createHash\s*\(\s*['"`]md5['"`]\s*\)/gi,
         fileTypes: [".ts", ".js"],
-        description: "MD5 is cryptographically weak and should not be used for security",
+        description:
+          "MD5 is cryptographically weak and should not be used for security",
         remediation: "Use SHA-256 or stronger hash functions",
         owasp: "A02:2021-Cryptographic-Failures",
         cweId: "CWE-328",
@@ -166,7 +173,8 @@ export class SecurityService {
         name: "Hardcoded Initialization Vector",
         category: "crypto",
         severity: "high",
-        pattern: /(?:iv|initializationVector|IV)\s*=\s*['"`][a-zA-Z0-9+/=]{16,}['"`]/gi,
+        pattern:
+          /(?:iv|initializationVector|IV)\s*=\s*['"`][a-zA-Z0-9+/=]{16,}['"`]/gi,
         fileTypes: [".ts", ".js"],
         description: "Hardcoded IV weakens encryption",
         remediation: "Generate random IVs for each encryption operation",
@@ -182,7 +190,8 @@ export class SecurityService {
         severity: "critical",
         pattern: /algorithm\s*:\s*['"`]none['"`]/gi,
         fileTypes: [".ts", ".js"],
-        description: "JWT with 'none' algorithm bypasses signature verification",
+        description:
+          "JWT with 'none' algorithm bypasses signature verification",
         remediation: "Always use a secure algorithm like RS256 or HS256",
         owasp: "A07:2021-Auth-Failures",
         cweId: "CWE-347",
@@ -192,7 +201,8 @@ export class SecurityService {
         name: "Hardcoded JWT Secret",
         category: "auth",
         severity: "critical",
-        pattern: /(?:jwt|jsonwebtoken)\.sign\s*\([^)]+,\s*['"`][^'"`]{8,}['"`]/gi,
+        pattern:
+          /(?:jwt|jsonwebtoken)\.sign\s*\([^)]+,\s*['"`][^'"`]{8,}['"`]/gi,
         fileTypes: [".ts", ".js"],
         description: "Hardcoded JWT secret in source code",
         remediation: "Use environment variables for secrets",
@@ -206,7 +216,8 @@ export class SecurityService {
         name: "CORS Wildcard Origin",
         category: "configuration",
         severity: "medium",
-        pattern: /(?:Access-Control-Allow-Origin|origin)\s*[:=]\s*['"`]\*['"`]/gi,
+        pattern:
+          /(?:Access-Control-Allow-Origin|origin)\s*[:=]\s*['"`]\*['"`]/gi,
         fileTypes: [".ts", ".js"],
         description: "CORS wildcard allows any origin",
         remediation: "Specify allowed origins explicitly",
@@ -218,7 +229,8 @@ export class SecurityService {
         name: "Security Features Disabled",
         category: "configuration",
         severity: "high",
-        pattern: /(?:helmet|csrf|xss|security)\s*[:=]\s*(?:false|null|undefined)/gi,
+        pattern:
+          /(?:helmet|csrf|xss|security)\s*[:=]\s*(?:false|null|undefined)/gi,
         fileTypes: [".ts", ".js", ".json"],
         description: "Security features appear to be disabled",
         remediation: "Enable security features in production",
@@ -258,7 +270,8 @@ export class SecurityService {
         name: "Sensitive Data in Console",
         category: "data-exposure",
         severity: "medium",
-        pattern: /console\.(?:log|debug|info)\s*\([^)]*(?:password|secret|token|key|credential|auth)/gi,
+        pattern:
+          /console\.(?:log|debug|info)\s*\([^)]*(?:password|secret|token|key|credential|auth)/gi,
         fileTypes: [".ts", ".js", ".tsx", ".jsx"],
         description: "Potentially logging sensitive data",
         remediation: "Remove or redact sensitive data from logs",
@@ -270,7 +283,8 @@ export class SecurityService {
         name: "Sensitive Data in Error Messages",
         category: "data-exposure",
         severity: "medium",
-        pattern: /(?:throw|Error)\s*\([^)]*(?:password|secret|token|key|credential)/gi,
+        pattern:
+          /(?:throw|Error)\s*\([^)]*(?:password|secret|token|key|credential)/gi,
         fileTypes: [".ts", ".js"],
         description: "Error messages may contain sensitive data",
         remediation: "Use generic error messages for users",
@@ -287,7 +301,8 @@ export class SecurityService {
         pattern: /new\s+RegExp\s*\([^)]*(?:req\.|params\.|query\.|body\.)/gi,
         fileTypes: [".ts", ".js"],
         description: "User input in RegExp can cause ReDoS",
-        remediation: "Validate and limit regex patterns. Use safe-regex library",
+        remediation:
+          "Validate and limit regex patterns. Use safe-regex library",
         owasp: "A03:2021-Injection",
         cweId: "CWE-1333",
       },
@@ -298,7 +313,8 @@ export class SecurityService {
         severity: "high",
         pattern: /\[(?:req\.|params\.|query\.|body\.)[^\]]+\]\s*=/gi,
         fileTypes: [".ts", ".js"],
-        description: "Dynamic property assignment can lead to prototype pollution",
+        description:
+          "Dynamic property assignment can lead to prototype pollution",
         remediation: "Use Object.hasOwnProperty() or Map for dynamic keys",
         owasp: "A03:2021-Injection",
         cweId: "CWE-1321",
@@ -317,7 +333,8 @@ export class SecurityService {
       {
         id: "aws-secret-key",
         type: "aws-credentials",
-        pattern: /(?:aws|AWS).{0,20}(?:secret|SECRET).{0,20}['"`][A-Za-z0-9/+=]{40}['"`]/g,
+        pattern:
+          /(?:aws|AWS).{0,20}(?:secret|SECRET).{0,20}['"`][A-Za-z0-9/+=]{40}['"`]/g,
         confidence: "high",
         description: "AWS Secret Access Key",
       },
@@ -352,7 +369,8 @@ export class SecurityService {
       {
         id: "api-key-generic",
         type: "api-key",
-        pattern: /(?:api[_-]?key|apikey)\s*[:=]\s*['"`][A-Za-z0-9-_]{20,}['"`]/gi,
+        pattern:
+          /(?:api[_-]?key|apikey)\s*[:=]\s*['"`][A-Za-z0-9-_]{20,}['"`]/gi,
         confidence: "medium",
         description: "Generic API Key",
       },
@@ -373,14 +391,16 @@ export class SecurityService {
       {
         id: "oauth-secret",
         type: "oauth-secret",
-        pattern: /(?:client[_-]?secret|oauth[_-]?secret)\s*[:=]\s*['"`][A-Za-z0-9-_]{20,}['"`]/gi,
+        pattern:
+          /(?:client[_-]?secret|oauth[_-]?secret)\s*[:=]\s*['"`][A-Za-z0-9-_]{20,}['"`]/gi,
         confidence: "high",
         description: "OAuth Client Secret",
       },
       {
         id: "slack-webhook",
         type: "webhook-secret",
-        pattern: /https:\/\/hooks\.slack\.com\/services\/T[A-Z0-9]+\/B[A-Z0-9]+\/[A-Za-z0-9]+/g,
+        pattern:
+          /https:\/\/hooks\.slack\.com\/services\/T[A-Z0-9]+\/B[A-Z0-9]+\/[A-Za-z0-9]+/g,
         confidence: "high",
         description: "Slack Webhook URL",
       },
@@ -411,7 +431,9 @@ export class SecurityService {
   /**
    * Scan files for security issues
    */
-  async scanFiles(options: SecurityScanOptions = {}): Promise<SecurityScanResult> {
+  async scanFiles(
+    options: SecurityScanOptions = {}
+  ): Promise<SecurityScanResult> {
     const files = await this.getSourceFiles(options.files);
     const issues: SecurityIssue[] = [];
     const owaspCoverage = new Set<string>();
@@ -494,7 +516,9 @@ export class SecurityService {
     let filtered = vulnerabilities;
     if (options.minSeverity) {
       filtered = vulnerabilities.filter(
-        (v) => this.severityToNumber(v.severity) >= this.severityToNumber(options.minSeverity!)
+        (v) =>
+          this.severityToNumber(v.severity) >=
+          this.severityToNumber(options.minSeverity!)
       );
     }
 
@@ -509,7 +533,10 @@ export class SecurityService {
       vulnerabilities: filtered,
       outdatedCount,
       riskLevel,
-      recommendations: this.generateDependencyRecommendations(filtered, riskLevel),
+      recommendations: this.generateDependencyRecommendations(
+        filtered,
+        riskLevel
+      ),
     };
   }
 
@@ -590,7 +617,10 @@ export class SecurityService {
       }
 
       // Skip if category filtered out
-      if (options.categories && !options.categories.includes(pattern.category)) {
+      if (
+        options.categories &&
+        !options.categories.includes(pattern.category)
+      ) {
         continue;
       }
 
@@ -751,7 +781,9 @@ export class SecurityService {
         for (const [name, vuln] of Object.entries(data.vulnerabilities)) {
           const v = vuln as {
             severity: string;
-            via: Array<{ title?: string; url?: string; cve?: string[] } | string>;
+            via: Array<
+              { title?: string; url?: string; cve?: string[] } | string
+            >;
             isDirect: boolean;
             effects: string[];
             fixAvailable?: { version: string } | boolean;
@@ -759,8 +791,9 @@ export class SecurityService {
           };
 
           // Get CVEs and description from 'via' array
-          const viaDetails = v.via.filter((item): item is { title?: string; url?: string; cve?: string[] } =>
-            typeof item !== "string"
+          const viaDetails = v.via.filter(
+            (item): item is { title?: string; url?: string; cve?: string[] } =>
+              typeof item !== "string"
           );
 
           const cves = viaDetails.flatMap((item) => item.cve || []);
@@ -774,7 +807,10 @@ export class SecurityService {
             cves,
             title,
             description: title,
-            fixedIn: typeof v.fixAvailable === "object" ? v.fixAvailable.version : undefined,
+            fixedIn:
+              typeof v.fixAvailable === "object"
+                ? v.fixAvailable.version
+                : undefined,
             dependencyPath: [name, ...v.effects],
             isDirect: v.isDirect,
             advisoryUrl,
@@ -847,7 +883,16 @@ export class SecurityService {
    * Check if file should be scanned
    */
   private isSourceFile(fileName: string, patterns?: string[]): boolean {
-    const sourceExtensions = [".ts", ".tsx", ".js", ".jsx", ".json", ".yml", ".yaml", ".env"];
+    const sourceExtensions = [
+      ".ts",
+      ".tsx",
+      ".js",
+      ".jsx",
+      ".json",
+      ".yml",
+      ".yaml",
+      ".env",
+    ];
 
     if (patterns && patterns.length > 0) {
       return patterns.some((p) => fileName.endsWith(p) || fileName.includes(p));
@@ -987,9 +1032,7 @@ export class SecurityService {
     minSeverity: SecuritySeverity
   ): SecurityIssue[] {
     const minLevel = this.severityToNumber(minSeverity);
-    return issues.filter(
-      (i) => this.severityToNumber(i.severity) >= minLevel
-    );
+    return issues.filter((i) => this.severityToNumber(i.severity) >= minLevel);
   }
 
   /**
@@ -1120,7 +1163,10 @@ export class SecurityService {
   /**
    * Generate scan summary
    */
-  private generateScanSummary(issues: SecurityIssue[], filesScanned: number): string {
+  private generateScanSummary(
+    issues: SecurityIssue[],
+    filesScanned: number
+  ): string {
     if (issues.length === 0) {
       return `Scanned ${filesScanned} files. No security issues found.`;
     }
@@ -1146,7 +1192,9 @@ export class SecurityService {
     const recommendations: string[] = [];
 
     if (vulns.length === 0) {
-      recommendations.push("No vulnerable dependencies found. Keep dependencies updated.");
+      recommendations.push(
+        "No vulnerable dependencies found. Keep dependencies updated."
+      );
       return recommendations;
     }
 
@@ -1180,13 +1228,21 @@ export class SecurityService {
     const suggestions: string[] = [];
 
     if (secrets.length === 0) {
-      suggestions.push("No secrets detected. Good job keeping secrets out of code!");
+      suggestions.push(
+        "No secrets detected. Good job keeping secrets out of code!"
+      );
       return suggestions;
     }
 
-    suggestions.push("Move secrets to environment variables or a secrets manager");
-    suggestions.push("Add detected files to .gitignore if they contain secrets");
-    suggestions.push("Consider using git-secrets or pre-commit hooks to prevent future leaks");
+    suggestions.push(
+      "Move secrets to environment variables or a secrets manager"
+    );
+    suggestions.push(
+      "Add detected files to .gitignore if they contain secrets"
+    );
+    suggestions.push(
+      "Consider using git-secrets or pre-commit hooks to prevent future leaks"
+    );
 
     const highConfidence = secrets.filter((s) => s.confidence === "high");
     if (highConfidence.length > 0) {

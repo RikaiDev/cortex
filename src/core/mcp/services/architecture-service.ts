@@ -514,7 +514,11 @@ export class ArchitectureService {
   private checkNamingConvention(
     filePath: string,
     config: ArchitectureConfig
-  ): { isValid: boolean; expectedPattern?: string; matchedConvention?: string } {
+  ): {
+    isValid: boolean;
+    expectedPattern?: string;
+    matchedConvention?: string;
+  } {
     const fileName = path.basename(filePath);
 
     for (const [name, convention] of Object.entries(config.naming)) {
@@ -704,7 +708,10 @@ export class ArchitectureService {
 
     // Get first pattern and make it concrete
     const pattern = layerRule.patterns[0];
-    const basePath = pattern.replace("/**", "").replace("**/*", "").replace("**/", "");
+    const basePath = pattern
+      .replace("/**", "")
+      .replace("**/*", "")
+      .replace("**/", "");
 
     // Add subdirectory based on file type
     switch (fileType) {
@@ -802,7 +809,9 @@ export class ArchitectureService {
       component: `Components belong in the ui layer for presentation`,
     };
 
-    return reasons[fileType] || `Based on file analysis, ${layer} is appropriate`;
+    return (
+      reasons[fileType] || `Based on file analysis, ${layer} is appropriate`
+    );
   }
 
   /**
@@ -826,10 +835,10 @@ export class ArchitectureService {
   private matchPattern(filePath: string, pattern: string): boolean {
     // Use placeholder for ** to prevent single * replacement from affecting it
     const regex = pattern
-      .replace(/\*\*/g, "<<<GLOBSTAR>>>")   // Temporarily replace **
-      .replace(/\*/g, "[^/]*")               // Replace single *
-      .replace(/<<<GLOBSTAR>>>/g, ".*")      // Replace ** placeholder with .*
-      .replace(/\//g, "\\/");                // Escape slashes
+      .replace(/\*\*/g, "<<<GLOBSTAR>>>") // Temporarily replace **
+      .replace(/\*/g, "[^/]*") // Replace single *
+      .replace(/<<<GLOBSTAR>>>/g, ".*") // Replace ** placeholder with .*
+      .replace(/\//g, "\\/"); // Escape slashes
 
     return new RegExp(`^${regex}$`).test(filePath);
   }

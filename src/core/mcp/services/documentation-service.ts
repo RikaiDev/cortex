@@ -347,8 +347,7 @@ export class DocumentationService {
     const docBlocks = this.extractDocBlocks(content);
 
     // Extract classes
-    const classPattern =
-      /^(\s*)(export\s+)?(abstract\s+)?class\s+(\w+)/gm;
+    const classPattern = /^(\s*)(export\s+)?(abstract\s+)?class\s+(\w+)/gm;
     let match;
 
     while ((match = classPattern.exec(content)) !== null) {
@@ -371,8 +370,7 @@ export class DocumentationService {
     }
 
     // Extract interfaces
-    const interfacePattern =
-      /^(\s*)(export\s+)?interface\s+(\w+)/gm;
+    const interfacePattern = /^(\s*)(export\s+)?interface\s+(\w+)/gm;
     while ((match = interfacePattern.exec(content)) !== null) {
       const lineNum = this.getLineNumber(content, match.index);
       const isPublic = !!match[2];
@@ -393,8 +391,7 @@ export class DocumentationService {
     }
 
     // Extract type aliases
-    const typePattern =
-      /^(\s*)(export\s+)?type\s+(\w+)\s*=/gm;
+    const typePattern = /^(\s*)(export\s+)?type\s+(\w+)\s*=/gm;
     while ((match = typePattern.exec(content)) !== null) {
       const lineNum = this.getLineNumber(content, match.index);
       const isPublic = !!match[2];
@@ -415,8 +412,7 @@ export class DocumentationService {
     }
 
     // Extract enums
-    const enumPattern =
-      /^(\s*)(export\s+)?(const\s+)?enum\s+(\w+)/gm;
+    const enumPattern = /^(\s*)(export\s+)?(const\s+)?enum\s+(\w+)/gm;
     while ((match = enumPattern.exec(content)) !== null) {
       const lineNum = this.getLineNumber(content, match.index);
       const isPublic = !!match[2];
@@ -467,8 +463,7 @@ export class DocumentationService {
     }
 
     // Extract exported constants
-    const constPattern =
-      /^(\s*)(export\s+)const\s+(\w+)\s*[=:]/gm;
+    const constPattern = /^(\s*)(export\s+)const\s+(\w+)\s*[=:]/gm;
     while ((match = constPattern.exec(content)) !== null) {
       const lineNum = this.getLineNumber(content, match.index);
       const docBlock = this.findDocBlockBefore(docBlocks, lineNum);
@@ -529,7 +524,9 @@ export class DocumentationService {
       if (!line) continue;
 
       // Check for tag
-      const tagMatch = line.match(/^@(\w+)(?:\s+(\{[^}]+\}))?(?:\s+(\w+))?\s*(.*)?$/);
+      const tagMatch = line.match(
+        /^@(\w+)(?:\s+(\{[^}]+\}))?(?:\s+(\w+))?\s*(.*)?$/
+      );
       if (tagMatch) {
         if (currentTag) {
           tags.push(currentTag);
@@ -710,8 +707,7 @@ export class DocumentationService {
     const relativePath = path.relative(this.projectRoot, filePath);
 
     // Find @example tags
-    const examplePattern =
-      /@example\s*\n\s*\*?\s*```(\w+)?\n([\s\S]*?)```/g;
+    const examplePattern = /@example\s*\n\s*\*?\s*```(\w+)?\n([\s\S]*?)```/g;
     let match;
 
     while ((match = examplePattern.exec(content)) !== null) {
@@ -750,7 +746,10 @@ export class DocumentationService {
   /**
    * Validate a code example
    */
-  private validateExample(example: DocExample): { isValid: boolean; error?: string } {
+  private validateExample(example: DocExample): {
+    isValid: boolean;
+    error?: string;
+  } {
     try {
       // Basic syntax validation - check for common issues
       const code = example.code;
@@ -1116,9 +1115,7 @@ export class DocumentationService {
     lines.push(`Documentation Coverage: ${coverage.coverage}%`);
     lines.push(`Quality Score: ${score}/100`);
     lines.push("");
-    lines.push(
-      `Documented: ${coverage.documented}/${coverage.total} items`
-    );
+    lines.push(`Documented: ${coverage.documented}/${coverage.total} items`);
     if (coverage.partial > 0) {
       lines.push(`Partially documented: ${coverage.partial} items`);
     }

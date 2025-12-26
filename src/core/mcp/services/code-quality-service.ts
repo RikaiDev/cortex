@@ -162,7 +162,8 @@ export class CodeQualityService {
     }
 
     // High complexity functions
-    const threshold = options.complexityThreshold || this.thresholds.maxComplexity;
+    const threshold =
+      options.complexityThreshold || this.thresholds.maxComplexity;
     const highComplexityFunctions = allFunctions
       .filter((f) => f.cyclomaticComplexity > threshold)
       .sort((a, b) => b.cyclomaticComplexity - a.cyclomaticComplexity);
@@ -331,7 +332,8 @@ export class CodeQualityService {
           entityName: cls.name,
           description: `Split ${cls.name} into smaller, focused classes`,
           reason: `Class has ${cls.methodCount} methods (threshold: ${this.thresholds.maxClassMethods})`,
-          expectedImprovement: "Better separation of concerns, improved maintainability",
+          expectedImprovement:
+            "Better separation of concerns, improved maintainability",
           effort: "high",
           relatedSmells: ["god-object"],
         });
@@ -506,8 +508,10 @@ export class CodeQualityService {
         const endLine = this.findFunctionEnd(lines, startLine - 1);
         const functionContent = lines.slice(startLine - 1, endLine).join("\n");
 
-        const cyclomaticComplexity = this.calculateCyclomaticComplexity(functionContent);
-        const cognitiveComplexity = this.calculateCognitiveComplexity(functionContent);
+        const cyclomaticComplexity =
+          this.calculateCyclomaticComplexity(functionContent);
+        const cognitiveComplexity =
+          this.calculateCognitiveComplexity(functionContent);
         const maxNestingDepth = this.calculateMaxNesting(functionContent);
         const parameterCount = this.countParameters(match[0]);
         const returnCount = this.countReturns(functionContent);
@@ -536,13 +540,17 @@ export class CodeQualityService {
   /**
    * Extract class metrics
    */
-  private extractClassMetrics(filePath: string, content: string): ClassMetrics[] {
+  private extractClassMetrics(
+    filePath: string,
+    content: string
+  ): ClassMetrics[] {
     const relativePath = path.relative(this.projectRoot, filePath);
     const metrics: ClassMetrics[] = [];
     const lines = content.split("\n");
 
     // Match class declarations
-    const classPattern = /class\s+(\w+)(?:\s+extends\s+\w+)?(?:\s+implements\s+[\w,\s]+)?\s*\{/g;
+    const classPattern =
+      /class\s+(\w+)(?:\s+extends\s+\w+)?(?:\s+implements\s+[\w,\s]+)?\s*\{/g;
     let match;
 
     while ((match = classPattern.exec(content)) !== null) {
@@ -560,7 +568,8 @@ export class CodeQualityService {
       const methodComplexities = this.extractMethodComplexities(classContent);
       const avgMethodComplexity =
         methodComplexities.length > 0
-          ? methodComplexities.reduce((a, b) => a + b, 0) / methodComplexities.length
+          ? methodComplexities.reduce((a, b) => a + b, 0) /
+            methodComplexities.length
           : 0;
       const maxMethodComplexity = Math.max(...methodComplexities, 0);
 
@@ -706,7 +715,11 @@ export class CodeQualityService {
     for (const line of lines) {
       lineNum++;
       // Skip obvious non-magic contexts
-      if (line.includes("const") || line.includes("let") || line.includes("//")) {
+      if (
+        line.includes("const") ||
+        line.includes("let") ||
+        line.includes("//")
+      ) {
         continue;
       }
 
@@ -1343,9 +1356,7 @@ export class CodeQualityService {
   /**
    * Convert complexity to rating
    */
-  private complexityToRating(
-    complexity: number
-  ): ComplexityMetrics["rating"] {
+  private complexityToRating(complexity: number): ComplexityMetrics["rating"] {
     if (complexity <= 5) return "A";
     if (complexity <= 10) return "B";
     if (complexity <= 20) return "C";
@@ -1459,10 +1470,7 @@ export class CodeQualityService {
   /**
    * Generate refactoring summary
    */
-  private generateRefactoringSummary(
-    count: number,
-    debtHours: number
-  ): string {
+  private generateRefactoringSummary(count: number, debtHours: number): string {
     return (
       `Found ${count} refactoring opportunity(ies). ` +
       `Estimated technical debt: ${debtHours} hours.`

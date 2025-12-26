@@ -183,10 +183,7 @@ export class ImpactCalculator {
   /**
    * Check if file should be excluded
    */
-  private shouldExclude(
-    file: string,
-    patterns: string[] | undefined
-  ): boolean {
+  private shouldExclude(file: string, patterns: string[] | undefined): boolean {
     if (!patterns || patterns.length === 0) return false;
 
     return patterns.some((pattern) => {

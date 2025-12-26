@@ -98,7 +98,9 @@ export class CIPipelineHandler {
         );
         sections.push(`\n### Last Run`);
         sections.push(`**${run.name}** ${runEmoji}`);
-        sections.push(`- Commit: \`${run.commit.substring(0, 7)}\` - ${run.commitMessage}`);
+        sections.push(
+          `- Commit: \`${run.commit.substring(0, 7)}\` - ${run.commitMessage}`
+        );
         sections.push(`- Author: ${run.author}`);
         sections.push(`- Started: ${new Date(run.startedAt).toLocaleString()}`);
         if (run.duration) {
@@ -163,7 +165,9 @@ export class CIPipelineHandler {
       sections.push(`## CI Test Failures`);
 
       if (failures.length === 0) {
-        sections.push(`\n All tests passing! No failures found in recent runs.`);
+        sections.push(
+          `\n All tests passing! No failures found in recent runs.`
+        );
         return {
           content: [{ type: "text", text: sections.join("\n") }],
         };
@@ -209,8 +213,12 @@ export class CIPipelineHandler {
 
       // Suggestions
       sections.push(`\n### Next Steps`);
-      sections.push(`1. Run failing tests locally: \`npm test -- --grep "${failures[0]?.testName || "failing"}"\``);
-      sections.push(`2. Check test file: \`${failures[0]?.testFile || "unknown"}\``);
+      sections.push(
+        `1. Run failing tests locally: \`npm test -- --grep "${failures[0]?.testName || "failing"}"\``
+      );
+      sections.push(
+        `2. Check test file: \`${failures[0]?.testFile || "unknown"}\``
+      );
       sections.push(`3. Review recent changes to affected files`);
 
       return {
@@ -243,7 +251,8 @@ export class CIPipelineHandler {
         files: {
           type: "array",
           items: { type: "string" },
-          description: "Files to check history for (empty for all recent builds)",
+          description:
+            "Files to check history for (empty for all recent builds)",
         },
         limit: {
           type: "number",
@@ -278,8 +287,12 @@ export class CIPipelineHandler {
       sections.push(`\n**Found ${history.length} relevant build(s)**`);
 
       // Summary statistics
-      const successCount = history.filter((h) => h.conclusion === "success").length;
-      const failureCount = history.filter((h) => h.conclusion === "failure").length;
+      const successCount = history.filter(
+        (h) => h.conclusion === "success"
+      ).length;
+      const failureCount = history.filter(
+        (h) => h.conclusion === "failure"
+      ).length;
       const successRate = Math.round((successCount / history.length) * 100);
 
       sections.push(`\n### Summary`);
@@ -300,7 +313,9 @@ export class CIPipelineHandler {
           build.conclusion === "success" ? "success" : "failure"
         );
         const time = new Date(build.timestamp).toLocaleDateString();
-        const message = build.commitMessage.slice(0, 30) + (build.commitMessage.length > 30 ? "..." : "");
+        const message =
+          build.commitMessage.slice(0, 30) +
+          (build.commitMessage.length > 30 ? "..." : "");
         sections.push(
           `| ${emoji} | ${build.workflowName} | \`${build.commit}\` ${message} | ${build.author} | ${time} |`
         );
@@ -313,7 +328,9 @@ export class CIPipelineHandler {
       // Failure patterns
       if (failureCount > 0) {
         sections.push(`\n### Recent Failures`);
-        const failures = history.filter((h) => h.conclusion === "failure").slice(0, 5);
+        const failures = history
+          .filter((h) => h.conclusion === "failure")
+          .slice(0, 5);
         for (const failure of failures) {
           sections.push(
             `- **${failure.workflowName}** - ${failure.commit} (${failure.author})`
@@ -356,7 +373,9 @@ export class CIPipelineHandler {
       required: ["files"],
     },
   })
-  async handleValidateChanges(args: { files: string[] }): Promise<MCPToolResult> {
+  async handleValidateChanges(args: {
+    files: string[];
+  }): Promise<MCPToolResult> {
     try {
       const result = await this.ciService.validateChanges(args.files);
 
@@ -365,14 +384,18 @@ export class CIPipelineHandler {
       // Header with risk level
       const riskEmoji = this.getRiskEmoji(result.riskLevel);
       sections.push(`## CI Change Validation`);
-      sections.push(`\n**Risk Level:** ${riskEmoji} ${result.riskLevel.toUpperCase()}`);
+      sections.push(
+        `\n**Risk Level:** ${riskEmoji} ${result.riskLevel.toUpperCase()}`
+      );
       sections.push(`**Files:** ${args.files.length}`);
 
       // Validation result
       if (result.isValid) {
         sections.push(`\n Low risk changes - proceed with caution`);
       } else {
-        sections.push(`\n High risk detected - review carefully before pushing`);
+        sections.push(
+          `\n High risk detected - review carefully before pushing`
+        );
       }
 
       // Warnings
@@ -386,9 +409,7 @@ export class CIPipelineHandler {
       // Related failures
       if (result.relatedFailures.length > 0) {
         sections.push(`\n### Related CI Failures`);
-        sections.push(
-          `These files have caused failures in the past:`
-        );
+        sections.push(`These files have caused failures in the past:`);
 
         for (const failure of result.relatedFailures.slice(0, 5)) {
           sections.push(
@@ -401,9 +422,7 @@ export class CIPipelineHandler {
       // Affected workflows
       if (result.affectedWorkflows.length > 0) {
         sections.push(`\n### Affected Workflows`);
-        sections.push(
-          `These workflows may be impacted by your changes:`
-        );
+        sections.push(`These workflows may be impacted by your changes:`);
         for (const workflow of result.affectedWorkflows) {
           sections.push(`- ${workflow}`);
         }

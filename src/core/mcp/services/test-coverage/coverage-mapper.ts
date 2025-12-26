@@ -122,7 +122,9 @@ export class CoverageMapper {
     sourceFile: string,
     testFiles: TestFile[]
   ): TestFile[] {
-    const baseName = path.basename(sourceFile).replace(/\.(ts|tsx|js|jsx)$/, "");
+    const baseName = path
+      .basename(sourceFile)
+      .replace(/\.(ts|tsx|js|jsx)$/, "");
     const dirName = path.dirname(sourceFile);
 
     return testFiles.filter((testFile) => {
@@ -142,10 +144,7 @@ export class CoverageMapper {
 
       // Check if test is in same directory or __tests__ subdirectory
       const testDir = path.dirname(testFile.path);
-      if (
-        testDir === dirName ||
-        testDir === path.join(dirName, "__tests__")
-      ) {
+      if (testDir === dirName || testDir === path.join(dirName, "__tests__")) {
         return testBaseName.includes(baseName);
       }
 

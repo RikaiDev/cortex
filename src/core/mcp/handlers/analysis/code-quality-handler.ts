@@ -70,7 +70,9 @@ export class CodeQualityHandler {
       // Header
       const gradeEmoji = this.getGradeEmoji(result.grade);
       sections.push(`## Code Quality Analysis ${gradeEmoji}`);
-      sections.push(`\n**Grade: ${result.grade}** | Score: ${result.overallScore}/100`);
+      sections.push(
+        `\n**Grade: ${result.grade}** | Score: ${result.overallScore}/100`
+      );
       sections.push(`\n${result.summary}`);
 
       // Statistics
@@ -126,7 +128,9 @@ export class CodeQualityHandler {
         sections.push(`\n### God Objects Detected`);
         for (const cls of godObjects) {
           sections.push(`- **${cls.name}** (${cls.file}:${cls.startLine})`);
-          sections.push(`  - Methods: ${cls.methodCount}, Lines: ${cls.linesOfCode}`);
+          sections.push(
+            `  - Methods: ${cls.methodCount}, Lines: ${cls.linesOfCode}`
+          );
         }
       }
 
@@ -171,13 +175,21 @@ export class CodeQualityHandler {
         sections.push(`- ✅ Code quality is good. Maintain current standards.`);
       } else {
         if (result.smellsBySeverity.critical > 0) {
-          sections.push(`- 🚨 Address ${result.smellsBySeverity.critical} critical smell(s) immediately`);
+          sections.push(
+            `- 🚨 Address ${result.smellsBySeverity.critical} critical smell(s) immediately`
+          );
         }
         if (godObjects.length > 0) {
-          sections.push(`- 📦 Refactor ${godObjects.length} god object(s) into smaller classes`);
+          sections.push(
+            `- 📦 Refactor ${godObjects.length} god object(s) into smaller classes`
+          );
         }
-        if (result.topComplexFunctions.some((f) => f.cyclomaticComplexity > 20)) {
-          sections.push(`- 🔄 Simplify highly complex functions (complexity > 20)`);
+        if (
+          result.topComplexFunctions.some((f) => f.cyclomaticComplexity > 20)
+        ) {
+          sections.push(
+            `- 🔄 Simplify highly complex functions (complexity > 20)`
+          );
         }
       }
 
@@ -203,8 +215,7 @@ export class CodeQualityHandler {
    */
   @MCPTool({
     name: "quality-complexity",
-    description:
-      "Calculate cyclomatic and cognitive complexity for functions",
+    description: "Calculate cyclomatic and cognitive complexity for functions",
     inputSchema: {
       type: "object",
       properties: {
@@ -259,8 +270,12 @@ export class CodeQualityHandler {
       // High complexity functions
       if (result.highComplexityFunctions.length > 0) {
         sections.push(`\n### High Complexity Functions`);
-        sections.push(`| Function | File | Cyclomatic | Cognitive | Nesting | Lines |`);
-        sections.push(`|----------|------|------------|-----------|---------|-------|`);
+        sections.push(
+          `| Function | File | Cyclomatic | Cognitive | Nesting | Lines |`
+        );
+        sections.push(
+          `|----------|------|------------|-----------|---------|-------|`
+        );
 
         for (const func of result.highComplexityFunctions.slice(0, 20)) {
           sections.push(
@@ -278,7 +293,9 @@ export class CodeQualityHandler {
       // Recommendations
       sections.push(`\n### Recommendations`);
       if (result.highComplexityFunctions.length === 0) {
-        sections.push(`- ✅ All functions are within acceptable complexity limits`);
+        sections.push(
+          `- ✅ All functions are within acceptable complexity limits`
+        );
       } else {
         sections.push(
           `- 🔄 Refactor ${result.highComplexityFunctions.length} function(s) exceeding threshold`
@@ -363,9 +380,15 @@ export class CodeQualityHandler {
         sections.push(`\n### Duplicate Blocks`);
 
         for (const dup of result.duplicates.slice(0, 15)) {
-          sections.push(`\n**${dup.lines} lines duplicated** (${dup.similarity}% similar)`);
-          sections.push(`- Location 1: \`${dup.first.file}:${dup.first.startLine}-${dup.first.endLine}\``);
-          sections.push(`- Location 2: \`${dup.second.file}:${dup.second.startLine}-${dup.second.endLine}\``);
+          sections.push(
+            `\n**${dup.lines} lines duplicated** (${dup.similarity}% similar)`
+          );
+          sections.push(
+            `- Location 1: \`${dup.first.file}:${dup.first.startLine}-${dup.first.endLine}\``
+          );
+          sections.push(
+            `- Location 2: \`${dup.second.file}:${dup.second.startLine}-${dup.second.endLine}\``
+          );
           sections.push("```");
           sections.push(dup.snippet);
           sections.push("```");
@@ -383,9 +406,13 @@ export class CodeQualityHandler {
       if (result.duplicationPercentage < 3) {
         sections.push(`- ✅ Code duplication is minimal (< 3%)`);
       } else if (result.duplicationPercentage < 10) {
-        sections.push(`- ⚠️ Consider extracting duplicated code into shared utilities`);
+        sections.push(
+          `- ⚠️ Consider extracting duplicated code into shared utilities`
+        );
       } else {
-        sections.push(`- 🚨 High duplication detected - refactoring recommended`);
+        sections.push(
+          `- 🚨 High duplication detected - refactoring recommended`
+        );
         sections.push(`- Extract common code into reusable functions/modules`);
         sections.push(`- Use inheritance or composition for shared behavior`);
       }
@@ -476,7 +503,9 @@ export class CodeQualityHandler {
           sections.push(
             `\n**${suggestion.priority}. ${this.formatRefactoringType(suggestion.type)}** ${effortEmoji}`
           );
-          sections.push(`- 📍 ${suggestion.entityName} (${suggestion.file}:${suggestion.startLine})`);
+          sections.push(
+            `- 📍 ${suggestion.entityName} (${suggestion.file}:${suggestion.startLine})`
+          );
           sections.push(`- 📝 ${suggestion.description}`);
           sections.push(`- 💡 Reason: ${suggestion.reason}`);
           sections.push(`- ✨ Expected: ${suggestion.expectedImprovement}`);
@@ -489,8 +518,12 @@ export class CodeQualityHandler {
         sections.push(`- ✅ No immediate refactoring needed`);
       } else {
         sections.push(`1. Start with low-effort, high-impact refactorings`);
-        sections.push(`2. Address critical smells first (god objects, high complexity)`);
-        sections.push(`3. Allocate ~${result.estimatedDebtHours} hours for technical debt reduction`);
+        sections.push(
+          `2. Address critical smells first (god objects, high complexity)`
+        );
+        sections.push(
+          `3. Allocate ~${result.estimatedDebtHours} hours for technical debt reduction`
+        );
 
         if (result.byType["extract-method"] > 5) {
           sections.push(

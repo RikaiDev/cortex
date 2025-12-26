@@ -35,7 +35,8 @@ export class DocumentationHandler {
         files: {
           type: "array",
           items: { type: "string" },
-          description: "Specific files to analyze (optional, analyzes all if not provided)",
+          description:
+            "Specific files to analyze (optional, analyzes all if not provided)",
         },
         includePrivate: {
           type: "boolean",
@@ -69,19 +70,29 @@ export class DocumentationHandler {
 
       const output: string[] = [];
       output.push("# Documentation Analysis Report\n");
-      output.push(`**Status:** ${status === "success" ? "✅ Passed" : "⚠️ Below threshold"}`);
+      output.push(
+        `**Status:** ${status === "success" ? "✅ Passed" : "⚠️ Below threshold"}`
+      );
       output.push(`**Analyzed:** ${result.filesAnalyzed} files`);
-      output.push(`**Quality:** ${result.quality} (${result.qualityScore}/100)`);
+      output.push(
+        `**Quality:** ${result.quality} (${result.qualityScore}/100)`
+      );
       output.push("");
 
       output.push("## Coverage Summary\n");
       output.push(`- **Overall Coverage:** ${result.coverage.coverage}%`);
-      output.push(`- **Documented:** ${result.coverage.documented}/${result.coverage.total} items`);
+      output.push(
+        `- **Documented:** ${result.coverage.documented}/${result.coverage.total} items`
+      );
       if (result.coverage.partial > 0) {
-        output.push(`- **Partially Documented:** ${result.coverage.partial} items`);
+        output.push(
+          `- **Partially Documented:** ${result.coverage.partial} items`
+        );
       }
       if (result.coverage.missing > 0) {
-        output.push(`- **Missing Documentation:** ${result.coverage.missing} items`);
+        output.push(
+          `- **Missing Documentation:** ${result.coverage.missing} items`
+        );
       }
 
       // Coverage by type
@@ -91,7 +102,9 @@ export class DocumentationHandler {
       for (const [type, stats] of Object.entries(result.coverage.byType)) {
         if (stats.total > 0) {
           const pct = Math.round((stats.documented / stats.total) * 100);
-          output.push(`| ${type} | ${stats.total} | ${stats.documented} | ${pct}% |`);
+          output.push(
+            `| ${type} | ${stats.total} | ${stats.documented} | ${pct}% |`
+          );
         }
       }
 
@@ -100,8 +113,15 @@ export class DocumentationHandler {
         output.push("\n## Issues Found\n");
         const topIssues = result.issues.slice(0, 10);
         for (const issue of topIssues) {
-          const icon = issue.severity === "error" ? "❌" : issue.severity === "warning" ? "⚠️" : "ℹ️";
-          output.push(`${icon} **${issue.file}:${issue.line}** - ${issue.description}`);
+          const icon =
+            issue.severity === "error"
+              ? "❌"
+              : issue.severity === "warning"
+                ? "⚠️"
+                : "ℹ️";
+          output.push(
+            `${icon} **${issue.file}:${issue.line}** - ${issue.description}`
+          );
         }
         if (result.issues.length > 10) {
           output.push(`\n... and ${result.issues.length - 10} more issues`);
@@ -117,7 +137,9 @@ export class DocumentationHandler {
       if (lowCoverageFiles.length > 0) {
         output.push("\n## Files Needing Attention\n");
         for (const file of lowCoverageFiles) {
-          output.push(`- **${file.file}**: ${file.coverage.coverage}% coverage (${file.coverage.missing} missing)`);
+          output.push(
+            `- **${file.file}**: ${file.coverage.coverage}% coverage (${file.coverage.missing} missing)`
+          );
         }
       }
 
@@ -158,7 +180,16 @@ export class DocumentationHandler {
           type: "array",
           items: {
             type: "string",
-            enum: ["class", "interface", "type", "enum", "function", "method", "property", "constant"],
+            enum: [
+              "class",
+              "interface",
+              "type",
+              "enum",
+              "function",
+              "method",
+              "property",
+              "constant",
+            ],
           },
           description: "Filter by entity types",
         },
@@ -186,7 +217,9 @@ export class DocumentationHandler {
 
       // By type summary
       output.push("## Missing by Type\n");
-      const typeEntries = Object.entries(result.byType).filter(([, count]) => count > 0);
+      const typeEntries = Object.entries(result.byType).filter(
+        ([, count]) => count > 0
+      );
       if (typeEntries.length > 0) {
         for (const [type, count] of typeEntries) {
           output.push(`- **${type}:** ${count}`);
@@ -200,11 +233,16 @@ export class DocumentationHandler {
         output.push("\n## Priority Items (Public APIs)\n");
         output.push("These exported items should be documented first:\n");
         for (const item of result.priorityItems.slice(0, 15)) {
-          const status = item.status === "partial" ? "📝 Partial" : "❌ Missing";
-          output.push(`${status} **${item.type}** \`${item.name}\` - ${item.file}:${item.startLine}`);
+          const status =
+            item.status === "partial" ? "📝 Partial" : "❌ Missing";
+          output.push(
+            `${status} **${item.type}** \`${item.name}\` - ${item.file}:${item.startLine}`
+          );
         }
         if (result.priorityItems.length > 15) {
-          output.push(`\n... and ${result.priorityItems.length - 15} more priority items`);
+          output.push(
+            `\n... and ${result.priorityItems.length - 15} more priority items`
+          );
         }
       }
 
@@ -214,7 +252,9 @@ export class DocumentationHandler {
         for (const fileGroup of result.byFile.slice(0, 10)) {
           output.push(`### ${fileGroup.file} (${fileGroup.count} items)\n`);
           for (const item of fileGroup.items.slice(0, 5)) {
-            output.push(`- ${item.type} \`${item.name}\` (line ${item.startLine})`);
+            output.push(
+              `- ${item.type} \`${item.name}\` (line ${item.startLine})`
+            );
           }
           if (fileGroup.items.length > 5) {
             output.push(`- ... and ${fileGroup.items.length - 5} more`);
@@ -275,10 +315,14 @@ export class DocumentationHandler {
 
       if (result.totalExamples === 0) {
         output.push("ℹ️ No @example blocks found in the codebase.");
-        output.push("\nConsider adding examples to your public APIs to improve documentation quality.");
+        output.push(
+          "\nConsider adding examples to your public APIs to improve documentation quality."
+        );
       } else {
         // Summary
-        const validPct = Math.round((result.validExamples / result.totalExamples) * 100);
+        const validPct = Math.round(
+          (result.validExamples / result.totalExamples) * 100
+        );
         output.push("## Validation Summary\n");
         output.push(`- ✅ **Valid:** ${result.validExamples} (${validPct}%)`);
         output.push(`- ❌ **Invalid:** ${result.invalidExamples}`);
@@ -288,7 +332,9 @@ export class DocumentationHandler {
           output.push("\n## Invalid Examples\n");
           const invalidExamples = result.examples.filter((e) => !e.isValid);
           for (const example of invalidExamples) {
-            output.push(`### ${example.file}:${example.line} - \`${example.entityName}\`\n`);
+            output.push(
+              `### ${example.file}:${example.line} - \`${example.entityName}\`\n`
+            );
             output.push(`**Error:** ${example.error}`);
             output.push("\n```" + (example.language || "typescript"));
             output.push(example.code.slice(0, 200));
@@ -302,12 +348,18 @@ export class DocumentationHandler {
         // Valid examples (show a few)
         if (result.validExamples > 0) {
           output.push("\n## Valid Examples\n");
-          const validExamples = result.examples.filter((e) => e.isValid).slice(0, 5);
+          const validExamples = result.examples
+            .filter((e) => e.isValid)
+            .slice(0, 5);
           for (const example of validExamples) {
-            output.push(`- ✅ ${example.file}:${example.line} - \`${example.entityName}\``);
+            output.push(
+              `- ✅ ${example.file}:${example.line} - \`${example.entityName}\``
+            );
           }
           if (result.validExamples > 5) {
-            output.push(`\n... and ${result.validExamples - 5} more valid examples`);
+            output.push(
+              `\n... and ${result.validExamples - 5} more valid examples`
+            );
           }
         }
       }
@@ -316,7 +368,9 @@ export class DocumentationHandler {
       if (result.issues.length > 0) {
         output.push("\n## Issues\n");
         for (const issue of result.issues) {
-          output.push(`⚠️ **${issue.file}:${issue.line}** - ${issue.description}`);
+          output.push(
+            `⚠️ **${issue.file}:${issue.line}** - ${issue.description}`
+          );
           output.push(`   Suggestion: ${issue.suggestion}`);
         }
       }
@@ -381,12 +435,16 @@ export class DocumentationHandler {
       output.push(`**Files Processed:** ${result.filesProcessed}`);
       output.push(`**Templates Generated:** ${result.templatesGenerated}`);
       if (result.templatesGenerated > maxTemplates) {
-        output.push(`**Showing:** ${maxTemplates} of ${result.templatesGenerated}`);
+        output.push(
+          `**Showing:** ${maxTemplates} of ${result.templatesGenerated}`
+        );
       }
       output.push("");
 
       if (templates.length === 0) {
-        output.push("✅ No missing documentation found! All items are documented.");
+        output.push(
+          "✅ No missing documentation found! All items are documented."
+        );
       } else {
         // Group by file
         const byFile = new Map<string, typeof templates>();
@@ -400,7 +458,9 @@ export class DocumentationHandler {
           output.push(`## ${file}\n`);
 
           for (const template of fileTemplates) {
-            output.push(`### ${template.entityType} \`${template.entityName}\` (line ${template.insertLine})\n`);
+            output.push(
+              `### ${template.entityType} \`${template.entityName}\` (line ${template.insertLine})\n`
+            );
             output.push("```typescript");
             output.push(template.template);
             output.push("```\n");
@@ -408,7 +468,9 @@ export class DocumentationHandler {
         }
 
         output.push("---\n");
-        output.push("**Usage:** Copy the generated templates and paste them above the corresponding declarations.");
+        output.push(
+          "**Usage:** Copy the generated templates and paste them above the corresponding declarations."
+        );
         output.push("Replace `TODO` placeholders with actual descriptions.");
       }
 

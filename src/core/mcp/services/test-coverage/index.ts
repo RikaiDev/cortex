@@ -70,15 +70,17 @@ export class TestCoverageService {
     const metrics = this.mapper.calculateMetrics(filteredTests, mappings);
 
     // Detect smells if requested
-    const smells = options.analyzeSmells !== false
-      ? await this.smellDetector.detectSmells(filteredTests)
-      : [];
+    const smells =
+      options.analyzeSmells !== false
+        ? await this.smellDetector.detectSmells(filteredTests)
+        : [];
     metrics.smellCount = smells.length;
 
     // Find untested code if requested
-    const untestedCode = options.findUntested !== false
-      ? await this.mapper.findUntestedCode(mappings)
-      : [];
+    const untestedCode =
+      options.findUntested !== false
+        ? await this.mapper.findUntestedCode(mappings)
+        : [];
 
     // Detect framework
     const framework = this.detectPrimaryFramework(filteredTests);
@@ -206,9 +208,7 @@ export class TestCoverageService {
   /**
    * Check test quality for a file
    */
-  async checkQuality(
-    testFile: string
-  ): Promise<{
+  async checkQuality(testFile: string): Promise<{
     score: number;
     issues: TestSmell[];
     summary: string;

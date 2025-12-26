@@ -52,7 +52,7 @@
     "chalk": "^5.0.0",
     "commander": "^11.0.0",
     "fs-extra": "^11.0.0",
-    "markdownlint-cli": "^0.45.0",
+    "markdownlint-cli": "^0.47.0",
     "reflect-metadata": "^0.2.2",
     "typescript": "^5.0.0",
     "uuid": "^13.0.0"

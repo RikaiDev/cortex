@@ -41,7 +41,8 @@ export class PRReviewHandler {
         },
         useTeamPatterns: {
           type: "boolean",
-          description: "Apply team patterns from previous reviews (default: true)",
+          description:
+            "Apply team patterns from previous reviews (default: true)",
         },
         includeSuggestions: {
           type: "boolean",
@@ -81,7 +82,9 @@ export class PRReviewHandler {
       const verdictEmoji = this.getVerdictEmoji(result.verdict);
       sections.push(`## PR Review: #${result.pr.number} ${verdictEmoji}`);
       sections.push(`**${result.pr.title}**`);
-      sections.push(`\nBy @${result.pr.author} | ${result.pr.headBranch} -> ${result.pr.baseBranch}`);
+      sections.push(
+        `\nBy @${result.pr.author} | ${result.pr.headBranch} -> ${result.pr.baseBranch}`
+      );
 
       // Verdict
       sections.push(`\n### Verdict: ${this.formatVerdict(result.verdict)}`);
@@ -103,7 +106,9 @@ export class PRReviewHandler {
         sections.push(`|----------|-------|`);
         sections.push(`| 🔴 Critical | ${result.stats.bySeverity.critical} |`);
         sections.push(`| 🟡 Warning | ${result.stats.bySeverity.warning} |`);
-        sections.push(`| 🔵 Suggestion | ${result.stats.bySeverity.suggestion} |`);
+        sections.push(
+          `| 🔵 Suggestion | ${result.stats.bySeverity.suggestion} |`
+        );
         sections.push(`| ⚪ Info | ${result.stats.bySeverity.info} |`);
       }
 
@@ -125,7 +130,9 @@ export class PRReviewHandler {
           for (const finding of findings) {
             const emoji = this.getSeverityEmoji(finding.severity);
             const line = finding.line ? `:${finding.line}` : "";
-            sections.push(`- ${emoji} **${finding.category}**${line}: ${finding.message}`);
+            sections.push(
+              `- ${emoji} **${finding.category}**${line}: ${finding.message}`
+            );
             sections.push(`  - Suggestion: ${finding.suggestion}`);
           }
         }
@@ -136,7 +143,9 @@ export class PRReviewHandler {
         sections.push(`\n### Applied Team Patterns`);
         for (const pattern of result.appliedPatterns) {
           sections.push(`- **${pattern.pattern}**: ${pattern.description}`);
-          sections.push(`  - Frequency: ${pattern.frequency} | Reviewers: ${pattern.reviewers.join(", ")}`);
+          sections.push(
+            `  - Frequency: ${pattern.frequency} | Reviewers: ${pattern.reviewers.join(", ")}`
+          );
         }
       }
 
@@ -146,7 +155,9 @@ export class PRReviewHandler {
         sections.push(`- ✅ This PR looks good and can be merged`);
       } else if (result.verdict === "comment") {
         sections.push(`- 💬 Review the warnings and address where appropriate`);
-        sections.push(`- Consider the suggestions for code quality improvements`);
+        sections.push(
+          `- Consider the suggestions for code quality improvements`
+        );
       } else {
         sections.push(`- 🔴 Address critical issues before merging`);
         sections.push(`- Review all findings and update the PR`);
@@ -223,12 +234,16 @@ export class PRReviewHandler {
       if (result.suggestions.length > 0) {
         sections.push(`\n### File Ownership`);
         for (const suggestion of result.suggestions.slice(0, 5)) {
-          sections.push(`\n**@${suggestion.username}** (${suggestion.ownedFiles.length} files)`);
+          sections.push(
+            `\n**@${suggestion.username}** (${suggestion.ownedFiles.length} files)`
+          );
           for (const file of suggestion.ownedFiles.slice(0, 5)) {
             sections.push(`- ${file}`);
           }
           if (suggestion.ownedFiles.length > 5) {
-            sections.push(`- *...and ${suggestion.ownedFiles.length - 5} more*`);
+            sections.push(
+              `- *...and ${suggestion.ownedFiles.length - 5} more*`
+            );
           }
         }
       }
@@ -251,8 +266,12 @@ export class PRReviewHandler {
         sections.push(`Found ${result.codeOwners.length} ownership rule(s).`);
       } else {
         sections.push(`\n### CODEOWNERS Not Found`);
-        sections.push(`Consider adding a CODEOWNERS file to define code ownership.`);
-        sections.push(`Common locations: \`CODEOWNERS\`, \`.github/CODEOWNERS\`, \`docs/CODEOWNERS\``);
+        sections.push(
+          `Consider adding a CODEOWNERS file to define code ownership.`
+        );
+        sections.push(
+          `Common locations: \`CODEOWNERS\`, \`.github/CODEOWNERS\`, \`docs/CODEOWNERS\``
+        );
       }
 
       // Quick action
@@ -263,7 +282,9 @@ export class PRReviewHandler {
           .join(",");
         sections.push(`\n### Quick Add Reviewers`);
         sections.push("```bash");
-        sections.push(`gh pr edit ${result.pr.number} --add-reviewer ${topReviewers}`);
+        sections.push(
+          `gh pr edit ${result.pr.number} --add-reviewer ${topReviewers}`
+        );
         sections.push("```");
       }
 
@@ -309,11 +330,15 @@ export class PRReviewHandler {
 
       // Header
       const readyEmoji = result.readyForReview ? "✅" : "⚠️";
-      sections.push(`## Review Checklist: PR #${result.pr.number} ${readyEmoji}`);
+      sections.push(
+        `## Review Checklist: PR #${result.pr.number} ${readyEmoji}`
+      );
       sections.push(`**${result.pr.title}**`);
 
       // Readiness status
-      sections.push(`\n### Readiness: ${result.readyForReview ? "Ready for Review" : "Needs Attention"}`);
+      sections.push(
+        `\n### Readiness: ${result.readyForReview ? "Ready for Review" : "Needs Attention"}`
+      );
 
       if (result.blockingItems.length > 0) {
         sections.push(`\n**Blocking Items:**`);
@@ -366,7 +391,9 @@ export class PRReviewHandler {
       sections.push(`\n### Changed Files`);
       for (const file of result.pr.files.slice(0, 10)) {
         const status = this.getFileStatusIcon(file.status);
-        sections.push(`- ${status} ${file.path} (+${file.additions}/-${file.deletions})`);
+        sections.push(
+          `- ${status} ${file.path} (+${file.additions}/-${file.deletions})`
+        );
       }
       if (result.pr.files.length > 10) {
         sections.push(`- *...and ${result.pr.files.length - 10} more files*`);

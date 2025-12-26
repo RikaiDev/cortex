@@ -71,9 +71,7 @@ export class TestCoverageHandler {
       sections.push(`\n### Coverage Metrics`);
       sections.push(`| Metric | Value |`);
       sections.push(`|--------|-------|`);
-      sections.push(
-        `| Source Files | ${result.metrics.totalSourceFiles} |`
-      );
+      sections.push(`| Source Files | ${result.metrics.totalSourceFiles} |`);
       sections.push(
         `| Files with Tests | ${result.metrics.testedFiles} (${result.metrics.fileCoveragePercent}%) |`
       );
@@ -81,9 +79,7 @@ export class TestCoverageHandler {
         `| Files without Tests | ${result.metrics.untestedFiles} |`
       );
       sections.push(`| Total Tests | ${result.metrics.totalTests} |`);
-      sections.push(
-        `| Total Assertions | ${result.metrics.totalAssertions} |`
-      );
+      sections.push(`| Total Assertions | ${result.metrics.totalAssertions} |`);
       sections.push(
         `| Avg Assertions/Test | ${result.metrics.avgAssertionsPerTest} |`
       );
@@ -103,9 +99,7 @@ export class TestCoverageHandler {
           const skipInfo =
             file.skippedTests > 0 ? ` (${file.skippedTests} skipped)` : "";
           const focusInfo =
-            file.focusedTests > 0
-              ? ` ⚠️ ${file.focusedTests} focused`
-              : "";
+            file.focusedTests > 0 ? ` ⚠️ ${file.focusedTests} focused` : "";
           sections.push(
             `- **${file.path}**: ${file.totalTests} tests, ${file.totalAssertions} assertions${skipInfo}${focusInfo}`
           );
@@ -120,9 +114,7 @@ export class TestCoverageHandler {
       if (result.smells.length > 0) {
         sections.push(`\n### Test Smells (${result.smells.length})`);
 
-        const errorSmells = result.smells.filter(
-          (s) => s.severity === "error"
-        );
+        const errorSmells = result.smells.filter((s) => s.severity === "error");
         const warningSmells = result.smells.filter(
           (s) => s.severity === "warning"
         );
@@ -160,15 +152,23 @@ export class TestCoverageHandler {
       // Overall assessment
       sections.push(`\n### Assessment`);
       if (result.metrics.fileCoveragePercent >= 80) {
-        sections.push(`✅ **Good coverage** - ${result.metrics.fileCoveragePercent}% of files have tests`);
+        sections.push(
+          `✅ **Good coverage** - ${result.metrics.fileCoveragePercent}% of files have tests`
+        );
       } else if (result.metrics.fileCoveragePercent >= 50) {
-        sections.push(`⚠️ **Moderate coverage** - ${result.metrics.fileCoveragePercent}% of files have tests`);
+        sections.push(
+          `⚠️ **Moderate coverage** - ${result.metrics.fileCoveragePercent}% of files have tests`
+        );
       } else {
-        sections.push(`❌ **Low coverage** - Only ${result.metrics.fileCoveragePercent}% of files have tests`);
+        sections.push(
+          `❌ **Low coverage** - Only ${result.metrics.fileCoveragePercent}% of files have tests`
+        );
       }
 
       if (result.metrics.avgAssertionsPerTest < 1) {
-        sections.push(`⚠️ Tests have very few assertions (${result.metrics.avgAssertionsPerTest} avg)`);
+        sections.push(
+          `⚠️ Tests have very few assertions (${result.metrics.avgAssertionsPerTest} avg)`
+        );
       }
 
       return {
@@ -212,17 +212,19 @@ export class TestCoverageHandler {
       const sections: string[] = [];
 
       sections.push(`## Test Suggestions for ${args.file}`);
-      sections.push(`\n**Suggested test file:** \`${suggestion.suggestedTestFile}\``);
+      sections.push(
+        `\n**Suggested test file:** \`${suggestion.suggestedTestFile}\``
+      );
       sections.push(`**Reason:** ${suggestion.reason}`);
 
       if (suggestion.testCases.length === 0) {
         sections.push(`\n✅ All functions appear to be tested!`);
       } else {
-        sections.push(`\n### Suggested Test Cases (${suggestion.testCases.length})`);
-
-        const unitTests = suggestion.testCases.filter(
-          (t) => t.type === "unit"
+        sections.push(
+          `\n### Suggested Test Cases (${suggestion.testCases.length})`
         );
+
+        const unitTests = suggestion.testCases.filter((t) => t.type === "unit");
         const edgeCases = suggestion.testCases.filter(
           (t) => t.type === "edge-case"
         );
@@ -257,9 +259,13 @@ export class TestCoverageHandler {
         // Template
         sections.push(`\n### Test Template`);
         sections.push("```typescript");
-        sections.push(`import { ${this.extractModuleName(args.file)} } from './${this.getImportPath(args.file)}';`);
+        sections.push(
+          `import { ${this.extractModuleName(args.file)} } from './${this.getImportPath(args.file)}';`
+        );
         sections.push(``);
-        sections.push(`describe('${this.extractModuleName(args.file)}', () => {`);
+        sections.push(
+          `describe('${this.extractModuleName(args.file)}', () => {`
+        );
         for (const tc of suggestion.testCases.slice(0, 3)) {
           sections.push(`  it('${tc.name}', () => {`);
           sections.push(`    // ${tc.description}`);
@@ -461,9 +467,7 @@ export class TestCoverageHandler {
         if (mediumPriority.length > 0) {
           sections.push(`\n### 🟡 Medium Priority (${mediumPriority.length})`);
           for (const item of mediumPriority.slice(0, 10)) {
-            sections.push(
-              `- **${item.name}** (\`${item.file}:${item.line}\`)`
-            );
+            sections.push(`- **${item.name}** (\`${item.file}:${item.line}\`)`);
           }
           if (mediumPriority.length > 10) {
             sections.push(`  ... and ${mediumPriority.length - 10} more`);
@@ -490,7 +494,9 @@ export class TestCoverageHandler {
           `1. Start with high-priority items in core/services directories`
         );
         sections.push(`2. Use \`test-suggest\` to get test templates`);
-        sections.push(`3. Run \`test-analyze\` after adding tests to track progress`);
+        sections.push(
+          `3. Run \`test-analyze\` after adding tests to track progress`
+        );
       }
 
       return {
