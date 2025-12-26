@@ -18,6 +18,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:cli": "node dist/cli/index.js --help && node dist/core/mcp/server.js --version",
     "prepublishOnly": "node -e \"console.error('❌ RELEASE WORKFLOW VIOLATION!\\n\\nYou must use the proper release workflow:\\n  npm run release:patch    # for patch releases\\n  npm run release:minor    # for minor releases\\n  npm run release:major    # for major releases\\n\\nDirect npm publish is blocked to ensure quality and consistency.\\n'); process.exit(1);\"",
     "release:patch": "node scripts/publish-workflow.cjs patch",
     "release:minor": "node scripts/publish-workflow.cjs minor",
