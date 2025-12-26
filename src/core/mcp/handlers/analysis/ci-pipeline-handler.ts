@@ -8,9 +8,18 @@ import { MCPTool } from "../../decorators/index.js";
 import { CIPipelineService } from "../../services/ci-pipeline-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 
+/**
+ * MCP handler for CI/CD pipeline awareness tools.
+ *
+ * Provides tools to check build status, analyze test failures,
+ * view build history, and validate changes against CI failure patterns.
+ */
 export class CIPipelineHandler {
   private ciService: CIPipelineService;
 
+  /**
+   * @param projectRoot - Root directory of the project to analyze
+   */
   constructor(private projectRoot: string) {
     this.ciService = new CIPipelineService(projectRoot);
   }

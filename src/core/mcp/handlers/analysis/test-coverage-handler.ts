@@ -9,9 +9,18 @@ import { TestCoverageService } from "../../services/test-coverage/index.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { TestAnalysisOptions } from "../../types/test-coverage.js";
 
+/**
+ * MCP handler for test coverage analysis tools.
+ *
+ * Provides tools to analyze test coverage, suggest tests for uncovered code,
+ * check test quality, and identify gaps in test coverage.
+ */
 export class TestCoverageHandler {
   private testCoverageService: TestCoverageService;
 
+  /**
+   * @param projectRoot - Root directory of the project to analyze
+   */
   constructor(private projectRoot: string) {
     this.testCoverageService = new TestCoverageService(projectRoot);
   }

@@ -9,9 +9,18 @@ import { SecurityService } from "../../services/security-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { SecuritySeverity, SecurityCategory } from "../../types/security.js";
 
+/**
+ * MCP handler for security scanning and vulnerability detection tools.
+ *
+ * Provides tools to scan code for security issues, check dependencies
+ * for vulnerabilities, and detect hardcoded secrets or credentials.
+ */
 export class SecurityHandler {
   private securityService: SecurityService;
 
+  /**
+   * @param projectRoot - Root directory of the project to analyze
+   */
   constructor(private projectRoot: string) {
     this.securityService = new SecurityService(projectRoot);
   }

@@ -9,9 +9,18 @@ import { ArchitectureService } from "../../services/architecture-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { ViolationSeverity } from "../../types/architecture.js";
 
+/**
+ * MCP handler for architecture validation and governance tools.
+ *
+ * Provides tools to validate code against architectural rules,
+ * check layer dependencies, and suggest appropriate layers for new files.
+ */
 export class ArchitectureHandler {
   private archService: ArchitectureService;
 
+  /**
+   * @param projectRoot - Root directory of the project to analyze
+   */
   constructor(private projectRoot: string) {
     this.archService = new ArchitectureService(projectRoot);
   }

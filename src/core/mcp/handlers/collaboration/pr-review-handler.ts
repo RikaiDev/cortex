@@ -9,9 +9,18 @@ import { PRReviewService } from "../../services/pr-review-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { ReviewSeverity } from "../../types/pr-review.js";
 
+/**
+ * MCP handler for PR review automation tools.
+ *
+ * Provides tools to auto-review PRs against team patterns,
+ * suggest appropriate reviewers, and generate review checklists.
+ */
 export class PRReviewHandler {
   private reviewService: PRReviewService;
 
+  /**
+   * @param projectRoot - Root directory of the project to analyze
+   */
   constructor(private projectRoot: string) {
     this.reviewService = new PRReviewService(projectRoot);
   }

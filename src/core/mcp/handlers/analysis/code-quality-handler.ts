@@ -9,9 +9,18 @@ import { CodeQualityService } from "../../services/code-quality-service.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { SmellSeverity } from "../../types/code-quality.js";
 
+/**
+ * MCP handler for code quality analysis tools.
+ *
+ * Provides tools to analyze code quality, detect code smells,
+ * calculate complexity metrics, find duplicates, and suggest refactorings.
+ */
 export class CodeQualityHandler {
   private qualityService: CodeQualityService;
 
+  /**
+   * @param projectRoot - Root directory of the project to analyze
+   */
   constructor(private projectRoot: string) {
     this.qualityService = new CodeQualityService(projectRoot);
   }

@@ -9,9 +9,18 @@ import { ImpactAnalyzer } from "../../services/impact-analysis/index.js";
 import type { MCPToolResult } from "../../types/mcp-types.js";
 import type { ImpactAnalysisOptions } from "../../types/change-impact.js";
 
+/**
+ * MCP handler for change impact analysis tools.
+ *
+ * Provides tools to build dependency graphs, analyze change impact,
+ * preview affected files, and understand code dependencies.
+ */
 export class ImpactAnalysisHandler {
   private impactAnalyzer: ImpactAnalyzer;
 
+  /**
+   * @param projectRoot - Root directory of the project to analyze
+   */
   constructor(private projectRoot: string) {
     this.impactAnalyzer = new ImpactAnalyzer(projectRoot);
   }

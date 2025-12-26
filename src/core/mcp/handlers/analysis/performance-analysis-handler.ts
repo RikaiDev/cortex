@@ -12,9 +12,18 @@ import type {
   PerformanceCategory,
 } from "../../types/performance.js";
 
+/**
+ * MCP handler for performance anti-pattern detection tools.
+ *
+ * Provides tools to scan code for performance issues, list known patterns,
+ * get fix suggestions, and record performance corrections for learning.
+ */
 export class PerformanceAnalysisHandler {
   private performanceAnalyzer: PerformanceAnalyzer;
 
+  /**
+   * @param projectRoot - Root directory of the project to analyze
+   */
   constructor(private projectRoot: string) {
     this.performanceAnalyzer = new PerformanceAnalyzer(projectRoot);
   }

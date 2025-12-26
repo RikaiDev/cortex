@@ -9,9 +9,18 @@ import type { MCPToolResult } from "../../types/mcp-types.js";
 import { DocumentationService } from "../../services/documentation-service.js";
 import type { DocAnalysisOptions } from "../../types/documentation.js";
 
+/**
+ * MCP handler for documentation analysis and generation tools.
+ *
+ * Provides tools to analyze documentation coverage, find missing docs,
+ * validate code examples, and generate JSDoc/TSDoc templates.
+ */
 export class DocumentationHandler {
   private service: DocumentationService;
 
+  /**
+   * @param projectRoot - Root directory of the project to analyze
+   */
   constructor(projectRoot: string) {
     this.service = new DocumentationService(projectRoot);
   }
