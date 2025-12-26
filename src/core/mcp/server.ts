@@ -40,6 +40,7 @@ import { TestCoverageHandler } from "./handlers/analysis/test-coverage-handler.j
 import { CIPipelineHandler } from "./handlers/analysis/ci-pipeline-handler.js";
 import { ArchitectureHandler } from "./handlers/analysis/architecture-handler.js";
 import { CodeQualityHandler } from "./handlers/analysis/code-quality-handler.js";
+import { DocumentationHandler } from "./handlers/analysis/documentation-handler.js";
 import { SecurityHandler } from "./handlers/security/security-handler.js";
 import { DangerZoneHandler } from "./handlers/project/danger-zone-handler.js";
 import { SpecHandler } from "./handlers/workflow/spec-handler.js";
@@ -134,6 +135,7 @@ export class CortexMCPServer {
     this.registry.registerHandler(new CIPipelineHandler(this.projectRoot));
     this.registry.registerHandler(new ArchitectureHandler(this.projectRoot));
     this.registry.registerHandler(new CodeQualityHandler(this.projectRoot));
+    this.registry.registerHandler(new DocumentationHandler(this.projectRoot));
     this.registry.registerHandler(new SecurityHandler(this.projectRoot));
     this.registry.registerHandler(new DangerZoneHandler(this.projectRoot));
     this.registry.registerHandler(new SpecHandler(this.projectRoot));
