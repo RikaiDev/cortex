@@ -34,6 +34,20 @@ export class ImpactCalculator {
       this.graphBuilder.normalizePath(f)
     );
 
+    // Also create .js versions for ESM import matching
+    // TypeScript files are stored with .ts but imports use .js (ESM convention)
+    const targetVariants = new Set<string>();
+    for (const target of normalizedTargets) {
+      targetVariants.add(target);
+      // Add .js variant for .ts files
+      if (target.endsWith(".ts")) {
+        targetVariants.add(target.replace(/\.ts$/, ".js"));
+      }
+      if (target.endsWith(".tsx")) {
+        targetVariants.add(target.replace(/\.tsx$/, ".js"));
+      }
+    }
+
     // Find all files that depend on the targets
     const maxDepth = options.maxDepth || 10;
     const visited = new Set<string>();
@@ -88,8 +102,8 @@ export class ImpactCalculator {
       }
     };
 
-    // Traverse from each target file
-    for (const target of normalizedTargets) {
+    // Traverse from each target file (including .js variants for ESM)
+    for (const target of targetVariants) {
       traverse(target, 0);
     }
 
