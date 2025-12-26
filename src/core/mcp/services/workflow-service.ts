@@ -10,9 +10,18 @@ import type { Workflow, PhaseResult } from "../types/workflow.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { WorkflowPhase } from "../types/workflow.js";
 
+/**
+ * Service for managing development workflows.
+ *
+ * Creates, tracks, and manages structured workflows with phases
+ * like spec, plan, implement, and review.
+ */
 export class WorkflowService {
   private workflowsPath: string;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.workflowsPath = path.join(projectRoot, ".cortex", "workflows");
   }

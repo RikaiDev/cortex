@@ -10,10 +10,19 @@ import fs from "fs-extra";
 import { v4 as uuidv4 } from "uuid";
 import type { Checkpoint, CheckpointIndex } from "../types/checkpoint.js";
 
+/**
+ * Service for managing task checkpoints and resumable work sessions.
+ *
+ * Allows saving, resuming, and managing checkpoints that preserve
+ * task context across development sessions.
+ */
 export class CheckpointService {
   private checkpointsPath: string;
   private indexPath: string;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     const cortexDir = path.join(projectRoot, ".cortex");
     this.checkpointsPath = path.join(cortexDir, "checkpoints");

@@ -18,6 +18,12 @@ import { TestParser } from "./test-parser.js";
 import { CoverageMapper } from "./coverage-mapper.js";
 import { SmellDetector } from "./smell-detector.js";
 
+/**
+ * Service for analyzing test coverage and test quality.
+ *
+ * Parses test files, maps coverage data, detects test smells,
+ * and suggests tests for uncovered code paths.
+ */
 export class TestCoverageService {
   private parser: TestParser;
   private mapper: CoverageMapper;
@@ -25,6 +31,9 @@ export class TestCoverageService {
   private cachedAnalysis: TestAnalysisResult | null = null;
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.parser = new TestParser(projectRoot);
     this.mapper = new CoverageMapper(projectRoot);

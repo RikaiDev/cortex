@@ -15,9 +15,18 @@ import type {
   DeprecatedAPIsDatabase,
 } from "../types/dependency.js";
 
+/**
+ * Service for analyzing and managing project dependencies.
+ *
+ * Checks for outdated packages, security vulnerabilities, deprecated APIs,
+ * and compatibility issues between dependencies.
+ */
 export class DependencyService {
   private deprecatedAPIs: DeprecatedAPIsDatabase;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     // Initialize with common deprecated APIs
     this.deprecatedAPIs = this.getKnownDeprecations();

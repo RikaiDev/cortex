@@ -25,6 +25,12 @@ import type {
   SecretType,
 } from "../types/security.js";
 
+/**
+ * Service for security scanning and vulnerability detection.
+ *
+ * Scans code for security issues (OWASP Top 10), checks dependencies
+ * for vulnerabilities, and detects hardcoded secrets or credentials.
+ */
 export class SecurityService {
   /** Directories to exclude from scanning */
   private static readonly EXCLUDE_DIRS = [

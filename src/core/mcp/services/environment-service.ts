@@ -15,9 +15,18 @@ import type {
   AutoDetectionResult,
 } from "../types/environment.js";
 
+/**
+ * Service for managing environment configurations and runtime constraints.
+ *
+ * Tracks environment-specific settings, validates configurations,
+ * and auto-detects runtime environments from project files.
+ */
 export class EnvironmentService {
   private configPath: string;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.configPath = path.join(projectRoot, ".cortex", "environments.json");
   }

@@ -11,10 +11,20 @@ import type { TemplateVariables } from "../types/template.js";
 import type { MemoryService } from "./memory/index.js";
 import { CorrectionService } from "./correction-service.js";
 
+/**
+ * Service for generating workflow documents from templates.
+ *
+ * Loads and renders templates with variable substitution, integrates
+ * with memory service for context, and applies learned corrections.
+ */
 export class TemplateGenerator {
   private templatesPath: string;
   private correctionService: CorrectionService;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   * @param memoryService - Optional memory service for context
+   */
   constructor(
     private projectRoot: string,
     private memoryService?: MemoryService

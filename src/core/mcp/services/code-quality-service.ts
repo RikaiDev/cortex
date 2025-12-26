@@ -25,6 +25,12 @@ import type {
 } from "../types/code-quality.js";
 import { DEFAULT_QUALITY_THRESHOLDS } from "../types/code-quality.js";
 
+/**
+ * Service for analyzing code quality, complexity, and detecting code smells.
+ *
+ * Calculates cyclomatic and cognitive complexity, finds code duplicates,
+ * detects code smells, and generates refactoring suggestions.
+ */
 export class CodeQualityService {
   private thresholds: QualityThresholds;
 

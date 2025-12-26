@@ -28,6 +28,12 @@ import type {
 } from "../types/documentation.js";
 import { DEFAULT_DOC_THRESHOLDS } from "../types/documentation.js";
 
+/**
+ * Service for analyzing documentation coverage and generating templates.
+ *
+ * Parses JSDoc/TSDoc comments, calculates coverage metrics, validates
+ * code examples, and generates documentation stubs for undocumented code.
+ */
 export class DocumentationService {
   private thresholds: DocThresholds;
 

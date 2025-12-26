@@ -12,9 +12,18 @@ import type {
   DangerZoneCheckResult,
 } from "../types/danger-zone.js";
 
+/**
+ * Service for managing danger zones in the codebase.
+ *
+ * Tracks and validates critical code sections that require extra care
+ * when modifying, such as security-sensitive or complex legacy code.
+ */
 export class DangerZoneService {
   private configPath: string;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.configPath = path.join(projectRoot, ".cortex", "danger-zones.json");
   }

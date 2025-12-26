@@ -17,10 +17,19 @@ import { LearningExtractor } from "./learning-extractor.js";
  * Maintains the same public API as the original MemoryService class
  * while delegating to specialized sub-modules.
  */
+/**
+ * Service for managing AI learning and experience memory.
+ *
+ * Stores patterns, decisions, solutions, and lessons learned from
+ * development sessions to improve future recommendations.
+ */
 export class MemoryService {
   private storage: MemoryStorage;
   private extractor: LearningExtractor;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.storage = new MemoryStorage(projectRoot);
     this.extractor = new LearningExtractor(this.storage, projectRoot);

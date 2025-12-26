@@ -34,10 +34,19 @@ interface GHWorkflowRun {
   url: string;
 }
 
+/**
+ * Service for CI/CD pipeline awareness and build status tracking.
+ *
+ * Integrates with GitHub Actions to track build status, analyze test failures,
+ * and validate changes against historical failure patterns.
+ */
 export class CIPipelineService {
   private readonly historyPath: string;
   private readonly failurePatternsPath: string;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     const cortexDir = path.join(projectRoot, ".cortex");
     this.historyPath = path.join(cortexDir, "ci-history.json");

@@ -22,10 +22,19 @@ import {
   DEFAULT_ARCHITECTURE_CONFIG,
 } from "../types/architecture.js";
 
+/**
+ * Service for validating architecture rules and layer boundaries.
+ *
+ * Checks import dependencies, naming conventions, and file organization
+ * against configurable architecture rules.
+ */
 export class ArchitectureService {
   private config: ArchitectureConfig | null = null;
   private configPath: string;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.configPath = path.join(projectRoot, ".cortex", "architecture.json");
   }

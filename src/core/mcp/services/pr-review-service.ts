@@ -24,9 +24,18 @@ import type {
   PRReviewOptions,
 } from "../types/pr-review.js";
 
+/**
+ * Service for automating pull request reviews.
+ *
+ * Reviews PRs against team patterns, suggests appropriate reviewers
+ * based on CODEOWNERS, and generates review checklists.
+ */
 export class PRReviewService {
   private teamKnowledgePath: string;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.teamKnowledgePath = path.join(
       projectRoot,

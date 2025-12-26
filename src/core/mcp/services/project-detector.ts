@@ -30,7 +30,16 @@ export interface ProjectConventions {
   };
 }
 
+/**
+ * Service for detecting project conventions and configuration.
+ *
+ * Analyzes project structure to detect changelog format, commit conventions,
+ * versioning scheme, and other project-specific settings.
+ */
 export class ProjectDetector {
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {}
 
   /**

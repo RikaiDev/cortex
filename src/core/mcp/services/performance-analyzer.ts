@@ -14,10 +14,19 @@ import type {
   PerformanceCategory,
 } from "../types/performance.js";
 
+/**
+ * Service for detecting performance anti-patterns in code.
+ *
+ * Scans for common performance issues like N+1 queries, memory leaks,
+ * inefficient loops, and provides fix suggestions based on patterns.
+ */
 export class PerformanceAnalyzer {
   private config: PerformanceConfig;
   private patterns: PerformancePattern[];
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.config = {
       enabled: true,

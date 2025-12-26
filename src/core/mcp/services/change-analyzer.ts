@@ -33,7 +33,16 @@ export interface ReleaseAnalysis {
   mergedChanges: ChangeEntry[];
 }
 
+/**
+ * Service for analyzing code changes from git history and workflows.
+ *
+ * Parses conventional commits, extracts change types, and generates
+ * release analysis from git commits and workflow changes.
+ */
 export class ChangeAnalyzer {
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {}
 
   /**

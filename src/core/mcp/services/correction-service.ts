@@ -15,11 +15,20 @@ import type {
   CorrectionIndex,
 } from "../types/correction.js";
 
+/**
+ * Service for managing code corrections and learning from mistakes.
+ *
+ * Stores and retrieves corrections for patterns, enabling the system
+ * to learn from previous mistakes and apply consistent fixes.
+ */
 export class CorrectionService {
   private correctionsPath: string;
   private indexPath: string;
   private cachedCorrections: Correction[] | null = null;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     const memoryDir = path.join(projectRoot, ".cortex", "memory");
     this.correctionsPath = path.join(memoryDir, "corrections");

@@ -16,10 +16,19 @@ import type {
   TeamKnowledgeStats,
 } from "../types/team-knowledge.js";
 
+/**
+ * Service for managing team knowledge and coding patterns.
+ *
+ * Stores and retrieves team-specific patterns, best practices,
+ * and coding standards for consistent code review and guidance.
+ */
 export class TeamKnowledgeService {
   private config: TeamKnowledgeConfig;
   private teamKnowledgePath: string;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.teamKnowledgePath = path.join(
       projectRoot,

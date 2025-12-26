@@ -12,9 +12,18 @@ import {
   MCPResourceResult,
 } from "../types/mcp-types.js";
 
+/**
+ * Service for generating project and workflow snapshots.
+ *
+ * Creates point-in-time snapshots of project structure, architecture,
+ * and workflow state for documentation and handoff purposes.
+ */
 export class SnapshotService {
   private fileAnalyzer: FileAnalyzer;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(private projectRoot: string) {
     this.fileAnalyzer = new FileAnalyzer(projectRoot);
   }

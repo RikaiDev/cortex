@@ -20,11 +20,20 @@ import { BreakingChangeDetector } from "./breaking-change-detector.js";
  * Maintains the same public API as the original ImpactAnalyzer class
  * while delegating to specialized sub-modules.
  */
+/**
+ * Service for analyzing the impact of code changes.
+ *
+ * Builds dependency graphs, calculates affected files, detects breaking
+ * changes, and provides risk assessments for proposed modifications.
+ */
 export class ImpactAnalyzer {
   private graphBuilder: DependencyGraphBuilder;
   private calculator: ImpactCalculator;
   private breakingChangeDetector: BreakingChangeDetector;
 
+  /**
+   * @param projectRoot - Root directory of the project
+   */
   constructor(projectRoot: string) {
     this.graphBuilder = new DependencyGraphBuilder(projectRoot);
     this.calculator = new ImpactCalculator(this.graphBuilder);
