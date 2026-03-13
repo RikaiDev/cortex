@@ -1,7 +1,9 @@
 {
   "name": "@rikaidev/cortex",
   "version": "0.12.0",
-  "description": "Cortex AI - AI Collaboration Brain with real-time preference learning and structured thinking",
+  "description": "⚠️ ARCHIVED - Use Claude Code, Gemini CLI, or OpenCode instead. See README.md",
+  "deprecated": true,
+  "deprecationMessage": "AI models now natively support 1M context, memory, and agentic workflows. See README.md for alternatives.",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
